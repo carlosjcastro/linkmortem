@@ -79,6 +79,13 @@ def test_skips_results_that_only_share_a_word():
     assert pick_candidates(ORIGINAL, "Space Shooter tutorial - Unity", results) == ["https://learn.dev/project/space-shooter-tutorial"]
 
 
+def test_keeps_the_site_name_out_of_the_core_title():
+    original = "http://kylemillercreative.com/grouper-social-club"
+    assert search_query("Grouper Social Club — Kyle Miller Creative", "", original) == '"Grouper Social Club" Kyle Miller Creative'
+    instagram = SearchResult(link="https://www.instagram.com/kylecmiller/", title="Kyle Miller (@kylecmiller) • Instagram photos and videos")
+    assert pick_candidates(original, "Grouper Social Club — Kyle Miller Creative", [instagram]) == []
+
+
 def test_builds_phrase_queries_with_the_site_name():
     assert search_query("Space Shooter tutorial - Unity", "", ORIGINAL) == '"Space Shooter tutorial" Unity'
     assert search_query("Install guide", "", "https://docs.tool.dev/install") == '"Install guide" tool'
