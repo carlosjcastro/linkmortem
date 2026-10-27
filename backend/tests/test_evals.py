@@ -5,6 +5,7 @@ from app.scan.models import PageClassification, PageKind
 from evals.metrics import CaseResult, summarize
 from evals.report import markdown_report
 from evals.runner import UsageMeter, run_case
+from app.scan.classifier import SYSTEM
 from evals.tasks import TASKS
 
 
@@ -55,3 +56,7 @@ def test_summarizes_and_ranks_models():
     assert reports[0].accuracy == 0 and reports[0].costly_errors == 1
     table = markdown_report(reports, {"PageClassification": 1})
     assert table.index("| right |") < table.index("| fast |")
+
+
+def test_cases_are_replayed_with_the_current_prompts():
+    assert TASKS["PageClassification"].system == SYSTEM
