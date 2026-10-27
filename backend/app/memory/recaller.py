@@ -5,6 +5,7 @@ from app.memory.models import WAYBACK_URL, Memory, Recall, Snapshot
 from app.memory.wayback import ArchiveUnavailableError, WaybackIndex
 from app.scan.fetcher import Fetcher, Page
 from app.scan.pagetext import ParsedPage, parse_page
+from app.scan.signals import ARCHIVE_HOSTS, on_hosts
 from app.tracing import traced_tool
 
 MAX_ATTEMPTS = 3
@@ -37,6 +38,8 @@ class Recaller:
 
     @traced_tool("recall_memory")
     async def recall(self, url: str) -> Memory:
+        if on_hosts(url, ARCHIVE_HOSTS):
+            return Memory(status=Recall.MISSING)
         async with self._slots:
             try:
                 snapshots = await self._index.snapshots(url)
