@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import type { Diagnosis } from "./scanTypes";
+import type { Diagnosis, Memory } from "./scanTypes";
 import { streamScan } from "./scanStream";
 
 export type ScanPhase = "idle" | "collecting" | "checking" | "done" | "failed";
@@ -9,10 +9,11 @@ export type ScanState = {
   target: string;
   total: number;
   results: Diagnosis[];
+  memories: Record<string, Memory>;
   errorCode: string;
 };
 
-const INITIAL: ScanState = { phase: "idle", target: "", total: 0, results: [], errorCode: "" };
+const INITIAL: ScanState = { phase: "idle", target: "", total: 0, results: [], memories: {}, errorCode: "" };
 
 export function useScan() {
   const [state, setState] = useState<ScanState>(INITIAL);
@@ -27,6 +28,7 @@ export function useScan() {
       for await (const event of streamScan(target, current.signal)) {
         if (event.type === "collected") setState((previous) => ({ ...previous, phase: "checking", total: event.total }));
         if (event.type === "link") setState((previous) => ({ ...previous, results: [...previous.results, event.diagnosis] }));
+        if (event.type === "memory") setState((previous) => ({ ...previous, memories: { ...previous.memories, [event.url]: event.memory } }));
         if (event.type === "done") setState((previous) => ({ ...previous, phase: "done" }));
         if (event.type === "error") setState((previous) => ({ ...previous, phase: "failed", errorCode: event.code }));
       }

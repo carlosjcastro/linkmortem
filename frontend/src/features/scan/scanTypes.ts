@@ -2,6 +2,7 @@ export type Verdict = "alive" | "ghost" | "unknown";
 
 export type Cause =
   | "alive"
+  | "unreadable"
   | "not_found"
   | "gone"
   | "dns_failure"
@@ -25,8 +26,17 @@ export type Diagnosis = {
   evidence: string;
 };
 
+export type Memory = {
+  status: "found" | "missing" | "unavailable";
+  archived_url: string;
+  captured_on: string;
+  title: string;
+  excerpt: string;
+};
+
 export type ScanEvent =
   | { type: "collected"; total: number }
   | { type: "link"; diagnosis: Diagnosis }
+  | { type: "memory"; url: string; memory: Memory }
   | { type: "done"; summary: Partial<Record<Verdict, number>> }
   | { type: "error"; code: string; message: string };
