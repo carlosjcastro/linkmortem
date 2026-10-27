@@ -3,9 +3,8 @@ from urllib.parse import unquote, urlsplit
 
 from app.afterlife.models import SearchResult
 from app.scan.noise import is_noise
-from app.scan.signals import PARKING_HOSTS, bare_host, same_address
+from app.scan.signals import ARCHIVE_HOSTS, PARKING_HOSTS, bare_host, on_hosts, same_address
 
-ARCHIVE_HOSTS = ("archive.org", "archive.ph", "archive.today")
 WEB_SCHEMES = ("http://", "https://")
 TITLE_SEPARATORS = re.compile(r"\s+[|·•—–:-]\s+")
 WORD = re.compile(r"[^\W_]{3,}")
@@ -45,13 +44,11 @@ def search_query(title: str, content: str, original_url: str) -> str:
 
 
 def is_candidate(original_url: str, link: str) -> bool:
-    host = bare_host(link)
-    excluded = ARCHIVE_HOSTS + PARKING_HOSTS
     return (
         link.startswith(WEB_SCHEMES)
         and not same_address(original_url, link)
         and not is_noise(link)
-        and not any(host == other or host.endswith(f".{other}") for other in excluded)
+        and not on_hosts(link, ARCHIVE_HOSTS + PARKING_HOSTS)
     )
 
 
