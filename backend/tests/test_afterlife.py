@@ -30,7 +30,7 @@ class FakeSearch:
     async def results(self, query: str) -> list[SearchResult]:
         if self.error:
             raise SearchUnavailableError(query)
-        return [SearchResult(link=link) for link in self.links]
+        return [SearchResult(link=link, title="Space Shooter tutorial") for link in self.links]
 
 
 class FakeModel:
@@ -58,7 +58,7 @@ def seeker_for(links: list[str], matches: dict[str, Match], error: bool = False)
 
 
 def test_filters_archives_parking_and_the_dead_address():
-    results = [SearchResult(link=link) for link in [
+    results = [SearchResult(link=link, title="Space Shooter tutorial") for link in [
         f"{ORIGINAL}/",
         "https://web.archive.org/web/2019/x",
         "https://sedoparking.com/x",
@@ -68,12 +68,21 @@ def test_filters_archives_parking_and_the_dead_address():
         "https://c.dev",
         "https://d.dev",
     ]]
-    assert pick_candidates(ORIGINAL, results) == ["https://learn.dev/a", "https://b.dev", "https://c.dev"]
+    assert pick_candidates(ORIGINAL, "Space Shooter tutorial", results) == ["https://learn.dev/a", "https://b.dev", "https://c.dev"]
 
 
-def test_builds_queries_from_title_or_text():
-    assert search_query("Space Shooter tutorial", "") == "Space Shooter tutorial"
-    assert search_query("", "one two three") == "one two three"
+def test_skips_results_that_only_share_a_word():
+    results = [
+        SearchResult(link="https://en.wikipedia.org/wiki/Shooter_(2007_film)", title="Shooter (2007 film)"),
+        SearchResult(link="https://learn.dev/project/space-shooter-tutorial", title="Space Shooter"),
+    ]
+    assert pick_candidates(ORIGINAL, "Space Shooter tutorial - Unity", results) == ["https://learn.dev/project/space-shooter-tutorial"]
+
+
+def test_builds_phrase_queries_with_the_site_name():
+    assert search_query("Space Shooter tutorial - Unity", "", ORIGINAL) == '"Space Shooter tutorial" Unity'
+    assert search_query("Install guide", "", "https://docs.tool.dev/install") == '"Install guide" tool'
+    assert search_query("", "one two three", ORIGINAL) == "one two three"
 
 
 async def test_prefers_the_same_content_over_a_successor():
