@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 import httpx2
 
 from app.scan.models import Cause
+from app.scan.refresh import refresh_target
 from app.scan.safety import UnresolvableAddressError, UnsafeAddressError, ensure_public
 
 MAX_REDIRECTS = 5
@@ -50,6 +51,10 @@ class Fetcher:
                         continue
                     content_type = response.headers.get("content-type", "")
                     body = await read_capped(response) if "html" in content_type or "text" in content_type else ""
+                    target = refresh_target(body)
+                    if target:
+                        current = urljoin(current, target)
+                        continue
                     return Page(response.status_code, current, content_type, body)
             return Page(None, current, failure=Cause.UNREACHABLE)
         except UnresolvableAddressError:
