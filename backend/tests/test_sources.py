@@ -88,3 +88,13 @@ async def test_a_silent_github_becomes_a_scan_error():
         with pytest.raises(ScanError) as caught:
             await GitHubSource(client, "").links("owner", "repo")
     assert caught.value.code == "source_unreachable"
+
+
+async def test_an_exhausted_github_limit_is_named():
+    def limited(request: httpx2.Request) -> httpx2.Response:
+        return httpx2.Response(403, headers={"x-ratelimit-remaining": "0"})
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(limited)) as client:
+        with pytest.raises(ScanError) as caught:
+            await GitHubSource(client, "").links("owner", "repo")
+    assert caught.value.code == "github_rate_limited"
