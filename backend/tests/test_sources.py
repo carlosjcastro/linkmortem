@@ -1,6 +1,7 @@
 import httpx2
 import pytest
 
+from app.scan.errors import ScanError
 from app.scan.github_source import GitHubSource
 from app.scan.markdown import markdown_links
 from app.scan.noise import is_noise
@@ -77,3 +78,13 @@ async def test_turns_relative_links_into_repository_pages():
     blob = "https://github.com/owner/repo/blob/main"
     assert {link.url for link in links} == {f"{blob}/docs/guide.md", "https://site.dev", f"{blob}/docs/gone.md"}
     assert next(link for link in links if link.url.endswith("gone.md")).source == f"{blob}/docs/guide.md"
+
+
+async def test_a_silent_github_becomes_a_scan_error():
+    def timeout(request: httpx2.Request) -> httpx2.Response:
+        raise httpx2.ConnectTimeout("timed out", request=request)
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(timeout)) as client:
+        with pytest.raises(ScanError) as caught:
+            await GitHubSource(client, "").links("owner", "repo")
+    assert caught.value.code == "source_unreachable"
