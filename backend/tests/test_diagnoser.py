@@ -65,3 +65,10 @@ async def test_browser_gates_are_restricted_without_the_model():
     page = Page(200, LINK.url, "text/html", html("Docs", "Ya no se admite esta versión. Actualiza a un navegador admitido."))
     result = await Diagnoser(FakeFetcher(page), classifier).diagnose(LINK)
     assert (result.cause, result.verdict, classifier.calls) == (Cause.RESTRICTED, Verdict.UNKNOWN, 0)
+
+
+async def test_cloudflare_checks_are_restricted_without_the_model():
+    classifier = FakeClassifier(PageKind.ALIVE)
+    page = Page(200, LINK.url, "text/html", html("One moment, please...", "Please wait while your request is being verified..."))
+    result = await Diagnoser(FakeFetcher(page), classifier).diagnose(LINK)
+    assert (result.cause, classifier.calls) == (Cause.RESTRICTED, 0)

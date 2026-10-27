@@ -34,6 +34,13 @@ def test_flags_redirects_to_the_home_page():
     assert not looks_suspicious("https://a.dev/docs/v1", "https://a.dev/docs/v1", "Docs", "x" * 900)
 
 
+def test_short_pages_at_their_own_address_need_less_text():
+    github = "https://www.github.com/xmartlabs/XLForm"
+    assert not looks_suspicious(github, "https://github.com/xmartlabs/XLForm", "XLForm", "x" * 300)
+    assert looks_suspicious(github, "https://github.com/xmartlabs/XLForm", "XLForm", "x" * 80)
+    assert looks_suspicious("https://a.dev/old", "https://a.dev/new", "Docs", "x" * 300)
+
+
 def test_parses_title_text_and_links():
     page = parse_page(
         "<html><head><title>Docs</title><script>var x</script></head>"
