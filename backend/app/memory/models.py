@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 WAYBACK_URL = "https://web.archive.org"
 
@@ -35,3 +35,4 @@ class Memory(BaseModel):
     captured_on: str = ""
     title: str = ""
     excerpt: str = ""
+    content: str = Field(default="", exclude=True)

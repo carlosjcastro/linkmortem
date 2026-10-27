@@ -20,6 +20,7 @@ def remembered(snapshot: Snapshot, page: ParsedPage) -> Memory:
         captured_on=snapshot.captured_on,
         title=page.title,
         excerpt=excerpt,
+        content=page.text,
     )
 
 
