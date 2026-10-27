@@ -43,14 +43,13 @@ def parked_evidence(final_url: str, title: str, text: str) -> str | None:
     return f'The page says "{phrase}".' if phrase else None
 
 
+def has_suspect_phrase(title: str, text: str) -> bool:
+    opening = f"{title} {text[:OPENING_CHARS]}".lower()
+    return any(phrase in opening for phrase in SUSPECT_PHRASES)
+
+
 def looks_suspicious(original_url: str, final_url: str, title: str, text: str) -> bool:
     original, final = urlsplit(original_url), urlsplit(final_url)
     moved_to_root = original.path.strip("/") != "" and final.path.strip("/") == ""
     changed_host = bare_host(original_url) != bare_host(final_url)
-    opening = f"{title} {text[:OPENING_CHARS]}".lower()
-    return (
-        moved_to_root
-        or changed_host
-        or len(text) < SHORT_PAGE_CHARS
-        or any(phrase in opening for phrase in SUSPECT_PHRASES)
-    )
+    return moved_to_root or changed_host or len(text) < SHORT_PAGE_CHARS or has_suspect_phrase(title, text)
