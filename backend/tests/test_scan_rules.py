@@ -49,6 +49,19 @@ def test_falls_back_to_meta_tags():
     assert (page.title, page.text) == ("Demo", "A video")
 
 
+def test_summarizes_with_description_or_main_content():
+    menu = "<nav>Home Products Learn Support</nav>"
+    described = parse_page(f'<meta name="description" content="Build a space shooter">{menu}<main>Step one</main>', "https://a.dev")
+    plain = parse_page(f"{menu}<header>Brand</header><main>Step one</main>", "https://a.dev")
+    assert described.summary == "Build a space shooter" and "Home" not in described.text
+    assert plain.summary == "Step one"
+
+
+def test_keeps_menu_links_without_menu_text():
+    page = parse_page('<nav><a href="/docs">Docs</a></nav><p>Body</p>', "https://a.dev")
+    assert page.links == [("https://a.dev/docs", "Docs")] and page.text == "Body"
+
+
 def test_extracts_markdown_links():
     text = "See [the docs](https://a.dev/docs). Or <https://b.dev>.\n[ref]: https://c.dev/x"
     assert {url for url, _ in markdown_links(text)} == {"https://a.dev/docs", "https://b.dev", "https://c.dev/x"}
