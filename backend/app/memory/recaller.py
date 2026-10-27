@@ -12,7 +12,8 @@ EXCERPT_CHARS = 280
 
 
 def remembered(snapshot: Snapshot, page: ParsedPage) -> Memory:
-    excerpt = page.text[:EXCERPT_CHARS].rsplit(" ", 1)[0] if len(page.text) > EXCERPT_CHARS else page.text
+    summary = page.summary
+    excerpt = summary[:EXCERPT_CHARS].rsplit(" ", 1)[0] if len(summary) > EXCERPT_CHARS else summary
     return Memory(
         status=Recall.FOUND,
         archived_url=snapshot.archive_url,
