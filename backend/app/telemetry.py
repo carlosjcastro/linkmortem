@@ -5,6 +5,16 @@ import sentry_sdk
 from app.config import Settings
 
 
+IP_TERMS = ["forwarded", "-ip", "remote-", "via", "-user"]
+PRIVATE_DATA_COLLECTION = {
+    "user_info": False,
+    "cookies": {"mode": "off"},
+    "http_bodies": [],
+    "http_headers": {"request": {"mode": "denylist", "terms": IP_TERMS}},
+    "url_query_params": {"mode": "denylist", "terms": IP_TERMS},
+    "gen_ai": {"inputs": False, "outputs": False},
+    "database_query_data": False,
+}
 LOG_FORMAT = "%(levelname)s:     %(name)s %(message)s"
 
 
@@ -25,6 +35,6 @@ def init_telemetry(settings: Settings) -> bool:
         dsn=settings.sentry_dsn,
         environment=settings.environment,
         traces_sample_rate=1.0,
-        send_default_pii=False,
+        data_collection=PRIVATE_DATA_COLLECTION,
     )
     return True
