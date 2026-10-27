@@ -1,6 +1,7 @@
 from app.scan.errors import ScanError
 from app.scan.github_source import GitHubSource
 from app.scan.models import Link
+from app.scan.noise import is_noise
 from app.scan.site_source import SiteSource
 from app.scan.targets import Target
 
@@ -14,9 +15,10 @@ class Collector:
 
     async def collect(self, target: Target) -> list[Link]:
         if target.is_repository:
-            links = await self._github.links(target.owner, target.repository)
+            found = await self._github.links(target.owner, target.repository)
         else:
-            links = await self._site.links(target.url)
+            found = await self._site.links(target.url)
+        links = [link for link in found if not is_noise(link.url)]
         if not links:
             raise ScanError("nothing_found", "No links were found at that address.")
         return links[:MAX_LINKS]
