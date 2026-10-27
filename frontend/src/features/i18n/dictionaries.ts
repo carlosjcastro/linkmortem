@@ -26,10 +26,17 @@ export type Dictionary = {
   aliveTitle: string;
   foundOn: string;
   scanRemembering: (remembered: number, ghosts: number) => string;
+  scanReincarnating: (sought: number, total: number) => string;
   memorySearching: string;
   memoryFound: (date: string) => string;
   memoryMissing: string;
   memoryUnavailable: string;
+  afterlifeSearching: string;
+  afterlifeSame: string;
+  afterlifeSuccessor: string;
+  afterlifeNone: string;
+  afterlifeUnavailable: string;
+  afterlifeSkipped: string;
   causes: Record<CauseName, string>;
   scanErrors: Record<string, string>;
   caseTitle: string;
@@ -72,10 +79,17 @@ export const dictionaries: Record<Language, Dictionary> = {
     aliveTitle: "Still alive",
     foundOn: "Found on",
     scanRemembering: (remembered, ghosts) => `Searching the Wayback Machine for ${ghosts === 1 ? "the lost page" : "the lost pages"}, ${remembered} of ${ghosts}`,
+    scanReincarnating: (sought, total) => `Looking for where the lost pages live now, ${sought} of ${total}`,
     memorySearching: "Searching the Wayback Machine for its last healthy copy",
     memoryFound: (date) => `Last healthy copy, ${date}`,
     memoryMissing: "The Wayback Machine never saved a healthy copy of this page.",
     memoryUnavailable: "The Wayback Machine didn't answer. Try again in a few minutes.",
+    afterlifeSearching: "Looking for where this page lives now",
+    afterlifeSame: "Reincarnated at a new address",
+    afterlifeSuccessor: "Lives on in a newer version",
+    afterlifeNone: "No new home found. The archived copy is the best replacement.",
+    afterlifeUnavailable: "The search for a new home didn't answer. Try again later.",
+    afterlifeSkipped: "This scan reached its search limit, so this page wasn't looked up.",
     causes: {
       alive: "Alive",
       unreadable: "Alive, though its content loads with scripts",
@@ -154,10 +168,17 @@ export const dictionaries: Record<Language, Dictionary> = {
     aliveTitle: "Siguen vivos",
     foundOn: "Encontrado en",
     scanRemembering: (remembered, ghosts) => `Buscando ${ghosts === 1 ? "la página perdida" : "las páginas perdidas"} en el Wayback Machine, ${remembered} de ${ghosts}`,
+    scanReincarnating: (sought, total) => `Buscando dónde viven hoy las páginas perdidas, ${sought} de ${total}`,
     memorySearching: "Buscando su última copia sana en el Wayback Machine",
     memoryFound: (date) => `Última copia sana, ${date}`,
     memoryMissing: "El Wayback Machine nunca guardó una copia sana de esta página.",
     memoryUnavailable: "El Wayback Machine no respondió. Probá de nuevo en unos minutos.",
+    afterlifeSearching: "Buscando dónde vive hoy esta página",
+    afterlifeSame: "Reencarnó en una nueva dirección",
+    afterlifeSuccessor: "Sigue viva en una versión más nueva",
+    afterlifeNone: "No encontramos un nuevo hogar. La copia archivada es el mejor reemplazo.",
+    afterlifeUnavailable: "La búsqueda de un nuevo hogar no respondió. Probá más tarde.",
+    afterlifeSkipped: "Este escaneo llegó a su límite de búsquedas, así que esta página no se buscó.",
     causes: {
       alive: "Vivo",
       unreadable: "Vivo, aunque su contenido carga con scripts",
