@@ -1,9 +1,12 @@
 import { useTranslation } from "../i18n/useTranslation";
-import type { Diagnosis } from "./scanTypes";
+import MemoryLine from "./MemoryLine";
+import type { Diagnosis, Memory } from "./scanTypes";
 
 const TONES = { ghost: "bg-rose", unknown: "bg-marigold", alive: "bg-spectral" } as const;
 
-export default function GhostItem({ result }: { result: Diagnosis }) {
+type GhostItemProps = { result: Diagnosis; memory?: Memory; remembering: boolean };
+
+export default function GhostItem({ result, memory, remembering }: GhostItemProps) {
   const { t } = useTranslation();
   const dead = result.verdict === "ghost";
 
@@ -24,6 +27,7 @@ export default function GhostItem({ result }: { result: Diagnosis }) {
           {result.status_code && result.status_code >= 400 ? <span className="ml-2 font-normal text-dusk">(HTTP {result.status_code})</span> : null}
         </p>
         {result.evidence ? <p className="mt-1 max-w-[60ch] leading-[1.6] text-dusk">{result.evidence}</p> : null}
+        {dead ? <MemoryLine memory={memory} remembering={remembering} /> : null}
         <p className="mt-1 text-[0.9rem] text-dusk">
           {t.foundOn}{" "}
           <a href={result.link.source} rel="noopener noreferrer" target="_blank" className="break-all underline decoration-veil underline-offset-4 hover:text-bone">

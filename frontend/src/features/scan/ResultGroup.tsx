@@ -1,14 +1,20 @@
 import GhostItem from "./GhostItem";
-import type { Diagnosis } from "./scanTypes";
+import type { Diagnosis, Memory } from "./scanTypes";
 
-type ResultGroupProps = { title: string; results: Diagnosis[]; collapsed?: boolean };
+type ResultGroupProps = {
+  title: string;
+  results: Diagnosis[];
+  collapsed?: boolean;
+  memories?: Record<string, Memory>;
+  remembering?: boolean;
+};
 
-export default function ResultGroup({ title, results, collapsed = false }: ResultGroupProps) {
+export default function ResultGroup({ title, results, collapsed = false, memories = {}, remembering = false }: ResultGroupProps) {
   if (results.length === 0) return null;
   const list = (
     <ul className="divide-y divide-veil">
       {results.map((result) => (
-        <GhostItem key={result.link.url} result={result} />
+        <GhostItem key={result.link.url} result={result} memory={memories[result.link.url]} remembering={remembering} />
       ))}
     </ul>
   );
