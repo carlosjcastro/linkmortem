@@ -4,6 +4,8 @@ from urllib.parse import urldefrag, urljoin
 
 SKIPPED_TAGS = {"script", "style", "noscript", "template", "svg"}
 MAX_TEXT_CHARS = 2500
+META_TITLES = {"og:title", "twitter:title"}
+META_DESCRIPTIONS = {"description", "og:description", "twitter:description"}
 
 
 @dataclass
@@ -22,6 +24,7 @@ class PageParser(HTMLParser):
         self._anchor: str | None = None
         self._anchor_text: list[str] = []
         self.title_parts: list[str] = []
+        self.meta: dict[str, str] = {}
         self.text_parts: list[str] = []
         self.links: list[tuple[str, str]] = []
 
@@ -30,10 +33,20 @@ class PageParser(HTMLParser):
             self._skipping += 1
         elif tag == "title":
             self._in_title = True
+        elif tag == "meta":
+            self._read_meta(dict(attrs))
         elif tag == "a":
             href = dict(attrs).get("href")
             self._anchor = urldefrag(urljoin(self._base, href))[0] if href else None
             self._anchor_text = []
+
+    def _read_meta(self, attrs: dict[str, str | None]) -> None:
+        key = (attrs.get("property") or attrs.get("name") or "").lower()
+        content = (attrs.get("content") or "").strip()
+        if content and key in META_TITLES:
+            self.meta.setdefault("title", content)
+        elif content and key in META_DESCRIPTIONS:
+            self.meta.setdefault("description", content)
 
     def handle_endtag(self, tag: str) -> None:
         if tag in SKIPPED_TAGS and self._skipping:
@@ -61,5 +74,6 @@ class PageParser(HTMLParser):
 def parse_page(html: str, base_url: str) -> ParsedPage:
     parser = PageParser(base_url)
     parser.feed(html)
-    text = " ".join(parser.text_parts)
-    return ParsedPage(" ".join(parser.title_parts), text[:MAX_TEXT_CHARS], parser.links)
+    title = " ".join(parser.title_parts) or parser.meta.get("title", "")
+    text = " ".join(parser.text_parts) or parser.meta.get("description", "")
+    return ParsedPage(title, text[:MAX_TEXT_CHARS], parser.links)
