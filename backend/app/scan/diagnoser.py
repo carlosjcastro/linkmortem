@@ -4,9 +4,7 @@ from app.scan.fetcher import Fetcher, Page
 from app.scan.models import Cause, Diagnosis, Link
 from app.scan.pagetext import parse_page
 from app.scan.policy import PAGE_CAUSES, cause_for_status, verdict_for
-from app.scan.signals import looks_suspicious, parked_evidence
-
-UNREADABLE = "The page answered but has no readable text, so there is no evidence of death."
+from app.scan.signals import gate_evidence, looks_suspicious, parked_evidence
 
 
 def diagnosis(link: Link, cause: Cause, page: Page, evidence: str = "") -> Diagnosis:
@@ -35,11 +33,14 @@ class Diagnoser:
         if not page.body:
             return diagnosis(link, Cause.ALIVE, page)
         parsed = parse_page(page.body, page.final_url)
-        if not parsed.title and not parsed.text:
-            return diagnosis(link, Cause.ALIVE, page, UNREADABLE)
+        if not parsed.text:
+            return diagnosis(link, Cause.UNREADABLE, page)
         parked = parked_evidence(page.final_url, parsed.title, parsed.text)
         if parked:
             return diagnosis(link, Cause.PARKED_DOMAIN, page, parked)
+        gate = gate_evidence(parsed.title, parsed.text)
+        if gate:
+            return diagnosis(link, Cause.RESTRICTED, page, gate)
         if not looks_suspicious(link.url, page.final_url, parsed.title, parsed.text):
             return diagnosis(link, Cause.ALIVE, page)
         try:

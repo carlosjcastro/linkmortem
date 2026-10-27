@@ -25,6 +25,22 @@ SUSPECT_PHRASES = (
     "no disponible",
     "en construcción",
 )
+GATE_PHRASES = (
+    "browser is no longer supported",
+    "browser is not supported",
+    "unsupported browser",
+    "upgrade to a supported browser",
+    "update your browser",
+    "enable javascript",
+    "javascript is disabled",
+    "enable cookies",
+    "navegador admitido",
+    "navegador no compatible",
+    "actualiza tu navegador",
+    "habilita javascript",
+    "activa javascript",
+)
+GATE_PAGE_CHARS = 800
 SHORT_PAGE_CHARS = 400
 OPENING_CHARS = 600
 
@@ -41,6 +57,14 @@ def parked_evidence(final_url: str, title: str, text: str) -> str | None:
     content = f"{title} {text}".lower()
     phrase = next((phrase for phrase in PARKED_PHRASES if phrase in content), None)
     return f'The page says "{phrase}".' if phrase else None
+
+
+def gate_evidence(title: str, text: str) -> str | None:
+    if len(text) >= GATE_PAGE_CHARS:
+        return None
+    content = f"{title} {text}".lower()
+    phrase = next((phrase for phrase in GATE_PHRASES if phrase in content), None)
+    return f'The site answered a bot with "{phrase}" instead of the page.' if phrase else None
 
 
 def has_suspect_phrase(title: str, text: str) -> bool:
