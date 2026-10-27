@@ -2,9 +2,9 @@ import { useId, useState, type FormEvent } from "react";
 import { normalizeTarget } from "../../lib/target";
 import { useTranslation } from "../i18n/useTranslation";
 
-type ScanFormProps = { onScan: (target: string) => void };
+type ScanFormProps = { onScan: (target: string) => void; busy?: boolean };
 
-export default function ScanForm({ onScan }: ScanFormProps) {
+export default function ScanForm({ onScan, busy = false }: ScanFormProps) {
   const { t } = useTranslation();
   const [value, setValue] = useState("");
   const [invalid, setInvalid] = useState(false);
@@ -39,16 +39,13 @@ export default function ScanForm({ onScan }: ScanFormProps) {
         />
         <button
           type="submit"
-          className="rounded-full bg-marigold px-7 py-3.5 font-semibold text-night-deep transition-[transform,background-color] hover:bg-bone active:scale-[0.97]"
+          disabled={busy}
+          className="rounded-full bg-marigold px-7 py-3.5 font-semibold text-night-deep transition-[transform,background-color] hover:bg-bone active:scale-[0.97] disabled:cursor-progress disabled:opacity-70"
         >
           {t.scanAction}
         </button>
       </div>
-      <p
-        id={hintId}
-        role={invalid ? "alert" : undefined}
-        className={`mt-3 text-[0.95rem] ${invalid ? "text-rose" : "text-dusk"}`}
-      >
+      <p id={hintId} role={invalid ? "alert" : undefined} className={`mt-3 text-[0.95rem] ${invalid ? "text-rose" : "text-dusk"}`}>
         {invalid ? t.targetInvalid : t.targetHint}
       </p>
     </form>
