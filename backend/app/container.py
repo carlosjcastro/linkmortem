@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 
 import httpx2
 from ollama import AsyncClient
@@ -9,6 +10,7 @@ from app.afterlife.search import SerpSearch
 from app.afterlife.seeker import Seeker
 from app.llm.base import StructuredModel
 from app.llm.local import OllamaModel
+from app.llm.recorder import RecordingModel
 from app.llm.remote import BackboardModel
 from app.memory.recaller import Recaller
 from app.memory.wayback import WaybackIndex
@@ -43,11 +45,16 @@ class Container:
         await self.store.close()
 
 
-def build_model(settings: Settings, backboard: httpx2.AsyncClient) -> StructuredModel:
+def build_provider_model(settings: Settings, backboard: httpx2.AsyncClient) -> StructuredModel:
     if settings.model_provider == "backboard":
         return BackboardModel(backboard, settings.backboard_provider, settings.backboard_model, settings.model_retries)
     client = AsyncClient(host=settings.ollama_host)
     return OllamaModel(client, settings.ollama_model, settings.num_ctx, settings.model_retries)
+
+
+def build_model(settings: Settings, backboard: httpx2.AsyncClient) -> StructuredModel:
+    model = build_provider_model(settings, backboard)
+    return RecordingModel(model, Path(settings.capture_file)) if settings.capture_file else model
 
 
 def build_seeker(settings: Settings, model: StructuredModel, web: httpx2.AsyncClient, fetcher: Fetcher) -> Seeker | None:
