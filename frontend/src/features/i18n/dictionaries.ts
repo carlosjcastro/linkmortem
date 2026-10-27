@@ -25,6 +25,11 @@ export type Dictionary = {
   unknownTitle: string;
   aliveTitle: string;
   foundOn: string;
+  scanRemembering: (remembered: number, ghosts: number) => string;
+  memorySearching: string;
+  memoryFound: (date: string) => string;
+  memoryMissing: string;
+  memoryUnavailable: string;
   causes: Record<CauseName, string>;
   scanErrors: Record<string, string>;
   caseTitle: string;
@@ -66,8 +71,14 @@ export const dictionaries: Record<Language, Dictionary> = {
     unknownTitle: "Could not confirm",
     aliveTitle: "Still alive",
     foundOn: "Found on",
+    scanRemembering: (remembered, ghosts) => `Searching the Wayback Machine for ${ghosts === 1 ? "the lost page" : "the lost pages"}, ${remembered} of ${ghosts}`,
+    memorySearching: "Searching the Wayback Machine for its last healthy copy",
+    memoryFound: (date) => `Last healthy copy, ${date}`,
+    memoryMissing: "The Wayback Machine never saved a healthy copy of this page.",
+    memoryUnavailable: "The Wayback Machine didn't answer. Try again in a few minutes.",
     causes: {
       alive: "Alive",
+      unreadable: "Alive, though its content loads with scripts",
       not_found: "The page no longer exists",
       gone: "The page was removed on purpose",
       dns_failure: "The domain no longer exists",
@@ -142,8 +153,14 @@ export const dictionaries: Record<Language, Dictionary> = {
     unknownTitle: "Sin confirmar",
     aliveTitle: "Siguen vivos",
     foundOn: "Encontrado en",
+    scanRemembering: (remembered, ghosts) => `Buscando ${ghosts === 1 ? "la página perdida" : "las páginas perdidas"} en el Wayback Machine, ${remembered} de ${ghosts}`,
+    memorySearching: "Buscando su última copia sana en el Wayback Machine",
+    memoryFound: (date) => `Última copia sana, ${date}`,
+    memoryMissing: "El Wayback Machine nunca guardó una copia sana de esta página.",
+    memoryUnavailable: "El Wayback Machine no respondió. Probá de nuevo en unos minutos.",
     causes: {
       alive: "Vivo",
+      unreadable: "Vivo, aunque su contenido carga con scripts",
       not_found: "La página ya no existe",
       gone: "La página fue eliminada a propósito",
       dns_failure: "El dominio ya no existe",
