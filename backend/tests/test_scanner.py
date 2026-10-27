@@ -1,3 +1,4 @@
+from app.afterlife.models import Afterlife, Rebirth
 from app.memory.models import Memory, Recall
 from app.ratelimit import ConcurrencyGate, SlidingWindowLimiter
 from app.scan.errors import ScanError
@@ -22,12 +23,22 @@ class FakeDiagnoser:
 
 
 class FakeRecaller:
-    def __init__(self) -> None:
+    def __init__(self, status: Recall = Recall.MISSING) -> None:
+        self.status = status
         self.urls: list[str] = []
 
     async def recall(self, url: str) -> Memory:
         self.urls.append(url)
-        return Memory(status=Recall.MISSING)
+        return Memory(status=self.status, title="Old page", content="Old text")
+
+
+class FakeSeeker:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def seek(self, url: str, memory: Memory) -> Afterlife:
+        self.calls += 1
+        return Afterlife(status=Rebirth.FOUND, url=f"{url}/new")
 
 
 async def collect_events(scanner: Scanner, target: str) -> list[dict]:
@@ -37,18 +48,29 @@ async def collect_events(scanner: Scanner, target: str) -> list[dict]:
 async def test_streams_every_link_and_a_summary():
     links = [Link(url=f"https://a.dev/{name}", source="https://a.dev") for name in ["one", "dead", "two"]]
     recaller = FakeRecaller()
-    events = await collect_events(Scanner(FakeCollector(links), FakeDiagnoser(), recaller, 2), "https://a.dev")
-    assert events[0] == {"type": "collected", "total": 3}
+    events = await collect_events(Scanner(FakeCollector(links), FakeDiagnoser(), recaller, None, 2, 5), "https://a.dev")
+    assert events[0] == {"type": "collected", "total": 3, "reincarnation": False}
     assert sum(event["type"] == "link" for event in events) == 3
     assert recaller.urls == ["https://a.dev/dead"]
-    assert events[-2] == {"type": "memory", "url": "https://a.dev/dead", "memory": Memory(status=Recall.MISSING).model_dump(mode="json")}
+    assert events[-2]["type"] == "memory" and events[-2]["memory"]["status"] == "missing"
+    assert "content" not in events[-2]["memory"]
     assert events[-1] == {"type": "done", "summary": {"alive": 2, "ghost": 1}}
 
 
 async def test_reports_collection_errors():
     error = ScanError("nothing_found", "No links were found at that address.")
-    events = await collect_events(Scanner(FakeCollector(error=error), FakeDiagnoser(), FakeRecaller(), 2), "https://a.dev")
+    events = await collect_events(Scanner(FakeCollector(error=error), FakeDiagnoser(), FakeRecaller(), None, 2, 5), "https://a.dev")
     assert events == [{"type": "error", "code": "nothing_found", "message": "No links were found at that address."}]
+
+
+async def test_reincarnates_found_memories_within_the_search_budget():
+    links = [Link(url=f"https://a.dev/dead{number}", source="https://a.dev") for number in range(3)]
+    seeker = FakeSeeker()
+    scanner = Scanner(FakeCollector(links), FakeDiagnoser(), FakeRecaller(Recall.FOUND), seeker, 2, 2)
+    events = await collect_events(scanner, "https://a.dev")
+    afterlives = [event["afterlife"]["status"] for event in events if event["type"] == "afterlife"]
+    assert seeker.calls == 2 and sorted(afterlives) == ["found", "found", "skipped"]
+    assert events[-1]["type"] == "done"
 
 
 def test_sliding_window_limits_each_client():

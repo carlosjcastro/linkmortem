@@ -1,0 +1,104 @@
+import httpx2
+import pytest
+
+from app.afterlife.candidates import pick_candidates, search_query
+from app.afterlife.judge import CandidateJudge
+from app.afterlife.models import CandidateJudgement, Match, Rebirth, SearchResult
+from app.afterlife.search import SearchUnavailableError, SerpSearch
+from app.afterlife.seeker import Seeker
+from app.memory.models import Memory, Recall
+from app.scan.fetcher import Fetcher
+
+ORIGINAL = "https://old.dev/learn/space-shooter"
+MEMORY = Memory(
+    status=Recall.FOUND,
+    archived_url=f"https://web.archive.org/web/2019/{ORIGINAL}",
+    title="Space Shooter tutorial",
+    content="Build a space shooter step by step with the player ship, hazards and scoring.",
+)
+LONG = "Build a space shooter step by step. " * 20
+
+
+async def allow(url: str) -> None:
+    return None
+
+
+class FakeSearch:
+    def __init__(self, links: list[str], error: bool = False) -> None:
+        self.links, self.error = links, error
+
+    async def results(self, query: str) -> list[SearchResult]:
+        if self.error:
+            raise SearchUnavailableError(query)
+        return [SearchResult(link=link) for link in self.links]
+
+
+class FakeModel:
+    name = "fake"
+
+    def __init__(self, matches: dict[str, Match]) -> None:
+        self.matches = matches
+
+    async def generate(self, system, prompt, schema):
+        match = next((match for host, match in self.matches.items() if host in prompt.split("<candidate>")[1]), Match.DIFFERENT)
+        return CandidateJudgement(match=match, evidence="Build a space shooter")
+
+
+def site(request: httpx2.Request) -> httpx2.Response:
+    if "parked" in request.url.host:
+        return httpx2.Response(200, headers={"content-type": "text/html"}, text="<p>This domain is for sale</p>")
+    if "gone" in request.url.host:
+        return httpx2.Response(404)
+    return httpx2.Response(200, headers={"content-type": "text/html"}, text=f"<title>{request.url.host}</title><p>{LONG}</p>")
+
+
+def seeker_for(links: list[str], matches: dict[str, Match], error: bool = False) -> Seeker:
+    fetcher = Fetcher(httpx2.AsyncClient(transport=httpx2.MockTransport(site)), allow)
+    return Seeker(FakeSearch(links, error), fetcher, CandidateJudge(FakeModel(matches), 1))
+
+
+def test_filters_archives_parking_and_the_dead_address():
+    results = [SearchResult(link=link) for link in [
+        f"{ORIGINAL}/",
+        "https://web.archive.org/web/2019/x",
+        "https://sedoparking.com/x",
+        "https://learn.dev/a",
+        "https://learn.dev/a",
+        "https://b.dev",
+        "https://c.dev",
+        "https://d.dev",
+    ]]
+    assert pick_candidates(ORIGINAL, results) == ["https://learn.dev/a", "https://b.dev", "https://c.dev"]
+
+
+def test_builds_queries_from_title_or_text():
+    assert search_query("Space Shooter tutorial", "") == "Space Shooter tutorial"
+    assert search_query("", "one two three") == "one two three"
+
+
+async def test_prefers_the_same_content_over_a_successor():
+    seeker = seeker_for(["https://newer.dev/a", "https://moved.dev/a"], {"newer.dev": Match.SUCCESSOR, "moved.dev": Match.SAME})
+    afterlife = await seeker.seek(ORIGINAL, MEMORY)
+    assert (afterlife.status, afterlife.url, afterlife.match) == (Rebirth.FOUND, "https://moved.dev/a", Match.SAME)
+
+
+async def test_skips_dead_and_parked_candidates():
+    seeker = seeker_for(["https://gone.dev/a", "https://parked.dev/a"], {"gone.dev": Match.SAME, "parked.dev": Match.SAME})
+    assert (await seeker.seek(ORIGINAL, MEMORY)).status == Rebirth.NONE
+
+
+async def test_reports_an_unavailable_search():
+    assert (await seeker_for([], {}, error=True).seek(ORIGINAL, MEMORY)).status == Rebirth.UNAVAILABLE
+
+
+@pytest.mark.parametrize(("status", "payload"), [(200, {"error": "Invalid API key"}), (429, {})])
+async def test_search_errors_become_unavailable(status, payload):
+    client = httpx2.AsyncClient(transport=httpx2.MockTransport(lambda request: httpx2.Response(status, json=payload)))
+    with pytest.raises(SearchUnavailableError):
+        await SerpSearch(client, "key").results("query")
+
+
+async def test_reads_organic_results():
+    payload = {"organic_results": [{"link": "https://a.dev", "title": "A"}, {"title": "no link"}]}
+    client = httpx2.AsyncClient(transport=httpx2.MockTransport(lambda request: httpx2.Response(200, json=payload)))
+    assert await SerpSearch(client, "key").results("query") == [SearchResult(link="https://a.dev", title="A")]
