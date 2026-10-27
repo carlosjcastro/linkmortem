@@ -42,9 +42,9 @@ class GitHubSource:
             return ""
         return "" if response.is_error else response.text
 
-    async def links(self, owner: str, repository: str) -> list[Link]:
+    async def links(self, owner: str, repository: str, ref: str = "") -> list[Link]:
         info = await self._json(f"{API_URL}/repos/{owner}/{repository}")
-        branch = quote(info["default_branch"])
+        branch = quote(ref or info["default_branch"])
         tree = await self._json(f"{API_URL}/repos/{owner}/{repository}/git/trees/{branch}?recursive=1")
         paths = [item["path"] for item in tree.get("tree", []) if item["path"].lower().endswith(MARKDOWN_SUFFIXES)][:MAX_FILES]
         texts = await asyncio.gather(*(self._text(f"{RAW_URL}/{owner}/{repository}/{branch}/{quote(path)}") for path in paths))
