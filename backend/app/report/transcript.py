@@ -4,6 +4,8 @@ from app.afterlife.models import Afterlife
 from app.memory.models import Memory
 from app.scan.models import Diagnosis, Verdict
 
+NOTHING_FOUND = "nothing_found"
+
 
 @dataclass
 class ScanTranscript:
@@ -13,6 +15,7 @@ class ScanTranscript:
     memories: dict[str, Memory] = field(default_factory=dict)
     afterlives: dict[str, Afterlife] = field(default_factory=dict)
     error: str = ""
+    error_code: str = ""
 
     def add(self, event: dict) -> None:
         kind = event["type"]
@@ -26,6 +29,11 @@ class ScanTranscript:
             self.afterlives[event["url"]] = Afterlife.model_validate(event["afterlife"])
         elif kind == "error":
             self.error = event["message"]
+            self.error_code = event["code"]
+
+    @property
+    def failed(self) -> bool:
+        return bool(self.error) and self.error_code != NOTHING_FOUND
 
     def with_verdict(self, verdict: Verdict) -> list[Diagnosis]:
         return sorted((item for item in self.diagnoses if item.verdict == verdict), key=lambda item: item.link.url)

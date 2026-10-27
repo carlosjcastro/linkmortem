@@ -46,7 +46,7 @@ def main() -> int:
         with options.github_output.open("a", encoding="utf8") as output:
             output.write(f"ghosts={ghosts}\nunknown={unknown}\nreport={options.report}\n")
     print(f"{transcript.total} links checked, {ghosts} ghosts, {unknown} could not be confirmed")
-    if transcript.error:
+    if transcript.failed:
         return FAILED_SCAN
     return GHOSTS_FOUND if ghosts and options.fail_on_ghosts else 0
 
