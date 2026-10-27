@@ -23,7 +23,7 @@ class UsageMeter:
 async def run_case(model: StructuredModel, meter: UsageMeter, case: EvalCase) -> CaseResult:
     task = TASKS[case.task]
     try:
-        predicted = predicted_label(task, await model.generate(case.system, case.prompt, task.schema))
+        predicted = predicted_label(task, await model.generate(task.system, case.prompt, task.schema))
     except ModelOutputError:
         predicted = None
     calls = meter.take()

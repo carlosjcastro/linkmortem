@@ -4,7 +4,7 @@ import pytest
 from app.memory import wayback
 from app.memory.models import Recall, Snapshot
 from app.memory.recaller import Recaller
-from app.memory.wayback import ArchiveUnavailableError, WaybackIndex
+from app.memory.wayback import ArchiveUnavailableError, WaybackIndex, is_real_snapshot
 from app.scan.fetcher import Fetcher
 
 HEALTHY = "<title>Install guide</title><p>" + "Run the installer and follow the steps. " * 20 + "</p>"
@@ -82,3 +82,17 @@ async def test_retries_a_busy_archive_once():
 
     client = httpx2.AsyncClient(transport=httpx2.MockTransport(handler))
     assert len(await WaybackIndex(client).snapshots("https://a.dev/docs")) == 2 and len(calls) == 2
+
+
+def test_ignores_placeholder_and_wildcard_snapshots():
+    assert is_real_snapshot("20190303121500", "https://a.dev/docs")
+    assert not is_real_snapshot("29991231235959", "https://a.dev/docs")
+    assert not is_real_snapshot("20190303121500", "/*")
+
+
+async def test_archive_links_have_no_memory_of_their_own():
+    def fail(request):
+        raise AssertionError("the archive should not be queried")
+
+    memory = await recaller_for(fail).recall("https://web.archive.org/web/*/https://a.dev/docs")
+    assert memory.status == Recall.MISSING

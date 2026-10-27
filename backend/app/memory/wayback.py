@@ -1,4 +1,6 @@
 import asyncio
+import re
+from datetime import UTC, datetime
 
 import httpx2
 
@@ -6,8 +8,16 @@ from app.memory.models import WAYBACK_URL, Snapshot
 
 CDX_URL = f"{WAYBACK_URL}/cdx/search/cdx"
 MAX_SNAPSHOTS = 6
+TIMESTAMP = re.compile(r"^\d{14}$")
+WEB_SCHEMES = ("http://", "https://")
 ATTEMPTS = 2
 RETRY_SECONDS = 2.0
+
+
+def is_real_snapshot(timestamp: str, original: str) -> bool:
+    if not TIMESTAMP.match(timestamp) or not original.startswith(WEB_SCHEMES):
+        return False
+    return timestamp <= datetime.now(UTC).strftime("%Y%m%d%H%M%S")
 
 
 class ArchiveUnavailableError(Exception):
@@ -48,5 +58,5 @@ class WaybackIndex:
         if response is None or response.is_error:
             raise ArchiveUnavailableError(url)
         rows = response.json() if response.content.strip() else []
-        found = [Snapshot(timestamp=row[0], original=row[1]) for row in rows[1:] if len(row) == 2]
+        found = [Snapshot(timestamp=row[0], original=row[1]) for row in rows[1:] if len(row) == 2 and is_real_snapshot(row[0], row[1])]
         return sorted(found, key=lambda snapshot: snapshot.timestamp, reverse=True)

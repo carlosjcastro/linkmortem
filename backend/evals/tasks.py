@@ -2,13 +2,16 @@ from dataclasses import dataclass
 
 from pydantic import BaseModel
 
+from app.afterlife.judge import SYSTEM as JUDGE_SYSTEM
 from app.afterlife.models import CandidateJudgement, Match
+from app.scan.classifier import SYSTEM as CLASSIFIER_SYSTEM
 from app.scan.models import PageClassification, PageKind, Verdict
 from app.scan.policy import PAGE_CAUSES, verdict_for
 
 
 @dataclass(frozen=True)
 class Task:
+    system: str
     schema: type[BaseModel]
     label_field: str
     labels: tuple[str, ...]
@@ -22,12 +25,14 @@ def classification_costs() -> frozenset[tuple[str, str]]:
 
 TASKS: dict[str, Task] = {
     "PageClassification": Task(
+        CLASSIFIER_SYSTEM,
         PageClassification,
         "kind",
         tuple(kind.value for kind in PageKind),
         classification_costs(),
     ),
     "CandidateJudgement": Task(
+        JUDGE_SYSTEM,
         CandidateJudgement,
         "match",
         tuple(match.value for match in Match),

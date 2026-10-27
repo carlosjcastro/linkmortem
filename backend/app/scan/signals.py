@@ -11,6 +11,7 @@ PARKED_PHRASES = (
     "dominio está en venta",
     "comprar este dominio",
 )
+ARCHIVE_HOSTS = ("archive.org", "archive.ph", "archive.today")
 PARKING_HOSTS = ("sedoparking.com", "parkingcrew.net", "bodis.com", "hugedomains.com", "dan.com", "afternic.com")
 SUSPECT_PHRASES = (
     "404",
@@ -58,9 +59,8 @@ def bare_host(url: str) -> str:
 
 
 def parked_evidence(final_url: str, title: str, text: str) -> str | None:
-    host = bare_host(final_url)
-    if any(host == parking or host.endswith(f".{parking}") for parking in PARKING_HOSTS):
-        return f"The link now lands on {host}, a domain parking service."
+    if on_hosts(final_url, PARKING_HOSTS):
+        return f"The link now lands on {bare_host(final_url)}, a domain parking service."
     content = f"{title} {text}".lower()
     phrase = next((phrase for phrase in PARKED_PHRASES if phrase in content), None)
     return f'The page says "{phrase}".' if phrase else None
@@ -77,6 +77,11 @@ def gate_evidence(title: str, text: str) -> str | None:
 def has_suspect_phrase(title: str, text: str) -> bool:
     opening = f"{title} {text[:OPENING_CHARS]}".lower()
     return any(phrase in opening for phrase in SUSPECT_PHRASES)
+
+
+def on_hosts(url: str, hosts: tuple[str, ...]) -> bool:
+    host = bare_host(url)
+    return any(host == known or host.endswith(f".{known}") for known in hosts)
 
 
 def same_address(first: str, second: str) -> bool:
