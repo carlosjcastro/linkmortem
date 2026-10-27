@@ -6,7 +6,7 @@
 
 Requirements: Python 3.12.
 
-From `/home/runner/work/linkmortem/linkmortem/backend`:
+From `backend`:
 
 ```bash
 python -m venv .venv
@@ -16,11 +16,19 @@ cp .env.example .env
 python -m uvicorn app.api:app --reload
 ```
 
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements_dev.txt
+Copy-Item .env.example .env
+python -m uvicorn app.api:app --reload
+```
+
 ### Frontend
 
 Requirements: Node.js LTS.
 
-From `/home/runner/work/linkmortem/linkmortem/frontend`:
+From `frontend`:
 
 ```bash
 npm ci
@@ -45,13 +53,13 @@ LINKMORTEM_MODEL_PROVIDER=backboard
 
 ## Checks before opening a pull request
 
-From `/home/runner/work/linkmortem/linkmortem/backend`:
+From `backend`:
 
 ```bash
 python -m pytest
 ```
 
-From `/home/runner/work/linkmortem/linkmortem/frontend`:
+From `frontend`:
 
 ```bash
 npm test
