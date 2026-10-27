@@ -1,0 +1,84 @@
+@import "tailwindcss";
+@import "@fontsource/gloock";
+@import "@fontsource-variable/atkinson-hyperlegible-next";
+
+:root {
+  color-scheme: dark;
+  --night: #1b1430;
+  --night-deep: #130e23;
+  --bone: #efe6d8;
+  --dusk: #bdb1cc;
+  --marigold: #f4a23c;
+  --spectral: #a8e6df;
+  --rose: #f07a95;
+  --veil: rgb(239 230 216 / 0.14);
+}
+
+@theme inline {
+  --color-night: var(--night);
+  --color-night-deep: var(--night-deep);
+  --color-bone: var(--bone);
+  --color-dusk: var(--dusk);
+  --color-marigold: var(--marigold);
+  --color-spectral: var(--spectral);
+  --color-rose: var(--rose);
+  --color-veil: var(--veil);
+  --font-display: "Gloock", "Iowan Old Style", Georgia, serif;
+  --font-sans: "Atkinson Hyperlegible Next Variable", system-ui, sans-serif;
+}
+
+html {
+  background: var(--night-deep);
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(
+    var(--night) 0,
+    var(--night) 60rem,
+    var(--night-deep) 120rem
+  );
+  color: var(--bone);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--marigold);
+  color: var(--night-deep);
+}
+
+:focus-visible {
+  outline: 3px solid var(--marigold);
+  outline-offset: 4px;
+}
+
+.spectral-type {
+  text-shadow:
+    0 0 0.05em rgb(168 230 223 / 0.35),
+    0 0 0.25em rgb(168 230 223 / 0.12);
+}
+
+.fade-bottom {
+  mask-image: linear-gradient(to bottom, black 70%, transparent);
+}
+
+.candle {
+  background: radial-gradient(
+    circle at 50% 60%,
+    var(--marigold) 0 38%,
+    rgb(244 162 60 / 0.35) 39% 62%,
+    transparent 63%
+  );
+}
+
+html[data-motion="off"] *,
+html[data-motion="off"] *::before,
+html[data-motion="off"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
