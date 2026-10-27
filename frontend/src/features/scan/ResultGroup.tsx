@@ -1,20 +1,29 @@
 import GhostItem from "./GhostItem";
-import type { Diagnosis, Memory } from "./scanTypes";
+import type { Afterlife, Diagnosis, Memory } from "./scanTypes";
 
 type ResultGroupProps = {
   title: string;
   results: Diagnosis[];
   collapsed?: boolean;
   memories?: Record<string, Memory>;
+  afterlives?: Record<string, Afterlife>;
+  reincarnation?: boolean;
   remembering?: boolean;
 };
 
-export default function ResultGroup({ title, results, collapsed = false, memories = {}, remembering = false }: ResultGroupProps) {
+export default function ResultGroup({ title, results, collapsed = false, memories = {}, afterlives = {}, reincarnation = false, remembering = false }: ResultGroupProps) {
   if (results.length === 0) return null;
   const list = (
     <ul className="divide-y divide-veil">
       {results.map((result) => (
-        <GhostItem key={result.link.url} result={result} memory={memories[result.link.url]} remembering={remembering} />
+        <GhostItem
+          key={result.link.url}
+          result={result}
+          memory={memories[result.link.url]}
+          afterlife={afterlives[result.link.url]}
+          reincarnation={reincarnation}
+          remembering={remembering}
+        />
       ))}
     </ul>
   );

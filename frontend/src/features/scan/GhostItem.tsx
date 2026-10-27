@@ -1,12 +1,20 @@
 import { useTranslation } from "../i18n/useTranslation";
+import AfterlifeLine from "./AfterlifeLine";
 import MemoryLine from "./MemoryLine";
-import type { Diagnosis, Memory } from "./scanTypes";
+import type { Afterlife, Diagnosis, Memory } from "./scanTypes";
 
 const TONES = { ghost: "bg-rose", unknown: "bg-marigold", alive: "bg-spectral" } as const;
 
-type GhostItemProps = { result: Diagnosis; memory?: Memory; remembering: boolean };
+type GhostItemProps = {
+  result: Diagnosis;
+  memory?: Memory;
+  afterlife?: Afterlife;
+  reincarnation: boolean;
+  remembering: boolean;
+};
 
-export default function GhostItem({ result, memory, remembering }: GhostItemProps) {
+export default function GhostItem({ result, memory, afterlife, reincarnation, remembering }: GhostItemProps) {
+  const seeking = reincarnation && memory?.status === "found" && remembering;
   const { t } = useTranslation();
   const dead = result.verdict === "ghost";
 
@@ -28,6 +36,7 @@ export default function GhostItem({ result, memory, remembering }: GhostItemProp
         </p>
         {result.evidence ? <p className="mt-1 max-w-[60ch] leading-[1.6] text-dusk">{result.evidence}</p> : null}
         {dead ? <MemoryLine memory={memory} remembering={remembering} /> : null}
+        {dead ? <AfterlifeLine afterlife={afterlife} seeking={seeking} /> : null}
         <p className="mt-1 text-[0.9rem] text-dusk">
           {t.foundOn}{" "}
           <a href={result.link.source} rel="noopener noreferrer" target="_blank" className="break-all underline decoration-veil underline-offset-4 hover:text-bone">

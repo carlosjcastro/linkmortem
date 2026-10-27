@@ -29,7 +29,7 @@ export default function ScanResults({ state }: { state: ScanState }) {
           {t.scanErrors[state.errorCode] ?? t.scanErrors.unavailable}
         </p>
       ) : null}
-      <ResultGroup title={t.ghostsTitle} results={groups.ghost} memories={state.memories} remembering={running} />
+      <ResultGroup title={t.ghostsTitle} results={groups.ghost} memories={state.memories} afterlives={state.afterlives} reincarnation={state.reincarnation} remembering={running} />
       <ResultGroup title={t.unknownTitle} results={groups.unknown} />
       <ResultGroup title={t.aliveTitle} results={groups.alive} collapsed />
     </section>
