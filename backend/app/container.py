@@ -4,6 +4,9 @@ import httpx2
 from ollama import AsyncClient
 
 from app.config import Settings
+from app.afterlife.judge import CandidateJudge
+from app.afterlife.search import SerpSearch
+from app.afterlife.seeker import Seeker
 from app.llm.base import StructuredModel
 from app.llm.local import OllamaModel
 from app.llm.remote import BackboardModel
@@ -47,12 +50,19 @@ def build_model(settings: Settings, backboard: httpx2.AsyncClient) -> Structured
     return OllamaModel(client, settings.ollama_model, settings.num_ctx, settings.model_retries)
 
 
+def build_seeker(settings: Settings, model: StructuredModel, web: httpx2.AsyncClient, fetcher: Fetcher) -> Seeker | None:
+    if not settings.serpapi_api_key:
+        return None
+    return Seeker(SerpSearch(web, settings.serpapi_api_key), fetcher, CandidateJudge(model, settings.model_concurrency))
+
+
 def build_scanner(settings: Settings, model: StructuredModel, web: httpx2.AsyncClient) -> Scanner:
     fetcher = Fetcher(web)
     collector = Collector(SiteSource(fetcher), GitHubSource(web, settings.github_token))
     diagnoser = Diagnoser(fetcher, PageClassifier(model, settings.model_concurrency))
     recaller = Recaller(WaybackIndex(web), fetcher)
-    return Scanner(collector, diagnoser, recaller, settings.scan_concurrency)
+    seeker = build_seeker(settings, model, web, fetcher)
+    return Scanner(collector, diagnoser, recaller, seeker, settings.scan_concurrency, settings.max_searches)
 
 
 def build_container(settings: Settings) -> Container:
