@@ -2,6 +2,9 @@ import asyncio
 from collections import Counter
 from collections.abc import AsyncIterator
 
+from app.afterlife.models import Afterlife, Rebirth
+from app.afterlife.seeker import Seeker
+from app.memory.models import Recall
 from app.memory.recaller import Recaller
 from app.scan.collector import Collector
 from app.scan.diagnoser import Diagnoser
@@ -11,11 +14,21 @@ from app.scan.targets import parse_target
 
 
 class Scanner:
-    def __init__(self, collector: Collector, diagnoser: Diagnoser, recaller: Recaller, concurrency: int) -> None:
+    def __init__(
+        self,
+        collector: Collector,
+        diagnoser: Diagnoser,
+        recaller: Recaller,
+        seeker: Seeker | None,
+        concurrency: int,
+        max_searches: int,
+    ) -> None:
         self._collector = collector
         self._diagnoser = diagnoser
         self._recaller = recaller
+        self._seeker = seeker
         self._concurrency = concurrency
+        self._max_searches = max_searches
 
     async def events(self, raw_target: str) -> AsyncIterator[dict]:
         try:
@@ -23,7 +36,7 @@ class Scanner:
         except ScanError as error:
             yield {"type": "error", "code": error.code, "message": error.message}
             return
-        yield {"type": "collected", "total": len(links)}
+        yield {"type": "collected", "total": len(links), "reincarnation": self._seeker is not None}
         tally: Counter[str] = Counter()
         ghosts: list[str] = []
         async for result in self._diagnoses(links):
@@ -31,7 +44,7 @@ class Scanner:
             if result.verdict == Verdict.GHOST:
                 ghosts.append(result.link.url)
             yield {"type": "link", "diagnosis": result.model_dump(mode="json")}
-        async for event in self._memories(ghosts):
+        async for event in self._afterlives(ghosts):
             yield event
         yield {"type": "done", "summary": dict(tally)}
 
@@ -45,10 +58,31 @@ class Scanner:
         for pending in asyncio.as_completed([checked(link) for link in links]):
             yield await pending
 
-    async def _memories(self, urls: list[str]) -> AsyncIterator[dict]:
-        async def recalled(url: str) -> dict:
-            memory = await self._recaller.recall(url)
-            return {"type": "memory", "url": url, "memory": memory.model_dump(mode="json")}
+    async def _afterlives(self, urls: list[str]) -> AsyncIterator[dict]:
+        queue: asyncio.Queue[dict | None] = asyncio.Queue()
+        searches = self._max_searches
 
-        for pending in asyncio.as_completed([recalled(url) for url in urls]):
-            yield await pending
+        async def follow(url: str) -> None:
+            nonlocal searches
+            try:
+                memory = await self._recaller.recall(url)
+                await queue.put({"type": "memory", "url": url, "memory": memory.model_dump(mode="json")})
+                if self._seeker and memory.status == Recall.FOUND:
+                    searches -= 1
+                    afterlife = await self._seeker.seek(url, memory) if searches >= 0 else Afterlife(status=Rebirth.SKIPPED)
+                    await queue.put({"type": "afterlife", "url": url, "afterlife": afterlife.model_dump(mode="json")})
+            finally:
+                await queue.put(None)
+
+        tasks = [asyncio.create_task(follow(url)) for url in urls]
+        try:
+            finished = 0
+            while finished < len(tasks):
+                event = await queue.get()
+                if event is None:
+                    finished += 1
+                else:
+                    yield event
+        finally:
+            for task in tasks:
+                task.cancel()
