@@ -1,3 +1,4 @@
+from app.memory.models import Memory, Recall
 from app.ratelimit import ConcurrencyGate, SlidingWindowLimiter
 from app.scan.errors import ScanError
 from app.scan.models import Cause, Diagnosis, Link, Verdict
@@ -20,21 +21,33 @@ class FakeDiagnoser:
         return Diagnosis(link=link, verdict=Verdict.GHOST if dead else Verdict.ALIVE, cause=Cause.NOT_FOUND if dead else Cause.ALIVE)
 
 
+class FakeRecaller:
+    def __init__(self) -> None:
+        self.urls: list[str] = []
+
+    async def recall(self, url: str) -> Memory:
+        self.urls.append(url)
+        return Memory(status=Recall.MISSING)
+
+
 async def collect_events(scanner: Scanner, target: str) -> list[dict]:
     return [event async for event in scanner.events(target)]
 
 
 async def test_streams_every_link_and_a_summary():
     links = [Link(url=f"https://a.dev/{name}", source="https://a.dev") for name in ["one", "dead", "two"]]
-    events = await collect_events(Scanner(FakeCollector(links), FakeDiagnoser(), 2), "https://a.dev")
+    recaller = FakeRecaller()
+    events = await collect_events(Scanner(FakeCollector(links), FakeDiagnoser(), recaller, 2), "https://a.dev")
     assert events[0] == {"type": "collected", "total": 3}
     assert sum(event["type"] == "link" for event in events) == 3
+    assert recaller.urls == ["https://a.dev/dead"]
+    assert events[-2] == {"type": "memory", "url": "https://a.dev/dead", "memory": Memory(status=Recall.MISSING).model_dump(mode="json")}
     assert events[-1] == {"type": "done", "summary": {"alive": 2, "ghost": 1}}
 
 
 async def test_reports_collection_errors():
     error = ScanError("nothing_found", "No links were found at that address.")
-    events = await collect_events(Scanner(FakeCollector(error=error), FakeDiagnoser(), 2), "https://a.dev")
+    events = await collect_events(Scanner(FakeCollector(error=error), FakeDiagnoser(), FakeRecaller(), 2), "https://a.dev")
     assert events == [{"type": "error", "code": "nothing_found", "message": "No links were found at that address."}]
 
 
