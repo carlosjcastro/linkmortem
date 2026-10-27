@@ -16,18 +16,14 @@ function renderForm() {
 describe("ScanForm", () => {
   it("sends a normalized address", () => {
     const onScan = renderForm();
-    fireEvent.change(screen.getByRole("textbox"), {
-      target: { value: "example.com" },
-    });
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "example.com" } });
     fireEvent.click(screen.getByRole("button"));
     expect(onScan).toHaveBeenCalledWith("https://example.com/");
   });
 
   it("announces an invalid address", () => {
     const onScan = renderForm();
-    fireEvent.change(screen.getByRole("textbox"), {
-      target: { value: "nothing" },
-    });
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "nothing" } });
     fireEvent.click(screen.getByRole("button"));
     expect(screen.getByRole("alert")).toBeInTheDocument();
     expect(onScan).not.toHaveBeenCalled();
