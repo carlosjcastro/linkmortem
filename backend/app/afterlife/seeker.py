@@ -25,14 +25,14 @@ class Seeker:
         self._judge = judge
 
     async def seek(self, original_url: str, memory: Memory) -> Afterlife:
-        query = search_query(memory.title, memory.content)
+        query = search_query(memory.title, memory.content, original_url)
         if not query or not memory.content:
             return Afterlife(status=Rebirth.NONE)
         try:
             results = await self._search.results(query)
         except SearchUnavailableError:
             return Afterlife(status=Rebirth.UNAVAILABLE)
-        links = pick_candidates(original_url, results)
+        links = pick_candidates(original_url, memory.title, results)
         logger.info("search %r gave %d results, checking %s", query, len(results), links)
         found = await asyncio.gather(*(self._living_page(link) for link in links))
         archived = ParsedPage(title=memory.title, text=memory.content)
