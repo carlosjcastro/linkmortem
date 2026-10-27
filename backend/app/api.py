@@ -6,11 +6,12 @@ from fastapi.staticfiles import StaticFiles
 from app.config import get_settings
 from app.container import Container, build_container
 from app.scan.routes import build_scan_router
-from app.telemetry import init_telemetry
+from app.telemetry import configure_logging, init_telemetry
 
 
 def create_app(container: Container | None = None) -> FastAPI:
     settings = get_settings()
+    configure_logging()
     init_telemetry(settings)
     services = container or build_container(settings)
 
