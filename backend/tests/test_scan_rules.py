@@ -44,6 +44,11 @@ def test_parses_title_text_and_links():
     assert page.links == [("https://a.dev/guide", "Guide")]
 
 
+def test_falls_back_to_meta_tags():
+    page = parse_page('<meta property="og:title" content="Demo"><meta name="description" content="A video"><script>x</script>', "https://a.dev")
+    assert (page.title, page.text) == ("Demo", "A video")
+
+
 def test_extracts_markdown_links():
     text = "See [the docs](https://a.dev/docs). Or <https://b.dev>.\n[ref]: https://c.dev/x"
     assert {url for url, _ in markdown_links(text)} == {"https://a.dev/docs", "https://b.dev", "https://c.dev/x"}

@@ -51,3 +51,10 @@ async def test_suspicious_pages_are_judged_by_the_model():
     page = Page(200, "https://a.dev/", "text/html", html("Home", LONG_TEXT))
     result = await Diagnoser(FakeFetcher(page), FakeClassifier(PageKind.UNRELATED)).diagnose(LINK)
     assert result.cause == Cause.UNRELATED_REDIRECT and result.verdict == Verdict.GHOST
+
+
+async def test_pages_without_readable_text_are_never_ghosts():
+    classifier = FakeClassifier(PageKind.ERROR_PAGE)
+    page = Page(200, "https://www.youtube.com/watch?v=x", "text/html", "<script>app()</script>")
+    result = await Diagnoser(FakeFetcher(page), classifier).diagnose(LINK)
+    assert result.verdict == Verdict.ALIVE and classifier.calls == 0
