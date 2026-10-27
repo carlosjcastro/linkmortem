@@ -34,9 +34,18 @@ export type Memory = {
   excerpt: string;
 };
 
+export type Afterlife = {
+  status: "found" | "none" | "unavailable" | "skipped";
+  url: string;
+  title: string;
+  match: "same" | "successor" | "different" | null;
+  evidence: string;
+};
+
 export type ScanEvent =
-  | { type: "collected"; total: number }
+  | { type: "collected"; total: number; reincarnation: boolean }
   | { type: "link"; diagnosis: Diagnosis }
   | { type: "memory"; url: string; memory: Memory }
+  | { type: "afterlife"; url: string; afterlife: Afterlife }
   | { type: "done"; summary: Partial<Record<Verdict, number>> }
   | { type: "error"; code: string; message: string };
