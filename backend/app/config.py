@@ -42,6 +42,8 @@ class Settings:
     scan_window: int
     max_concurrent_scans: int
     trust_proxy: bool
+    serpapi_api_key: str
+    max_searches: int
 
 
 @lru_cache
@@ -68,4 +70,6 @@ def get_settings() -> Settings:
         scan_window=env_int("LINKMORTEM_SCAN_WINDOW", 600),
         max_concurrent_scans=env_int("LINKMORTEM_MAX_CONCURRENT_SCANS", 2),
         trust_proxy=env_flag("LINKMORTEM_TRUST_PROXY"),
+        serpapi_api_key=env("SERPAPI_API_KEY"),
+        max_searches=env_int("LINKMORTEM_MAX_SEARCHES", 5),
     )
