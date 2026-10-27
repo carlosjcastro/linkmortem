@@ -1,6 +1,7 @@
 import httpx2
 
 from app.afterlife.models import SearchResult
+from app.tracing import traced_tool
 
 SERPAPI_URL = "https://serpapi.com/search.json"
 RESULTS = 8
@@ -15,6 +16,7 @@ class SerpSearch:
         self._client = client
         self._api_key = api_key
 
+    @traced_tool("web_search")
     async def results(self, query: str) -> list[SearchResult]:
         params = {"engine": "google", "q": query, "num": str(RESULTS), "api_key": self._api_key}
         try:
