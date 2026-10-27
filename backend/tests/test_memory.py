@@ -1,5 +1,7 @@
 import httpx2
+import pytest
 
+from app.memory import wayback
 from app.memory.models import Recall, Snapshot
 from app.memory.recaller import Recaller
 from app.memory.wayback import ArchiveUnavailableError, WaybackIndex
@@ -8,6 +10,11 @@ from app.scan.fetcher import Fetcher
 HEALTHY = "<title>Install guide</title><p>" + "Run the installer and follow the steps. " * 20 + "</p>"
 PARKED = "<title>Sale</title><p>This domain is for sale</p>"
 CDX_ROWS = [["timestamp", "original"], ["20180101000000", "https://a.dev/docs"], ["20230101000000", "https://a.dev/docs"]]
+
+
+@pytest.fixture(autouse=True)
+def instant_retries(monkeypatch):
+    monkeypatch.setattr(wayback, "RETRY_SECONDS", 0)
 
 
 async def allow(url: str) -> None:
@@ -64,3 +71,14 @@ async def test_marks_missing_and_unavailable_memories():
 
     assert (await recaller_for(empty).recall("https://a.dev/x")).status == Recall.MISSING
     assert (await recaller_for(archive_handler(503)).recall("https://a.dev/x")).status == Recall.UNAVAILABLE
+
+
+async def test_retries_a_busy_archive_once():
+    calls = []
+
+    def handler(request):
+        calls.append(request)
+        return httpx2.Response(429 if len(calls) == 1 else 200, json=CDX_ROWS)
+
+    client = httpx2.AsyncClient(transport=httpx2.MockTransport(handler))
+    assert len(await WaybackIndex(client).snapshots("https://a.dev/docs")) == 2 and len(calls) == 2

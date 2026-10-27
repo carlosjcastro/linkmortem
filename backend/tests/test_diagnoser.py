@@ -55,6 +55,13 @@ async def test_suspicious_pages_are_judged_by_the_model():
 
 async def test_pages_without_readable_text_are_never_ghosts():
     classifier = FakeClassifier(PageKind.ERROR_PAGE)
-    page = Page(200, "https://www.youtube.com/watch?v=x", "text/html", "<script>app()</script>")
+    page = Page(200, "https://www.youtube.com/watch?v=x", "text/html", "<title>Video</title><script>app()</script>")
     result = await Diagnoser(FakeFetcher(page), classifier).diagnose(LINK)
-    assert result.verdict == Verdict.ALIVE and classifier.calls == 0
+    assert (result.cause, result.verdict, classifier.calls) == (Cause.UNREADABLE, Verdict.ALIVE, 0)
+
+
+async def test_browser_gates_are_restricted_without_the_model():
+    classifier = FakeClassifier(PageKind.ERROR_PAGE)
+    page = Page(200, LINK.url, "text/html", html("Docs", "Ya no se admite esta versión. Actualiza a un navegador admitido."))
+    result = await Diagnoser(FakeFetcher(page), classifier).diagnose(LINK)
+    assert (result.cause, result.verdict, classifier.calls) == (Cause.RESTRICTED, Verdict.UNKNOWN, 0)
