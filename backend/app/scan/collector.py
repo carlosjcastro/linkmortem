@@ -15,7 +15,7 @@ class Collector:
 
     async def collect(self, target: Target) -> list[Link]:
         if target.is_repository:
-            found = await self._github.links(target.owner, target.repository)
+            found = await self._github.links(target.owner, target.repository, target.ref)
         else:
             found = await self._site.links(target.url)
         links = [link for link in found if not is_noise(link.url)]

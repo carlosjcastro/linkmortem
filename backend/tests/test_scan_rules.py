@@ -69,7 +69,9 @@ def test_extracts_markdown_links():
 
 def test_recognizes_github_repositories():
     target = parse_target("https://github.com/carlosjcastro/tramo/tree/main")
-    assert (target.owner, target.repository, target.is_repository) == ("carlosjcastro", "tramo", True)
+    assert (target.owner, target.repository, target.ref, target.is_repository) == ("carlosjcastro", "tramo", "main", True)
+    assert parse_target("https://github.com/owner/repo/tree/feat/agent-tracing").ref == "feat/agent-tracing"
+    assert parse_target("https://github.com/owner/repo").ref == ""
     assert not parse_target("https://example.com/blog").is_repository
 
 
