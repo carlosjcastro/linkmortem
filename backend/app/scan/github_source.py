@@ -13,6 +13,7 @@ RAW_URL = "https://raw.githubusercontent.com"
 MARKDOWN_SUFFIXES = (".md", ".mdx", ".markdown")
 WEB_SCHEMES = ("http://", "https://")
 MAX_FILES = 40
+RATE_LIMIT_STATUSES = frozenset({403, 429})
 
 
 def absolute_url(blob: str, source_path: str, target: str) -> str | None:
@@ -32,6 +33,8 @@ class GitHubSource:
             response = await self._client.get(url, headers=self._headers)
         except httpx2.HTTPError as error:
             raise ScanError("source_unreachable", "GitHub didn't answer. Try again in a few minutes.") from error
+        if response.status_code in RATE_LIMIT_STATUSES and response.headers.get("x-ratelimit-remaining") == "0":
+            raise ScanError("github_rate_limited", "GitHub's hourly limit ran out. Try again later or set GITHUB_TOKEN.")
         if response.status_code == 404:
             raise ScanError("repository_not_found", "That repository doesn't exist or isn't public.")
         if response.is_error:
