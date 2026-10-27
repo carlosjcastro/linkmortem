@@ -6,6 +6,8 @@ from app.scan.pagetext import parse_page
 from app.scan.policy import PAGE_CAUSES, cause_for_status, verdict_for
 from app.scan.signals import looks_suspicious, parked_evidence
 
+UNREADABLE = "The page answered but has no readable text, so there is no evidence of death."
+
 
 def diagnosis(link: Link, cause: Cause, page: Page, evidence: str = "") -> Diagnosis:
     return Diagnosis(
@@ -33,6 +35,8 @@ class Diagnoser:
         if not page.body:
             return diagnosis(link, Cause.ALIVE, page)
         parsed = parse_page(page.body, page.final_url)
+        if not parsed.title and not parsed.text:
+            return diagnosis(link, Cause.ALIVE, page, UNREADABLE)
         parked = parked_evidence(page.final_url, parsed.title, parsed.text)
         if parked:
             return diagnosis(link, Cause.PARKED_DOMAIN, page, parked)
