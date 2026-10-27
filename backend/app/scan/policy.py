@@ -2,6 +2,7 @@ from app.scan.models import Cause, PageKind, Verdict
 
 VERDICTS: dict[Cause, Verdict] = {
     Cause.ALIVE: Verdict.ALIVE,
+    Cause.UNREADABLE: Verdict.ALIVE,
     Cause.NOT_FOUND: Verdict.GHOST,
     Cause.GONE: Verdict.GHOST,
     Cause.DNS_FAILURE: Verdict.GHOST,

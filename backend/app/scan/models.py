@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 class Cause(StrEnum):
     ALIVE = "alive"
+    UNREADABLE = "unreadable"
     NOT_FOUND = "not_found"
     GONE = "gone"
     DNS_FAILURE = "dns_failure"
