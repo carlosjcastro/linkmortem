@@ -43,3 +43,21 @@ async def test_stops_redirect_loops():
 def test_only_global_addresses_are_public():
     assert is_public("93.184.216.34")
     assert not any(is_public(address) for address in ["127.0.0.1", "10.1.2.3", "169.254.169.254", "::1"])
+
+
+async def test_follows_meta_refresh_redirects():
+    alias = '<html><head><title>https://a.dev/new/</title><meta http-equiv="refresh" content="0; url=https://a.dev/new/"></head></html>'
+
+    def handler(request):
+        if request.url.path == "/old":
+            return httpx2.Response(200, headers={"content-type": "text/html"}, text=alias)
+        return httpx2.Response(200, headers={"content-type": "text/html"}, text="<p>code of conduct</p>")
+
+    page = await fetcher_for(handler).fetch("https://a.dev/old")
+    assert page.final_url == "https://a.dev/new/" and "code of conduct" in page.body
+
+
+async def test_stops_meta_refresh_loops():
+    loop = '<meta content="0;url=/loop" http-equiv="refresh">'
+    handler = lambda request: httpx2.Response(200, headers={"content-type": "text/html"}, text=loop)
+    assert (await fetcher_for(handler).fetch("https://a.dev/loop")).failure == Cause.UNREACHABLE
