@@ -5,11 +5,12 @@ from app.afterlife.candidates import pick_candidates, search_query
 from app.afterlife.judge import CandidateJudge
 from app.afterlife.models import Afterlife, CandidateJudgement, Match, Rebirth
 from app.afterlife.search import SearchUnavailableError, SerpSearch
-from app.llm.base import ModelOutputError
+from app.llm.base import ModelOutputError, ModelUnavailableError
 from app.memory.models import Memory
 from app.scan.fetcher import Fetcher
 from app.scan.pagetext import ParsedPage, parse_page
 from app.scan.signals import parked_evidence
+from app.tracing import traced_tool
 
 logger = logging.getLogger("linkmortem.afterlife")
 
@@ -24,6 +25,7 @@ class Seeker:
         self._fetcher = fetcher
         self._judge = judge
 
+    @traced_tool("find_new_home")
     async def seek(self, original_url: str, memory: Memory) -> Afterlife:
         query = search_query(memory.title, memory.content, original_url)
         if not query or not memory.content:
@@ -60,5 +62,5 @@ class Seeker:
     async def _judgement(self, archived_url: str, archived: ParsedPage, link: str, page: ParsedPage) -> CandidateJudgement | None:
         try:
             return await self._judge.judge(archived_url, archived, link, page)
-        except ModelOutputError:
+        except (ModelOutputError, ModelUnavailableError):
             return None

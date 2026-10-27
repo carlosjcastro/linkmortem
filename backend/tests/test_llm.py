@@ -1,7 +1,8 @@
 import pytest
 from pydantic import BaseModel
 
-from app.llm.base import ModelOutputError, parse_output, with_retries
+from app.llm.base import ModelOutputError, ModelUnavailableError, parse_output, with_retries
+from app.llm.local import OllamaModel
 from app.llm.remote import schema_instructions
 
 
@@ -45,3 +46,13 @@ async def test_gives_up_after_the_retry_limit():
 def test_instructions_include_the_schema():
     text = schema_instructions("Judge the page.", Verdict)
     assert "Judge the page." in text and '"alive"' in text
+
+
+class DownOllama:
+    async def chat(self, **kwargs):
+        raise ConnectionError("Failed to connect to Ollama.")
+
+
+async def test_a_stopped_ollama_is_reported_as_unavailable():
+    with pytest.raises(ModelUnavailableError):
+        await OllamaModel(DownOllama(), "gemma4:e4b", 8192, 2).generate("Judge.", "Page", Verdict)

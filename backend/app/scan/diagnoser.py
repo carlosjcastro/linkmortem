@@ -1,10 +1,11 @@
-from app.llm.base import ModelOutputError
+from app.llm.base import ModelOutputError, ModelUnavailableError
 from app.scan.classifier import PageClassifier
 from app.scan.fetcher import Fetcher, Page
 from app.scan.models import Cause, Diagnosis, Link
 from app.scan.pagetext import parse_page
 from app.scan.policy import PAGE_CAUSES, cause_for_status, verdict_for
 from app.scan.signals import gate_evidence, looks_suspicious, parked_evidence
+from app.tracing import traced_tool
 
 
 def diagnosis(link: Link, cause: Cause, page: Page, evidence: str = "") -> Diagnosis:
@@ -23,6 +24,7 @@ class Diagnoser:
         self._fetcher = fetcher
         self._classifier = classifier
 
+    @traced_tool("diagnose_link")
     async def diagnose(self, link: Link) -> Diagnosis:
         page = await self._fetcher.fetch(link.url)
         if page.failure:
@@ -45,6 +47,6 @@ class Diagnoser:
             return diagnosis(link, Cause.ALIVE, page)
         try:
             result = await self._classifier.classify(link, page.final_url, parsed)
-        except ModelOutputError:
+        except (ModelOutputError, ModelUnavailableError):
             return diagnosis(link, Cause.UNCLASSIFIED, page)
         return diagnosis(link, PAGE_CAUSES[result.kind], page, result.evidence)

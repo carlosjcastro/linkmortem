@@ -44,6 +44,7 @@ class Settings:
     trust_proxy: bool
     serpapi_api_key: str
     max_searches: int
+    capture_file: str
 
 
 @lru_cache
@@ -72,4 +73,5 @@ def get_settings() -> Settings:
         trust_proxy=env_flag("LINKMORTEM_TRUST_PROXY"),
         serpapi_api_key=env("SERPAPI_API_KEY"),
         max_searches=env_int("LINKMORTEM_MAX_SEARCHES", 5),
+        capture_file=env("LINKMORTEM_CAPTURE_FILE"),
     )

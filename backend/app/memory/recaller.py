@@ -5,6 +5,7 @@ from app.memory.models import WAYBACK_URL, Memory, Recall, Snapshot
 from app.memory.wayback import ArchiveUnavailableError, WaybackIndex
 from app.scan.fetcher import Fetcher, Page
 from app.scan.pagetext import ParsedPage, parse_page
+from app.tracing import traced_tool
 
 MAX_ATTEMPTS = 3
 MEMORY_CONCURRENCY = 2
@@ -34,6 +35,7 @@ class Recaller:
         self._fetcher = fetcher
         self._slots = asyncio.Semaphore(MEMORY_CONCURRENCY)
 
+    @traced_tool("recall_memory")
     async def recall(self, url: str) -> Memory:
         async with self._slots:
             try:

@@ -4,7 +4,7 @@ import httpx2
 import pytest
 from pydantic import BaseModel
 
-from app.llm.base import ModelOutputError
+from app.llm.base import ModelOutputError, ModelUnavailableError
 from app.llm.remote import BackboardModel
 
 
@@ -40,3 +40,10 @@ async def test_fails_when_every_attempt_errors():
     model, _ = model_answering((500, {}), (500, {}))
     with pytest.raises(ModelOutputError):
         await model.generate("Judge.", "Page", Verdict)
+
+
+async def test_refused_requests_mean_the_model_is_unavailable():
+    model, sent = model_answering((401, {}))
+    with pytest.raises(ModelUnavailableError):
+        await model.generate("Judge.", "Page", Verdict)
+    assert len(sent) == 1

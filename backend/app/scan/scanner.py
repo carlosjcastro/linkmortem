@@ -11,6 +11,7 @@ from app.scan.diagnoser import Diagnoser
 from app.scan.errors import ScanError
 from app.scan.models import Diagnosis, Link, Verdict
 from app.scan.targets import parse_target
+from app.tracing import agent_span
 
 
 class Scanner:
@@ -31,6 +32,11 @@ class Scanner:
         self._max_searches = max_searches
 
     async def events(self, raw_target: str) -> AsyncIterator[dict]:
+        with agent_span(raw_target):
+            async for event in self._autopsy(raw_target):
+                yield event
+
+    async def _autopsy(self, raw_target: str) -> AsyncIterator[dict]:
         try:
             links = await self._collector.collect(parse_target(raw_target))
         except ScanError as error:
