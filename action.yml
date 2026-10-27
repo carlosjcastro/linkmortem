@@ -1,0 +1,70 @@
+name: Linkmortem
+description: Find dead links in a repository's Markdown, recover their last healthy copy and look for where they live now.
+author: Carlos José Castro Galante
+branding:
+  icon: link
+  color: purple
+
+inputs:
+  repository:
+    description: Repository to scan, as owner/name.
+    default: ${{ github.repository }}
+  ref:
+    description: Branch, tag or commit to scan.
+    default: ${{ github.event.pull_request.head.sha || github.sha }}
+  github-token:
+    description: Token used to read the repository through the GitHub API.
+    default: ${{ github.token }}
+  backboard-api-key:
+    description: Backboard key so Gemma can judge suspicious pages. Without it, code checks still run.
+    default: ""
+  backboard-model:
+    description: Model served by Backboard.
+    default: google/gemma-4-26b-a4b-it
+  serpapi-api-key:
+    description: SerpApi key to look for where dead pages live now.
+    default: ""
+  fail-on-ghosts:
+    description: Fail the step when dead links are found.
+    default: "false"
+
+outputs:
+  ghosts:
+    description: Number of dead links.
+    value: ${{ steps.scan.outputs.ghosts }}
+  unknown:
+    description: Number of links that could not be confirmed.
+    value: ${{ steps.scan.outputs.unknown }}
+  report:
+    description: Path to the Markdown report.
+    value: ${{ steps.scan.outputs.report }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v7
+      with:
+        python-version: "3.12"
+    - shell: bash
+      run: pip install --quiet -r "$GITHUB_ACTION_PATH/backend/requirements.txt"
+    - id: scan
+      shell: bash
+      working-directory: ${{ github.action_path }}/backend
+      env:
+        TARGET_REPOSITORY: ${{ inputs.repository }}
+        TARGET_REF: ${{ inputs.ref }}
+        FAIL_ON_GHOSTS: ${{ inputs.fail-on-ghosts }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        BACKBOARD_API_KEY: ${{ inputs.backboard-api-key }}
+        LINKMORTEM_BACKBOARD_MODEL: ${{ inputs.backboard-model }}
+        LINKMORTEM_MODEL_PROVIDER: ${{ inputs.backboard-api-key != '' && 'backboard' || 'ollama' }}
+        SERPAPI_API_KEY: ${{ inputs.serpapi-api-key }}
+      run: |
+        flags=()
+        if [ "$FAIL_ON_GHOSTS" = "true" ]; then flags+=(--fail-on-ghosts); fi
+        status=0
+        python -m app.cli "https://github.com/$TARGET_REPOSITORY/tree/$TARGET_REF" \
+          --report "$RUNNER_TEMP/linkmortem.md" \
+          --github-output "$GITHUB_OUTPUT" "${flags[@]}" || status=$?
+        cat "$RUNNER_TEMP/linkmortem.md" >> "$GITHUB_STEP_SUMMARY"
+        exit "$status"
