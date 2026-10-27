@@ -7,6 +7,8 @@ from app.config import Settings
 from app.llm.base import StructuredModel
 from app.llm.local import OllamaModel
 from app.llm.remote import BackboardModel
+from app.memory.recaller import Recaller
+from app.memory.wayback import WaybackIndex
 from app.ratelimit import ConcurrencyGate, SlidingWindowLimiter
 from app.scan.classifier import PageClassifier
 from app.scan.collector import Collector
@@ -49,7 +51,8 @@ def build_scanner(settings: Settings, model: StructuredModel, web: httpx2.AsyncC
     fetcher = Fetcher(web)
     collector = Collector(SiteSource(fetcher), GitHubSource(web, settings.github_token))
     diagnoser = Diagnoser(fetcher, PageClassifier(model, settings.model_concurrency))
-    return Scanner(collector, diagnoser, settings.scan_concurrency)
+    recaller = Recaller(WaybackIndex(web), fetcher)
+    return Scanner(collector, diagnoser, recaller, settings.scan_concurrency)
 
 
 def build_container(settings: Settings) -> Container:
