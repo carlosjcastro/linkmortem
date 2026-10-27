@@ -2,7 +2,7 @@ import re
 
 from app.afterlife.models import Match, Rebirth
 from app.memory.models import Recall
-from app.report.transcript import ScanTranscript
+from app.report.transcript import NOTHING_FOUND, ScanTranscript
 from app.scan.models import Cause, Diagnosis, Verdict
 
 CAUSE_LABELS: dict[Cause, str] = {
@@ -72,6 +72,8 @@ def unknown_entry(item: Diagnosis) -> str:
 
 
 def markdown_report(transcript: ScanTranscript) -> str:
+    if transcript.error_code == NOTHING_FOUND:
+        return f"# Linkmortem report\n\nNo links were found in `{transcript.target}`, so there is nothing to check yet.\n"
     if transcript.error:
         return f"# Linkmortem report\n\nThe scan of `{transcript.target}` failed: {plain(transcript.error)}\n"
     ghosts = transcript.with_verdict(Verdict.GHOST)

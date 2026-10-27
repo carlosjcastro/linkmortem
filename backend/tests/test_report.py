@@ -39,3 +39,9 @@ def test_reports_failed_scans():
     record = ScanTranscript("https://github.com/owner/missing")
     record.add({"type": "error", "code": "repository_not_found", "message": "That repository doesn't exist or isn't public."})
     assert "failed: That repository doesn't exist or isn't public." in markdown_report(record)
+
+
+def test_a_repository_without_links_is_not_a_failure():
+    record = ScanTranscript("https://github.com/owner/empty")
+    record.add({"type": "error", "code": "nothing_found", "message": "No links were found at that address."})
+    assert not record.failed and "nothing to check yet" in markdown_report(record)

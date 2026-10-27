@@ -28,7 +28,10 @@ class GitHubSource:
         self._headers = {"Accept": "application/vnd.github+json", **({"Authorization": f"Bearer {token}"} if token else {})}
 
     async def _json(self, url: str) -> dict:
-        response = await self._client.get(url, headers=self._headers)
+        try:
+            response = await self._client.get(url, headers=self._headers)
+        except httpx2.HTTPError as error:
+            raise ScanError("source_unreachable", "GitHub didn't answer. Try again in a few minutes.") from error
         if response.status_code == 404:
             raise ScanError("repository_not_found", "That repository doesn't exist or isn't public.")
         if response.is_error:
