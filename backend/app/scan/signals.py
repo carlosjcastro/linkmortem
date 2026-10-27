@@ -39,9 +39,16 @@ GATE_PHRASES = (
     "actualiza tu navegador",
     "habilita javascript",
     "activa javascript",
+    "request is being verified",
+    "verify to continue",
+    "confirm that you're a human",
+    "verify you are human",
+    "checking if the site connection is secure",
+    "just a moment",
 )
 GATE_PAGE_CHARS = 800
 SHORT_PAGE_CHARS = 400
+TINY_PAGE_CHARS = 120
 OPENING_CHARS = 600
 
 
@@ -72,8 +79,14 @@ def has_suspect_phrase(title: str, text: str) -> bool:
     return any(phrase in opening for phrase in SUSPECT_PHRASES)
 
 
+def same_address(first: str, second: str) -> bool:
+    left, right = urlsplit(first), urlsplit(second)
+    return bare_host(first) == bare_host(second) and left.path.rstrip("/") == right.path.rstrip("/")
+
+
 def looks_suspicious(original_url: str, final_url: str, title: str, text: str) -> bool:
     original, final = urlsplit(original_url), urlsplit(final_url)
     moved_to_root = original.path.strip("/") != "" and final.path.strip("/") == ""
     changed_host = bare_host(original_url) != bare_host(final_url)
-    return moved_to_root or changed_host or len(text) < SHORT_PAGE_CHARS or has_suspect_phrase(title, text)
+    short_limit = TINY_PAGE_CHARS if same_address(original_url, final_url) else SHORT_PAGE_CHARS
+    return moved_to_root or changed_host or len(text) < short_limit or has_suspect_phrase(title, text)
