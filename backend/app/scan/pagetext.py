@@ -3,6 +3,8 @@ from html.parser import HTMLParser
 from urllib.parse import urldefrag, urljoin
 
 SKIPPED_TAGS = {"script", "style", "noscript", "template", "svg"}
+MENU_TAGS = {"nav"}
+CONTENT_TAGS = {"main", "article"}
 MAX_TEXT_CHARS = 2500
 META_TITLES = {"og:title", "twitter:title"}
 META_DESCRIPTIONS = {"description", "og:description", "twitter:description"}
@@ -12,6 +14,7 @@ META_DESCRIPTIONS = {"description", "og:description", "twitter:description"}
 class ParsedPage:
     title: str = ""
     text: str = ""
+    summary: str = ""
     links: list[tuple[str, str]] = field(default_factory=list)
 
 
@@ -21,11 +24,14 @@ class PageParser(HTMLParser):
         self._base = base_url
         self._skipping = 0
         self._in_title = False
+        self._content = 0
+        self._menu = 0
         self._anchor: str | None = None
         self._anchor_text: list[str] = []
         self.title_parts: list[str] = []
         self.meta: dict[str, str] = {}
         self.text_parts: list[str] = []
+        self.content_parts: list[str] = []
         self.links: list[tuple[str, str]] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
@@ -33,6 +39,10 @@ class PageParser(HTMLParser):
             self._skipping += 1
         elif tag == "title":
             self._in_title = True
+        elif tag in CONTENT_TAGS:
+            self._content += 1
+        elif tag in MENU_TAGS:
+            self._menu += 1
         elif tag == "meta":
             self._read_meta(dict(attrs))
         elif tag == "a":
@@ -53,6 +63,10 @@ class PageParser(HTMLParser):
             self._skipping -= 1
         elif tag == "title":
             self._in_title = False
+        elif tag in CONTENT_TAGS and self._content:
+            self._content -= 1
+        elif tag in MENU_TAGS and self._menu:
+            self._menu -= 1
         elif tag == "a" and self._anchor:
             self.links.append((self._anchor, " ".join(self._anchor_text).strip()))
             self._anchor = None
@@ -66,14 +80,20 @@ class PageParser(HTMLParser):
         if self._in_title:
             self.title_parts.append(text)
             return
-        self.text_parts.append(text)
         if self._anchor:
             self._anchor_text.append(text)
+        if self._menu:
+            return
+        self.text_parts.append(text)
+        if self._content:
+            self.content_parts.append(text)
 
 
 def parse_page(html: str, base_url: str) -> ParsedPage:
     parser = PageParser(base_url)
     parser.feed(html)
     title = " ".join(parser.title_parts) or parser.meta.get("title", "")
-    text = " ".join(parser.text_parts) or parser.meta.get("description", "")
-    return ParsedPage(title, text[:MAX_TEXT_CHARS], parser.links)
+    description = parser.meta.get("description", "")
+    text = " ".join(parser.text_parts) or description
+    summary = description or " ".join(parser.content_parts) or text
+    return ParsedPage(title, text[:MAX_TEXT_CHARS], summary[:MAX_TEXT_CHARS], parser.links)
