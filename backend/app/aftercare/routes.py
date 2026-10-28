@@ -29,11 +29,11 @@ def build_aftercare_router(
         saved = await archive.get(scan_id)
         if not saved:
             return refusal(404, "scan_not_found", "That autopsy doesn't exist or has expired.")
-        diff = await patches.build(replacements(saved["events"]))
-        if not diff:
+        built = await patches.build(replacements(saved["events"]))
+        if not built.diff:
             return refusal(404, "nothing_to_patch", "This autopsy has no replacement that can be written as a patch.")
         headers = {"Content-Disposition": f'attachment; filename="{PATCH_NAME}"'}
-        return PlainTextResponse(diff, media_type="text/x-diff", headers=headers)
+        return PlainTextResponse(built.diff, media_type="text/x-diff", headers=headers)
 
     @router.post("/api/scans/{scan_id}/preserve", response_model=None)
     async def preserve(request: Request, scan_id: str) -> StreamingResponse | JSONResponse:
