@@ -1,6 +1,8 @@
 from enum import StrEnum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+
+from app.llm.evidence import Evidence
 
 
 class Match(StrEnum):
@@ -23,7 +25,7 @@ class SearchResult(BaseModel):
 
 class CandidateJudgement(BaseModel):
     match: Match
-    evidence: str = Field(max_length=400)
+    evidence: Evidence
 
 
 class Afterlife(BaseModel):
