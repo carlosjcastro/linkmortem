@@ -5,7 +5,7 @@ import httpx2
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from app.aftercare.patch import PatchBuilder, blob_parts
+from app.aftercare.patch import PatchBuilder, blob_parts, rewritten
 from app.aftercare.preserver import Preserver, living_links
 from app.aftercare.replacements import ARCHIVED_COPY, NEW_HOME, replacements
 from app.aftercare.routes import build_aftercare_router
@@ -31,7 +31,7 @@ EVENTS = [
     link(LOST, "ghost"),
     link("https://fine.dev", "alive"),
     {"type": "memory", "url": DEAD, "memory": {"status": "found", "archived_url": "https://web.archive.org/web/2019/x"}},
-    {"type": "afterlife", "url": DEAD, "afterlife": {"status": "found", "url": NEW}},
+    {"type": "afterlife", "url": DEAD, "afterlife": {"status": "found", "url": NEW, "match": "same"}},
     {"type": "memory", "url": LOST, "memory": {"status": "found", "archived_url": ARCHIVED}},
     {"type": "done", "summary": {}},
 ]
@@ -52,8 +52,23 @@ def test_maps_blob_pages_to_raw_files():
     assert blob_parts("https://evil.dev/blob/x") is None
 
 
+def test_ignores_new_homes_without_proof():
+    events = [*EVENTS[:5], {"type": "afterlife", "url": DEAD, "afterlife": {"status": "found", "url": NEW, "match": "different"}}]
+    assert {change.replacement for change in replacements(events)} == {"https://web.archive.org/web/2019/x"}
+
+
+def test_replaces_whole_links_only():
+    change = replacements(EVENTS)[0]
+    text = f"[a]({change.url}) and {change.url}/deeper and <{change.url}>"
+    after, applied = rewritten(text, [change])
+    assert after == f"[a]({change.replacement}) and {change.url}/deeper and <{change.replacement}>" and applied == [change]
+    assert rewritten("nothing here", [change]) == ("nothing here", [])
+
+
 async def test_builds_a_git_patch_for_each_file():
-    patch = await PatchBuilder(httpx2.AsyncClient(transport=httpx2.MockTransport(raw))).build(replacements(EVENTS))
+    built = await PatchBuilder(httpx2.AsyncClient(transport=httpx2.MockTransport(raw))).build(replacements(EVENTS))
+    patch = built.diff
+    assert len(built.changes) == 2
     assert patch.startswith("--- a/docs/README.md\n+++ b/docs/README.md\n")
     assert f"-Read [the tutorial]({DEAD})." in patch and f"+Read [the tutorial]({NEW})." in patch
     assert f"+See [the post]({ARCHIVED})." in patch
