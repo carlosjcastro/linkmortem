@@ -10,11 +10,14 @@ on:
 
 permissions:
   contents: read
-  issues: write
 
 jobs:
   links:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v7
       - id: linkmortem
@@ -22,15 +25,12 @@ jobs:
         with:
           backboard-api-key: ${{ secrets.BACKBOARD_API_KEY }}
           serpapi-api-key: ${{ secrets.SERPAPI_API_KEY }}
+          open-pull-request: ${{ github.event_name != 'pull_request' }}
       - if: github.event_name != 'pull_request' && steps.linkmortem.outputs.ghosts != '0'
         env:
           GH_TOKEN: ${{ github.token }}
           REPORT: ${{ steps.linkmortem.outputs.report }}
+          PULL_REQUEST: ${{ steps.linkmortem.outputs.pull-request }}
+          PULL_REQUEST_STATUS: ${{ steps.linkmortem.outputs.pull-request-status }}
           TITLE: Linkmortem found dead links
-        run: |
-          existing=$(gh issue list --state open --search "\"$TITLE\" in:title" --json number --jq '.[0].number // empty')
-          if [ -n "$existing" ]; then
-            gh issue comment "$existing" --body-file "$REPORT"
-          else
-            gh issue create --title "$TITLE" --body-file "$REPORT"
-          fi
+        run: bash scripts/report_issue.sh
