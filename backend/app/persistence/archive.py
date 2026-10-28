@@ -1,5 +1,6 @@
 import re
 import secrets
+from datetime import UTC, datetime
 
 from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.errors import PyMongoError
@@ -23,6 +24,15 @@ class ScanArchive:
         except PyMongoError:
             return None
         return scan_id
+
+    async def claim_preservation(self, scan_id: str) -> bool:
+        if not SCAN_ID.match(scan_id):
+            return False
+        try:
+            result = await self._collection.update_one({"_id": scan_id, "preserved_at": {"$exists": False}}, {"$set": {"preserved_at": datetime.now(UTC)}})
+        except PyMongoError:
+            return False
+        return result.modified_count == 1
 
     async def get(self, scan_id: str) -> dict | None:
         if not SCAN_ID.match(scan_id):

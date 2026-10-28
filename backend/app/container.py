@@ -5,6 +5,9 @@ import httpx2
 from ollama import AsyncClient
 
 from app.config import Settings
+from app.aftercare.patch import PatchBuilder
+from app.aftercare.preserver import Preserver
+from app.aftercare.savepagenow import SavePageNow
 from app.afterlife.judge import CandidateJudge
 from app.afterlife.search import SerpSearch
 from app.afterlife.seeker import Seeker
@@ -46,6 +49,8 @@ class Container:
     limiter: SlidingWindowLimiter | None = None
     gate: ConcurrencyGate | None = None
     archive: ScanArchive | None = None
+    patches: PatchBuilder | None = None
+    preserver: Preserver | None = None
 
     async def close(self) -> None:
         for client in self.clients:
@@ -89,6 +94,12 @@ def build_scanner(settings: Settings, model: StructuredModel, web: httpx2.AsyncC
     return Scanner(collector, diagnoser, recaller, seeker, settings.scan_concurrency, settings.max_searches)
 
 
+def build_preserver(settings: Settings, web: httpx2.AsyncClient) -> Preserver | None:
+    if not settings.archive_access_key or not settings.archive_secret_key:
+        return None
+    return Preserver(SavePageNow(web, settings.archive_access_key, settings.archive_secret_key))
+
+
 def build_container(settings: Settings) -> Container:
     backboard = httpx2.AsyncClient(
         base_url=BACKBOARD_URL,
@@ -111,4 +122,6 @@ def build_container(settings: Settings) -> Container:
         limiter=SlidingWindowLimiter(settings.scan_limit, settings.scan_window),
         gate=ConcurrencyGate(settings.max_concurrent_scans),
         archive=ScanArchive(scans) if scans is not None else None,
+        patches=PatchBuilder(web),
+        preserver=build_preserver(settings, web),
     )

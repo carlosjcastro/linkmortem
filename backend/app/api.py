@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.aftercare.routes import build_aftercare_router
 from app.config import get_settings
 from app.container import Container, build_container
 from app.scan.routes import build_scan_router
@@ -30,6 +31,8 @@ def create_app(container: Container | None = None) -> FastAPI:
 
     if services.scanner and services.limiter and services.gate:
         app.include_router(build_scan_router(services.scanner, services.limiter, services.gate, settings.trust_proxy, services.archive))
+    if services.archive and services.patches and services.limiter:
+        app.include_router(build_aftercare_router(services.archive, services.patches, services.preserver, services.limiter, settings.trust_proxy))
 
     if settings.web_dist.is_dir():
         index = settings.web_dist / "index.html"
