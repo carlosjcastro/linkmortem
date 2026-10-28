@@ -1,14 +1,14 @@
 from evals.metrics import ModelReport
 
 HEADER = (
-    "| Model | Cases | Accuracy | Costly errors | Invalid answers | Median latency | p95 latency | Input tokens | Output tokens |\n"
-    "|---|---|---|---|---|---|---|---|---|\n"
+    "| Model | Cases | Accuracy | Costly errors | Invalid answers | Unanswered | Median latency | p95 latency | Input tokens | Output tokens |\n"
+    "|---|---|---|---|---|---|---|---|---|---|\n"
 )
 
 
 def report_row(report: ModelReport) -> str:
     return (
-        f"| {report.model} | {report.cases} | {report.accuracy:.0%} | {report.costly_errors} | {report.invalid} "
+        f"| {report.model} | {report.cases} | {report.accuracy:.0%} | {report.costly_errors} | {report.invalid} | {report.unanswered} "
         f"| {report.median_seconds:.2f} s | {report.p95_seconds:.2f} s "
         f"| {report.mean_input_tokens:.0f} | {report.mean_output_tokens:.0f} |"
     )
@@ -22,5 +22,6 @@ def markdown_report(reports: list[ModelReport], tasks: dict[str, int]) -> str:
         "# Model comparison\n\n"
         f"Labeled cases: {counts}. Every case is a prompt Linkmortem sent while scanning real repositories.\n\n"
         "Costly errors are the mistakes that hurt users most: calling a living page dead, or accepting a different page as the new home.\n\n"
+        "Unanswered cases timed out or were refused by the provider. Accuracy counts only answered cases.\n\n"
         f"{HEADER}{rows}\n"
     )
