@@ -1,3 +1,5 @@
+import json
+
 import httpx2
 import pytest
 from fastapi.testclient import TestClient
@@ -5,8 +7,10 @@ from fastapi.testclient import TestClient
 from app.api import create_app
 from app.config import get_settings
 from app.container import Container
+from app.persistence.archive import ScanArchive
 from app.ratelimit import ConcurrencyGate, SlidingWindowLimiter
 from app.store import Store
+from tests.fakes import FakeCollection
 
 
 class FakeModel:
@@ -45,6 +49,7 @@ def test_health_reports_model_and_database():
 def test_serves_the_built_interface(web_dist):
     response = client_for(False).get("/")
     assert response.status_code == 200 and "Linkmortem" in response.text
+    assert "Linkmortem" in client_for(False).get("/r/abc123def4").text
 
 
 class FakeScanner:
@@ -70,3 +75,15 @@ def test_limits_scans_per_client():
     client = scan_client(1)
     client.post("/api/scans/stream", json={"target": "https://a.dev"})
     assert client.post("/api/scans/stream", json={"target": "https://a.dev"}).status_code == 429
+
+
+def test_saves_finished_scans_and_shares_them():
+    container = Container(
+        FakeModel(), FakeStore(True), [httpx2.AsyncClient()], FakeScanner(), SlidingWindowLimiter(5, 60), ConcurrencyGate(1), ScanArchive(FakeCollection())
+    )
+    client = TestClient(create_app(container))
+    lines = client.post("/api/scans/stream", json={"target": "https://a.dev"}).text.splitlines()
+    scan_id = json.loads(lines[-1])["id"]
+    shared = client.get(f"/api/scans/{scan_id}").json()
+    assert shared["target"] == "https://a.dev" and shared["events"][-1]["type"] == "done"
+    assert client.get("/api/scans/missing00000").status_code == 404
