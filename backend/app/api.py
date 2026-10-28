@@ -8,6 +8,7 @@ from app.aftercare.routes import build_aftercare_router
 from app.config import get_settings
 from app.container import Container, build_container
 from app.scan.routes import build_scan_router
+from app.security import SecurityHeaders
 from app.telemetry import configure_logging, init_telemetry
 
 
@@ -24,6 +25,7 @@ def create_app(container: Container | None = None) -> FastAPI:
         await services.close()
 
     app = FastAPI(title="Linkmortem", docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
+    app.add_middleware(SecurityHeaders)
 
     @app.get("/api/health")
     async def health() -> dict:
