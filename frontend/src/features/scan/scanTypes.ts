@@ -15,7 +15,8 @@ export type Cause =
   | "timeout"
   | "restricted"
   | "blocked"
-  | "unclassified";
+  | "unclassified"
+  | "model_unavailable";
 
 export type Diagnosis = {
   link: { url: string; source: string; text: string };
