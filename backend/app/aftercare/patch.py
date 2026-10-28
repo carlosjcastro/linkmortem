@@ -1,5 +1,6 @@
 import re
 from collections import defaultdict
+from dataclasses import dataclass
 from difflib import unified_diff
 from urllib.parse import unquote
 
@@ -9,6 +10,13 @@ from app.aftercare.replacements import Replacement
 
 BLOB = re.compile(r"^https://github\.com/([\w.-]+)/([\w.-]+)/blob/([^/]+)/(.+)$")
 RAW_URL = "https://raw.githubusercontent.com"
+URL_END = r"(?=[\s)\]>\"'`<]|$)"
+
+
+@dataclass(frozen=True)
+class Patch:
+    diff: str
+    changes: tuple[Replacement, ...]
 
 
 def blob_parts(source: str) -> tuple[str, str] | None:
@@ -24,10 +32,14 @@ def file_diff(path: str, before: str, after: str) -> str:
     return "".join(lines)
 
 
-def rewritten(text: str, changes: list[Replacement]) -> str:
+def rewritten(text: str, changes: list[Replacement]) -> tuple[str, list[Replacement]]:
+    applied: list[Replacement] = []
     for change in changes:
-        text = text.replace(change.url, change.replacement)
-    return text
+        pattern = re.compile(re.escape(change.url) + URL_END, re.MULTILINE)
+        text, count = pattern.subn(lambda _: change.replacement, text)
+        if count:
+            applied.append(change)
+    return text, applied
 
 
 class PatchBuilder:
@@ -41,14 +53,18 @@ class PatchBuilder:
             return None
         return None if response.is_error else response.text
 
-    async def build(self, changes: list[Replacement]) -> str:
+    async def build(self, changes: list[Replacement]) -> Patch:
         grouped: dict[str, list[Replacement]] = defaultdict(list)
         for change in changes:
             grouped[change.source].append(change)
         diffs: list[str] = []
+        applied: list[Replacement] = []
         for source, file_changes in grouped.items():
             parts = blob_parts(source)
             before = await self._text(parts[0]) if parts else None
-            if before is not None:
-                diffs.append(file_diff(parts[1], before, rewritten(before, file_changes)))
-        return "".join(diff for diff in diffs if diff)
+            if before is None:
+                continue
+            after, done = rewritten(before, file_changes)
+            diffs.append(file_diff(parts[1], before, after))
+            applied.extend(done)
+        return Patch("".join(diffs), tuple(applied))
