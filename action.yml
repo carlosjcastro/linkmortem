@@ -27,6 +27,9 @@ inputs:
   fail-on-ghosts:
     description: Fail the step when dead links are found.
     default: "false"
+  open-pull-request:
+    description: Open or update one pull request with the replacements Linkmortem can prove. Needs a checkout of this repository plus contents and pull-requests write permissions.
+    default: "false"
 
 outputs:
   ghosts:
@@ -38,6 +41,15 @@ outputs:
   report:
     description: Path to the Markdown report.
     value: ${{ steps.scan.outputs.report }}
+  replacements:
+    description: Number of dead links with a proven replacement written into the patch.
+    value: ${{ steps.scan.outputs.replacements }}
+  pull-request:
+    description: Address of the Linkmortem pull request, when there is one.
+    value: ${{ steps.rest.outputs.pull-request }}
+  pull-request-status:
+    description: opened, updated, unchanged, conflict or edited-by-people.
+    value: ${{ steps.rest.outputs.pull-request-status }}
 
 runs:
   using: composite
@@ -54,6 +66,7 @@ runs:
         TARGET_REPOSITORY: ${{ inputs.repository }}
         TARGET_REF: ${{ inputs.ref }}
         FAIL_ON_GHOSTS: ${{ inputs.fail-on-ghosts }}
+        OPEN_PULL_REQUEST: ${{ inputs.open-pull-request }}
         GITHUB_TOKEN: ${{ inputs.github-token }}
         BACKBOARD_API_KEY: ${{ inputs.backboard-api-key }}
         LINKMORTEM_BACKBOARD_MODEL: ${{ inputs.backboard-model }}
@@ -62,9 +75,19 @@ runs:
       run: |
         flags=()
         if [ "$FAIL_ON_GHOSTS" = "true" ]; then flags+=(--fail-on-ghosts); fi
+        if [ "$OPEN_PULL_REQUEST" = "true" ]; then flags+=(--patch "$RUNNER_TEMP/linkmortem.patch"); fi
         status=0
         python -m app.cli "https://github.com/$TARGET_REPOSITORY/tree/$TARGET_REF" \
           --report "$RUNNER_TEMP/linkmortem.md" \
           --github-output "$GITHUB_OUTPUT" "${flags[@]}" || status=$?
         cat "$RUNNER_TEMP/linkmortem.md" >> "$GITHUB_STEP_SUMMARY"
         exit "$status"
+    - id: rest
+      if: inputs.open-pull-request == 'true' && steps.scan.outputs.patch != '' && inputs.repository == github.repository
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        PATCH: ${{ steps.scan.outputs.patch }}
+        BODY: ${{ steps.scan.outputs.pull-request-body }}
+      run: bash "$GITHUB_ACTION_PATH/scripts/rest_pull_request.sh"
