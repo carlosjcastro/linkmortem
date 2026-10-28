@@ -40,6 +40,7 @@ export type Afterlife = {
   title: string;
   match: "same" | "successor" | "different" | null;
   evidence: string;
+  source: "search" | "graveyard" | "";
 };
 
 export type ScanEvent =
@@ -47,5 +48,6 @@ export type ScanEvent =
   | { type: "link"; diagnosis: Diagnosis }
   | { type: "memory"; url: string; memory: Memory }
   | { type: "afterlife"; url: string; afterlife: Afterlife }
+  | { type: "saved"; id: string }
   | { type: "done"; summary: Partial<Record<Verdict, number>> }
   | { type: "error"; code: string; message: string };

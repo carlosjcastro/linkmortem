@@ -1,6 +1,6 @@
 import { useTranslation } from "../i18n/useTranslation";
 import { progressStage } from "./progressStage";
-import type { ScanState } from "./useScan";
+import type { ScanState } from "./scanState";
 
 export default function ScanProgress({ state }: { state: ScanState }) {
   const { t } = useTranslation();

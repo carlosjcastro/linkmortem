@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 import { dictionaries } from "../i18n/dictionaries";
 import { progressStage } from "./progressStage";
 import type { Diagnosis, Memory } from "./scanTypes";
-import type { ScanState } from "./useScan";
+import type { ScanState } from "./scanState";
 
 const t = dictionaries.en;
 const ghost = { link: { url: "https://a.dev/x", source: "", text: "" }, verdict: "ghost", cause: "not_found", status_code: 404, final_url: null, evidence: "" } as Diagnosis;
 const found = { status: "found", archived_url: "", captured_on: "2019-01-01", title: "", excerpt: "" } as Memory;
-const base: ScanState = { phase: "checking", target: "", total: 1, results: [], memories: {}, afterlives: {}, reincarnation: true, errorCode: "" };
+const base: ScanState = { phase: "checking", target: "", total: 1, results: [], memories: {}, afterlives: {}, reincarnation: true, shareId: "", errorCode: "" };
 
 describe("progressStage", () => {
   it("counts checked links first", () => {
