@@ -1,6 +1,8 @@
 from app.afterlife.models import Afterlife, Match, Rebirth
 from app.memory.models import Memory, Recall
+from app.aftercare.replacements import ARCHIVED_COPY, NEW_HOME, Replacement
 from app.report.markdown import markdown_report, plain
+from app.report.pull_request import pull_request_body
 from app.report.transcript import ScanTranscript
 from app.scan.models import Cause, Diagnosis, Link, Verdict
 
@@ -15,7 +17,7 @@ def transcript() -> ScanTranscript:
         {"type": "link", "diagnosis": Diagnosis(link=Link(url="https://slow.dev", source="x"), verdict=Verdict.UNKNOWN, cause=Cause.TIMEOUT).model_dump(mode="json")},
         {"type": "link", "diagnosis": Diagnosis(link=Link(url="https://fine.dev", source="x"), verdict=Verdict.ALIVE, cause=Cause.ALIVE).model_dump(mode="json")},
         {"type": "memory", "url": DEAD, "memory": Memory(status=Recall.FOUND, archived_url=f"https://web.archive.org/web/2019/{DEAD}", captured_on="2019-10-16").model_dump(mode="json")},
-        {"type": "afterlife", "url": DEAD, "afterlife": Afterlife(status=Rebirth.FOUND, url="https://learn.dev/tutorial", title="Tutorial @team [v2]", match=Match.SAME).model_dump(mode="json")},
+        {"type": "afterlife", "url": DEAD, "afterlife": Afterlife(status=Rebirth.FOUND, url="https://learn.dev/tutorial", title="Tutorial @team [v2]", match=Match.SAME, evidence="Same tutorial | moved").model_dump(mode="json")},
     ]
     for event in events:
         record.add(event)
@@ -45,3 +47,20 @@ def test_a_repository_without_links_is_not_a_failure():
     record = ScanTranscript("https://github.com/owner/empty")
     record.add({"type": "error", "code": "nothing_found", "message": "No links were found at that address."})
     assert not record.failed and "nothing to check yet" in markdown_report(record)
+
+
+def test_pull_request_body_explains_every_replacement():
+    source = "https://github.com/owner/repo/blob/main/README.md"
+    changes = (
+        Replacement(source, DEAD, "https://learn.dev/tutorial", NEW_HOME),
+        Replacement("https://github.com/owner/repo/blob/main/docs/a.md", DEAD, "https://learn.dev/tutorial", NEW_HOME),
+    )
+    body = pull_request_body(transcript(), changes)
+    assert "found 1 dead links" in body and body.count(f"`{DEAD}`") == 1
+    assert "The page no longer exists (HTTP 404)" in body and 'Gemma noted "Same tutorial \\| moved"' in body
+    assert "never merges on its own" in body
+
+
+def test_pull_request_body_dates_archived_copies():
+    archived = Replacement("x", DEAD, f"https://web.archive.org/web/2019/{DEAD}", ARCHIVED_COPY)
+    assert "captured on 2019-10-16" in pull_request_body(transcript(), (archived,))
