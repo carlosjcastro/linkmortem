@@ -46,6 +46,14 @@ def test_health_reports_model_and_database():
     assert client_for(True).get("/api/health").json() == {"status": "ok", "model": "fake/model", "database": True}
 
 
+def test_every_response_carries_security_headers(web_dist):
+    client = client_for(True)
+    for path in ("/api/health", "/", "/r/abc123abc123", "/api/scans/missing00000"):
+        headers = client.get(path).headers
+        assert "frame-ancestors 'none'" in headers["content-security-policy"] and "unsafe" not in headers["content-security-policy"]
+        assert headers["x-content-type-options"] == "nosniff" and headers["referrer-policy"] == "no-referrer"
+
+
 def test_serves_the_built_interface(web_dist):
     response = client_for(False).get("/")
     assert response.status_code == 200 and "Linkmortem" in response.text
