@@ -63,6 +63,8 @@ def test_replaces_whole_links_only():
     after, applied = rewritten(text, [change])
     assert after == f"[a]({change.replacement}) and {change.url}/deeper and <{change.replacement}>" and applied == [change]
     assert rewritten("nothing here", [change]) == ("nothing here", [])
+    sentence = f"Tutorial at {change.url}. Mirror at {change.url}.html, notes at {change.url}, done"
+    assert rewritten(sentence, [change])[0] == f"Tutorial at {change.replacement}. Mirror at {change.url}.html, notes at {change.replacement}, done"
 
 
 async def test_builds_a_git_patch_for_each_file():
