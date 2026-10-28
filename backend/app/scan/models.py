@@ -21,6 +21,7 @@ class Cause(StrEnum):
     RESTRICTED = "restricted"
     BLOCKED = "blocked"
     UNCLASSIFIED = "unclassified"
+    MODEL_UNAVAILABLE = "model_unavailable"
 
 
 class Verdict(StrEnum):

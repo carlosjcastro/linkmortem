@@ -16,6 +16,7 @@ VERDICTS: dict[Cause, Verdict] = {
     Cause.RESTRICTED: Verdict.UNKNOWN,
     Cause.BLOCKED: Verdict.UNKNOWN,
     Cause.UNCLASSIFIED: Verdict.UNKNOWN,
+    Cause.MODEL_UNAVAILABLE: Verdict.UNKNOWN,
 }
 
 PAGE_CAUSES: dict[PageKind, Cause] = {
