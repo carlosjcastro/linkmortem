@@ -22,6 +22,7 @@ NO_PATCH = Patch("", ())
 class ScanOutcome:
     transcript: ScanTranscript
     patch: Patch
+    proven: int = 0
 
 
 def arguments() -> argparse.Namespace:
@@ -45,16 +46,17 @@ async def scan(target: str, with_patch: bool) -> ScanOutcome:
         async for event in container.scanner.events(target):
             transcript.add(event)
             events.append(event)
-        patch = await container.patches.build(replacements(events)) if with_patch and container.patches else NO_PATCH
+        proven = replacements(events) if with_patch else []
+        patch = await container.patches.build(proven) if proven and container.patches else NO_PATCH
     finally:
         await container.close()
-    return ScanOutcome(transcript, patch)
+    return ScanOutcome(transcript, patch, len(proven))
 
 
 def write_patch(outcome: ScanOutcome, path: Path) -> dict[str, str]:
     if not outcome.patch.diff:
         return {"replacements": "0"}
-    body = path.with_suffix(".md")
+    body = path.with_name(f"{path.stem}-pull-request.md")
     path.write_text(outcome.patch.diff, encoding="utf8")
     body.write_text(pull_request_body(outcome.transcript, outcome.patch.changes), encoding="utf8")
     return {"replacements": str(len(outcome.patch.changes)), "patch": str(path), "pull-request-body": str(body)}
@@ -70,6 +72,7 @@ def main() -> int:
     outputs = {"ghosts": str(ghosts), "unknown": str(unknown), "report": str(options.report)}
     if options.patch:
         outputs |= write_patch(outcome, options.patch)
+        print(f"{outcome.proven} proven replacements, {len(outcome.patch.changes)} written into the patch")
     if options.github_output:
         with options.github_output.open("a", encoding="utf8") as output:
             output.writelines(f"{key}={value}\n" for key, value in outputs.items())
