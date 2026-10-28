@@ -1,5 +1,5 @@
 import type { Dictionary } from "../i18n/dictionaries";
-import type { ScanState } from "./useScan";
+import type { ScanState } from "./scanState";
 
 export type ProgressStage = { label: string; value?: number; max?: number };
 

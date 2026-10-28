@@ -3,9 +3,9 @@ from collections import Counter
 from collections.abc import AsyncIterator
 
 from app.afterlife.models import Afterlife, Rebirth
-from app.afterlife.seeker import Seeker
 from app.memory.models import Recall
-from app.memory.recaller import Recaller
+from app.persistence.cached_recaller import Recalling
+from app.persistence.cached_seeker import Seeking
 from app.scan.collector import Collector
 from app.scan.diagnoser import Diagnoser
 from app.scan.errors import ScanError
@@ -19,8 +19,8 @@ class Scanner:
         self,
         collector: Collector,
         diagnoser: Diagnoser,
-        recaller: Recaller,
-        seeker: Seeker | None,
+        recaller: Recalling,
+        seeker: Seeking | None,
         concurrency: int,
         max_searches: int,
     ) -> None:

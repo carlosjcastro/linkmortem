@@ -37,6 +37,11 @@ export type Dictionary = {
   afterlifeNone: string;
   afterlifeUnavailable: string;
   afterlifeSkipped: string;
+  afterlifeFromGraveyard: string;
+  shareTitle: string;
+  shareHint: string;
+  shareCopy: string;
+  shareCopied: string;
   causes: Record<CauseName, string>;
   scanErrors: Record<string, string>;
   caseTitle: string;
@@ -90,6 +95,11 @@ export const dictionaries: Record<Language, Dictionary> = {
     afterlifeNone: "No new home found. The archived copy is the best replacement.",
     afterlifeUnavailable: "The search for a new home didn't answer. Try again later.",
     afterlifeSkipped: "This scan reached its search limit, so this page wasn't looked up.",
+    afterlifeFromGraveyard: "Found in Linkmortem's graveyard of resolved links, without a new web search.",
+    shareTitle: "Share this autopsy",
+    shareHint: "Anyone with the link can read these results for 30 days.",
+    shareCopy: "Copy link",
+    shareCopied: "Link copied",
     causes: {
       alive: "Alive",
       unreadable: "Alive, though its content loads with scripts",
@@ -112,6 +122,7 @@ export const dictionaries: Record<Language, Dictionary> = {
       repository_not_found: "That repository doesn't exist or isn't public.",
       source_unreachable: "The source didn't answer. Try again in a few minutes.",
       github_rate_limited: "GitHub's hourly limit for this server ran out. Try again in an hour, or set GITHUB_TOKEN in the backend.",
+      scan_not_found: "That autopsy doesn't exist or has expired.",
       nothing_found: "No links were found at that address.",
       too_many_scans: "You reached the scan limit. Try again in a few minutes.",
       busy: "Linkmortem is busy with other scans. Try again in a minute.",
@@ -180,6 +191,11 @@ export const dictionaries: Record<Language, Dictionary> = {
     afterlifeNone: "No encontramos un nuevo hogar. La copia archivada es el mejor reemplazo.",
     afterlifeUnavailable: "La búsqueda de un nuevo hogar no respondió. Probá más tarde.",
     afterlifeSkipped: "Este escaneo llegó a su límite de búsquedas, así que esta página no se buscó.",
+    afterlifeFromGraveyard: "Encontrada en el cementerio de enlaces resueltos de Linkmortem, sin una nueva búsqueda web.",
+    shareTitle: "Compartí esta autopsia",
+    shareHint: "Cualquiera con el enlace puede leer estos resultados durante 30 días.",
+    shareCopy: "Copiar enlace",
+    shareCopied: "Enlace copiado",
     causes: {
       alive: "Vivo",
       unreadable: "Vivo, aunque su contenido carga con scripts",
@@ -202,6 +218,7 @@ export const dictionaries: Record<Language, Dictionary> = {
       repository_not_found: "Ese repositorio no existe o no es público.",
       source_unreachable: "La fuente no respondió. Probá de nuevo en unos minutos.",
       github_rate_limited: "Se agotó el límite por hora de GitHub para este servidor. Probá en una hora o configurá GITHUB_TOKEN en el backend.",
+      scan_not_found: "Esa autopsia no existe o ya venció.",
       nothing_found: "No se encontraron enlaces en esa dirección.",
       too_many_scans: "Llegaste al límite de escaneos. Probá de nuevo en unos minutos.",
       busy: "Linkmortem está ocupado con otros escaneos. Probá de nuevo en un minuto.",

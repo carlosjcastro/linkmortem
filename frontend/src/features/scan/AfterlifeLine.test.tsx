@@ -10,6 +10,7 @@ const FOUND: Afterlife = {
   title: "Space Shooter",
   match: "same",
   evidence: "Build a space shooter",
+  source: "graveyard",
 };
 
 function renderLine(afterlife: Afterlife | undefined, seeking: boolean) {
@@ -25,6 +26,7 @@ describe("AfterlifeLine", () => {
     renderLine(FOUND, false);
     expect(screen.getByRole("link")).toHaveAttribute("href", FOUND.url);
     expect(screen.getByText(/Build a space shooter/)).toBeInTheDocument();
+    expect(screen.getByText(/graveyard|cementerio/)).toBeInTheDocument();
   });
 
   it("stays silent when nothing is being searched", () => {

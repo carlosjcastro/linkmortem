@@ -28,6 +28,7 @@ export default function AfterlifeLine({ afterlife, seeking }: AfterlifeLineProps
       </a>
       {afterlife.title ? <p className="mt-1 break-all text-[0.9rem] text-dusk">{afterlife.url}</p> : null}
       {afterlife.evidence ? <p className="mt-1 max-w-[65ch] leading-[1.6] text-dusk">"{afterlife.evidence}"</p> : null}
+      {afterlife.source === "graveyard" ? <p className="mt-1 text-[0.9rem] text-dusk">{t.afterlifeFromGraveyard}</p> : null}
     </div>
   );
 }

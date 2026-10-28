@@ -34,3 +34,4 @@ class Afterlife(BaseModel):
     title: str = ""
     match: Match | None = None
     evidence: str = ""
+    source: str = ""
