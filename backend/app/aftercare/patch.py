@@ -10,7 +10,7 @@ from app.aftercare.replacements import Replacement
 
 BLOB = re.compile(r"^https://github\.com/([\w.-]+)/([\w.-]+)/blob/([^/]+)/(.+)$")
 RAW_URL = "https://raw.githubusercontent.com"
-URL_END = r"(?=[\s)\]>\"'`<]|$)"
+URL_END = r"(?![\w/%~+=&?#@-]|[.,;:!*'][\w/%~+=&?#@-])"
 
 
 @dataclass(frozen=True)
