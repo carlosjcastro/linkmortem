@@ -51,9 +51,14 @@ async def main() -> None:
             except ModelUnavailableError as error:
                 print(f"{spec}: skipped, {error}")
                 continue
-            reports.append(summarize(spec, results))
+            label = spec if getattr(model, "json_mode", True) else f"{spec} (JSON by prompt)"
+            reports.append(summarize(label, results))
             details[spec] = [asdict(result) for result in results]
-            print(f"{spec}: {reports[-1].accuracy:.0%} accuracy, {reports[-1].costly_errors} costly errors")
+            report = reports[-1]
+            print(f"{spec}: {report.accuracy:.0%} accuracy, {report.costly_errors} costly errors, {report.invalid} invalid answers, {report.unanswered} unanswered")
+            failure = next((result.error for result in results if result.error), "")
+            if failure:
+                print(f"  first invalid answer: {failure}")
     if not reports:
         raise SystemExit("No model answered, so nothing was saved.")
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")

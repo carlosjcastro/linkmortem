@@ -50,7 +50,7 @@ class OllamaModel:
                 think=False,
             )
         except (ConnectionError, httpx.TimeoutException) as error:
-            raise ModelUnavailableError(f"Ollama isn't answering at the configured host: {error}") from error
+            raise ModelUnavailableError(f"Ollama isn't answering at the configured host: {type(error).__name__} {error}".strip()) from error
         except ResponseError as error:
             if error.status_code == MISSING_MODEL:
                 raise ModelUnavailableError(f"Ollama doesn't have the model {self._model}.") from error

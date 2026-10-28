@@ -46,6 +46,8 @@ GATE_PHRASES = (
     "verify you are human",
     "checking if the site connection is secure",
     "just a moment",
+    "please wait",
+    "perform that action at this time",
 )
 GATE_PAGE_CHARS = 800
 SHORT_PAGE_CHARS = 400

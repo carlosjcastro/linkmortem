@@ -12,6 +12,8 @@ class CaseResult:
     seconds: float
     input_tokens: int
     output_tokens: int
+    error: str = ""
+    unanswered: bool = False
 
 
 @dataclass(frozen=True)
@@ -21,6 +23,7 @@ class ModelReport:
     accuracy: float
     costly_errors: int
     invalid: int
+    unanswered: int
     median_seconds: float
     p95_seconds: float
     mean_input_tokens: float
@@ -32,15 +35,17 @@ def p95(values: list[float]) -> float:
 
 
 def summarize(model: str, results: list[CaseResult]) -> ModelReport:
-    seconds = [result.seconds for result in results]
+    answered = [result for result in results if not result.unanswered]
+    seconds = [result.seconds for result in answered]
     return ModelReport(
         model=model,
         cases=len(results),
-        accuracy=sum(result.predicted == result.expected for result in results) / len(results) if results else 0.0,
-        costly_errors=sum(result.costly for result in results),
-        invalid=sum(result.predicted is None for result in results),
+        accuracy=sum(result.predicted == result.expected for result in answered) / len(answered) if answered else 0.0,
+        costly_errors=sum(result.costly for result in answered),
+        invalid=sum(result.predicted is None for result in answered),
+        unanswered=len(results) - len(answered),
         median_seconds=median(seconds) if seconds else 0.0,
         p95_seconds=p95(seconds),
-        mean_input_tokens=mean(result.input_tokens for result in results) if results else 0.0,
-        mean_output_tokens=mean(result.output_tokens for result in results) if results else 0.0,
+        mean_input_tokens=mean(result.input_tokens for result in answered) if answered else 0.0,
+        mean_output_tokens=mean(result.output_tokens for result in answered) if answered else 0.0,
     )
