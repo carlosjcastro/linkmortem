@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
@@ -17,6 +18,7 @@ def create_app(container: Container | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
+        await services.store.ensure_indexes()
         yield
         await services.close()
 
@@ -27,9 +29,15 @@ def create_app(container: Container | None = None) -> FastAPI:
         return {"status": "ok", "model": services.model.name, "database": await services.store.ping()}
 
     if services.scanner and services.limiter and services.gate:
-        app.include_router(build_scan_router(services.scanner, services.limiter, services.gate, settings.trust_proxy))
+        app.include_router(build_scan_router(services.scanner, services.limiter, services.gate, settings.trust_proxy, services.archive))
 
     if settings.web_dist.is_dir():
+        index = settings.web_dist / "index.html"
+
+        @app.get("/r/{scan_id}", include_in_schema=False)
+        async def shared(scan_id: str) -> FileResponse:
+            return FileResponse(index)
+
         app.mount("/", StaticFiles(directory=settings.web_dist, html=True), name="web")
     return app
 

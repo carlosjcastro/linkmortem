@@ -1,6 +1,9 @@
 from pymongo import AsyncMongoClient
+from pymongo.asynchronous.collection import AsyncCollection
+from pymongo.errors import PyMongoError
 
 from app.config import Settings
+from app.persistence.collections import EXPIRES_FIELD, EXPIRING
 
 SELECTION_TIMEOUT_MS = 3000
 
@@ -22,6 +25,18 @@ class Store:
         except Exception:
             return False
         return True
+
+    def collection(self, name: str) -> AsyncCollection | None:
+        return self._client[self._database][name] if self._client is not None else None
+
+    async def ensure_indexes(self) -> None:
+        if self._client is None:
+            return
+        try:
+            for name in EXPIRING:
+                await self._client[self._database][name].create_index(EXPIRES_FIELD, expireAfterSeconds=0)
+        except PyMongoError:
+            return
 
     async def close(self) -> None:
         if self._client is not None:

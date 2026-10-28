@@ -14,6 +14,12 @@ from app.llm.recorder import RecordingModel
 from app.llm.remote import BackboardModel
 from app.memory.recaller import Recaller
 from app.memory.wayback import WaybackIndex
+from app.persistence.archive import ScanArchive
+from app.persistence.cache import ResultCache
+from app.persistence.cached_recaller import CachedRecaller, Recalling
+from app.persistence.cached_seeker import CachedSeeker, Seeking
+from app.persistence.collections import AFTERLIVES, GRAVEYARD, MEMORIES, SCANS
+from app.persistence.graveyard import Graveyard
 from app.ratelimit import ConcurrencyGate, SlidingWindowLimiter
 from app.scan.classifier import PageClassifier
 from app.scan.collector import Collector
@@ -28,6 +34,7 @@ BACKBOARD_URL = "https://app.backboard.io/api"
 MODEL_TIMEOUT_SECONDS = 120
 WEB_TIMEOUT_SECONDS = 12
 USER_AGENT = "LinkmortemBot/1.0 (+https://linkmortem.tech)"
+CACHE_DAYS = 7
 
 
 @dataclass
@@ -38,6 +45,7 @@ class Container:
     scanner: Scanner | None = None
     limiter: SlidingWindowLimiter | None = None
     gate: ConcurrencyGate | None = None
+    archive: ScanArchive | None = None
 
     async def close(self) -> None:
         for client in self.clients:
@@ -57,18 +65,27 @@ def build_model(settings: Settings, backboard: httpx2.AsyncClient) -> Structured
     return RecordingModel(model, Path(settings.capture_file)) if settings.capture_file else model
 
 
-def build_seeker(settings: Settings, model: StructuredModel, web: httpx2.AsyncClient, fetcher: Fetcher) -> Seeker | None:
+def build_seeker(settings: Settings, model: StructuredModel, web: httpx2.AsyncClient, fetcher: Fetcher, store: Store) -> Seeking | None:
     if not settings.serpapi_api_key:
         return None
-    return Seeker(SerpSearch(web, settings.serpapi_api_key), fetcher, CandidateJudge(model, settings.model_concurrency))
+    graves = store.collection(GRAVEYARD)
+    seeker = Seeker(SerpSearch(web, settings.serpapi_api_key), fetcher, CandidateJudge(model, settings.model_concurrency), Graveyard(graves) if graves is not None else None)
+    cached = store.collection(AFTERLIVES)
+    return CachedSeeker(seeker, ResultCache(cached, CACHE_DAYS)) if cached is not None else seeker
 
 
-def build_scanner(settings: Settings, model: StructuredModel, web: httpx2.AsyncClient) -> Scanner:
+def build_recaller(web: httpx2.AsyncClient, fetcher: Fetcher, store: Store) -> Recalling:
+    recaller = Recaller(WaybackIndex(web), fetcher)
+    cached = store.collection(MEMORIES)
+    return CachedRecaller(recaller, ResultCache(cached, CACHE_DAYS)) if cached is not None else recaller
+
+
+def build_scanner(settings: Settings, model: StructuredModel, web: httpx2.AsyncClient, store: Store) -> Scanner:
     fetcher = Fetcher(web)
     collector = Collector(SiteSource(fetcher), GitHubSource(web, settings.github_token))
     diagnoser = Diagnoser(fetcher, PageClassifier(model, settings.model_concurrency))
-    recaller = Recaller(WaybackIndex(web), fetcher)
-    seeker = build_seeker(settings, model, web, fetcher)
+    recaller = build_recaller(web, fetcher, store)
+    seeker = build_seeker(settings, model, web, fetcher, store)
     return Scanner(collector, diagnoser, recaller, seeker, settings.scan_concurrency, settings.max_searches)
 
 
@@ -84,11 +101,14 @@ def build_container(settings: Settings) -> Container:
         follow_redirects=False,
     )
     model = build_model(settings, backboard)
+    store = build_store(settings)
+    scans = store.collection(SCANS)
     return Container(
         model=model,
-        store=build_store(settings),
+        store=store,
         clients=[backboard, web],
-        scanner=build_scanner(settings, model, web),
+        scanner=build_scanner(settings, model, web, store),
         limiter=SlidingWindowLimiter(settings.scan_limit, settings.scan_window),
         gate=ConcurrencyGate(settings.max_concurrent_scans),
+        archive=ScanArchive(scans) if scans is not None else None,
     )
