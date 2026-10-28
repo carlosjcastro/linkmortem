@@ -3,7 +3,8 @@ import { useTranslation } from "../i18n/useTranslation";
 import { groupResults } from "./groupResults";
 import ResultGroup from "./ResultGroup";
 import ScanProgress from "./ScanProgress";
-import type { ScanState } from "./useScan";
+import ShareLink from "./ShareLink";
+import type { ScanState } from "./scanState";
 
 export default function ScanResults({ state }: { state: ScanState }) {
   const { t } = useTranslation();
@@ -24,6 +25,7 @@ export default function ScanResults({ state }: { state: ScanState }) {
       </h2>
       <p className="mt-3 break-all text-dusk">{state.target}</p>
       {running ? <ScanProgress state={state} /> : null}
+      {state.phase === "done" && state.shareId ? <ShareLink id={state.shareId} /> : null}
       {state.phase === "failed" ? (
         <p role="alert" className="mt-8 max-w-xl text-rose">
           {t.scanErrors[state.errorCode] ?? t.scanErrors.unavailable}
