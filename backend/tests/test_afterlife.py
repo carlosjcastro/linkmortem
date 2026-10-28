@@ -6,6 +6,7 @@ from app.afterlife.judge import CandidateJudge
 from app.afterlife.models import CandidateJudgement, Match, Rebirth, SearchResult
 from app.afterlife.search import SearchUnavailableError, SerpSearch
 from app.afterlife.seeker import Seeker
+from app.llm.base import ModelUnavailableError
 from app.memory.models import Memory, Recall
 from app.scan.fetcher import Fetcher
 
@@ -101,6 +102,19 @@ async def test_prefers_the_same_content_over_a_successor():
 async def test_skips_dead_and_parked_candidates():
     seeker = seeker_for(["https://gone.dev/a", "https://parked.dev/a"], {"gone.dev": Match.SAME, "parked.dev": Match.SAME})
     assert (await seeker.seek(ORIGINAL, MEMORY)).status == Rebirth.NONE
+
+
+class DownModel:
+    name = "down"
+
+    async def generate(self, system, prompt, schema):
+        raise ModelUnavailableError("Backboard isn't answering")
+
+
+async def test_a_missing_model_is_unavailable_not_nothing_found():
+    fetcher = Fetcher(httpx2.AsyncClient(transport=httpx2.MockTransport(site)), allow)
+    seeker = Seeker(FakeSearch(["https://moved.dev/a"]), fetcher, CandidateJudge(DownModel(), 1))
+    assert (await seeker.seek(ORIGINAL, MEMORY)).status == Rebirth.UNAVAILABLE
 
 
 async def test_reports_an_unavailable_search():

@@ -47,6 +47,8 @@ class Diagnoser:
             return diagnosis(link, Cause.ALIVE, page)
         try:
             result = await self._classifier.classify(link, page.final_url, parsed)
-        except (ModelOutputError, ModelUnavailableError):
+        except ModelOutputError:
             return diagnosis(link, Cause.UNCLASSIFIED, page)
+        except ModelUnavailableError:
+            return diagnosis(link, Cause.MODEL_UNAVAILABLE, page)
         return diagnosis(link, PAGE_CAUSES[result.kind], page, result.evidence)

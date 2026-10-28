@@ -58,7 +58,7 @@ async def main() -> None:
             print(f"{spec}: {report.accuracy:.0%} accuracy, {report.costly_errors} costly errors, {report.invalid} invalid answers, {report.unanswered} unanswered")
             failure = next((result.error for result in results if result.error), "")
             if failure:
-                print(f"  first invalid answer: {failure}")
+                print(f"  first problem: {failure}")
     if not reports:
         raise SystemExit("No model answered, so nothing was saved.")
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")

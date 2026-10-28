@@ -41,6 +41,12 @@ class Seeker:
         query = search_query(memory.title, memory.content, original_url)
         if not query or not memory.content:
             return Afterlife(status=Rebirth.NONE)
+        try:
+            return await self._seek(original_url, memory, query)
+        except ModelUnavailableError:
+            return Afterlife(status=Rebirth.UNAVAILABLE)
+
+    async def _seek(self, original_url: str, memory: Memory, query: str) -> Afterlife:
         remembered = await self._graves.similar(original_url, memory) if self._graves else []
         known = await self._best(memory, remembered, GRAVEYARD_SOURCE)
         if known and known.match == Match.SAME:
@@ -83,5 +89,5 @@ class Seeker:
     async def _judgement(self, archived_url: str, archived: ParsedPage, link: str, page: ParsedPage) -> CandidateJudgement | None:
         try:
             return await self._judge.judge(archived_url, archived, link, page)
-        except (ModelOutputError, ModelUnavailableError):
+        except ModelOutputError:
             return None

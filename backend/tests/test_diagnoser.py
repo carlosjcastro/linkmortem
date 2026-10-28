@@ -1,3 +1,4 @@
+from app.llm.base import ModelOutputError, ModelUnavailableError
 from app.scan.diagnoser import Diagnoser
 from app.scan.fetcher import Page
 from app.scan.models import Cause, Link, PageClassification, PageKind, Verdict
@@ -51,6 +52,22 @@ async def test_suspicious_pages_are_judged_by_the_model():
     page = Page(200, "https://a.dev/", "text/html", html("Home", LONG_TEXT))
     result = await Diagnoser(FakeFetcher(page), FakeClassifier(PageKind.UNRELATED)).diagnose(LINK)
     assert result.cause == Cause.UNRELATED_REDIRECT and result.verdict == Verdict.GHOST
+
+
+class SilentClassifier:
+    def __init__(self, error: Exception) -> None:
+        self.error = error
+
+    async def classify(self, link, final_url, page):
+        raise self.error
+
+
+async def test_a_missing_model_is_told_apart_from_an_unclear_answer():
+    page = Page(200, "https://a.dev/", "text/html", html("Home", LONG_TEXT))
+    missing = await Diagnoser(FakeFetcher(page), SilentClassifier(ModelUnavailableError("down"))).diagnose(LINK)
+    unclear = await Diagnoser(FakeFetcher(page), SilentClassifier(ModelOutputError("bad"))).diagnose(LINK)
+    assert (missing.cause, missing.verdict) == (Cause.MODEL_UNAVAILABLE, Verdict.UNKNOWN)
+    assert (unclear.cause, unclear.verdict) == (Cause.UNCLASSIFIED, Verdict.UNKNOWN)
 
 
 async def test_pages_without_readable_text_are_never_ghosts():

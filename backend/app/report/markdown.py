@@ -21,6 +21,7 @@ CAUSE_LABELS: dict[Cause, str] = {
     Cause.RESTRICTED: "Hidden behind a login or bot check",
     Cause.BLOCKED: "Private address, not checked",
     Cause.UNCLASSIFIED: "Gemma could not decide",
+    Cause.MODEL_UNAVAILABLE: "Gemma wasn't available to read it",
 }
 MARKDOWN_SPECIALS = re.compile(r"([\\`*_{}\[\]()<>#|!])")
 TEXT_CHARS = 200
@@ -71,6 +72,17 @@ def unknown_entry(item: Diagnosis) -> str:
     return f"- `{item.link.url.replace('`', '%60')}`: {cause_line(item)}"
 
 
+def model_note(unknown: list[Diagnosis]) -> str:
+    missed = sum(item.cause == Cause.MODEL_UNAVAILABLE for item in unknown)
+    if not missed:
+        return ""
+    pages = "1 page that looked suspicious stays" if missed == 1 else f"{missed} pages that looked suspicious stay"
+    return (
+        f"Gemma wasn't available, so {pages} unconfirmed. "
+        "Code checks still ran on every link. In the GitHub Action, set `backboard-api-key` so Gemma can read them."
+    )
+
+
 def markdown_report(transcript: ScanTranscript) -> str:
     if transcript.error_code == NOTHING_FOUND:
         return f"# Linkmortem report\n\nNo links were found in `{transcript.target}`, so there is nothing to check yet.\n"
@@ -86,6 +98,9 @@ def markdown_report(transcript: ScanTranscript) -> str:
         parts.append("## Ghosts\n\n" + "\n".join(ghost_entry(transcript, item) for item in ghosts))
     else:
         parts.append("No ghosts here. Every link still leads somewhere.")
+    note = model_note(unknown)
+    if note:
+        parts.append(note)
     if unknown:
         entries = "\n".join(unknown_entry(item) for item in unknown)
         parts.append(f"<details>\n<summary>Could not confirm ({len(unknown)})</summary>\n\n{entries}\n\n</details>")

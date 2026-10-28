@@ -55,6 +55,7 @@ export type Dictionary = {
   preserveFailed: string;
   preserveRecent: string;
   preserveWaiting: string;
+  modelMissing: (count: number) => string;
   causes: Record<CauseName, string>;
   scanErrors: Record<string, string>;
   caseTitle: string;
@@ -126,6 +127,10 @@ export const dictionaries: Record<Language, Dictionary> = {
     preserveFailed: "Not saved",
     preserveRecent: "Already saved recently",
     preserveWaiting: "The Internet Archive is busy with these pages. Waiting a minute before the next one.",
+    modelMissing: (count) => {
+      const pages = count === 1 ? "1 page that looked suspicious stays" : `${count} pages that looked suspicious stay`;
+      return `Gemma wasn't available during this scan, so ${pages} unconfirmed. Every other check still ran. Try again in a few minutes.`;
+    },
     causes: {
       alive: "Alive",
       unreadable: "Alive, though its content loads with scripts",
@@ -142,6 +147,7 @@ export const dictionaries: Record<Language, Dictionary> = {
       restricted: "Hidden behind a login or bot check",
       blocked: "Private address, not checked",
       unclassified: "Gemma could not decide",
+      model_unavailable: "Gemma wasn't available to read it",
     },
     scanErrors: {
       invalid_target: "Enter a public web address that starts with http or https.",
@@ -237,6 +243,10 @@ export const dictionaries: Record<Language, Dictionary> = {
     preserveFailed: "No guardada",
     preserveRecent: "Ya guardada hace poco",
     preserveWaiting: "El Internet Archive está ocupado con estas páginas. Esperando un minuto antes de la siguiente.",
+    modelMissing: (count) => {
+      const pages = count === 1 ? "1 página sospechosa quedó" : `${count} páginas sospechosas quedaron`;
+      return `Gemma no estuvo disponible en este escaneo, así que ${pages} sin confirmar. El resto de los controles se hizo igual. Probá de nuevo en unos minutos.`;
+    },
     causes: {
       alive: "Vivo",
       unreadable: "Vivo, aunque su contenido carga con scripts",
@@ -253,6 +263,7 @@ export const dictionaries: Record<Language, Dictionary> = {
       restricted: "Oculta tras un inicio de sesión o un control de bots",
       blocked: "Dirección privada, no se revisó",
       unclassified: "Gemma no pudo decidir",
+      model_unavailable: "Gemma no estuvo disponible para leerla",
     },
     scanErrors: {
       invalid_target: "Ingresá una dirección web pública que empiece con http o https.",

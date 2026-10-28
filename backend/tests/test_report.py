@@ -37,6 +37,14 @@ def test_untrusted_text_cannot_mention_or_inject_markdown():
     assert "@team" not in markdown_report(transcript())
 
 
+def test_explains_when_gemma_was_missing():
+    record = transcript()
+    record.add({"type": "link", "diagnosis": Diagnosis(link=Link(url="https://moved.dev", source="x"), verdict=Verdict.UNKNOWN, cause=Cause.MODEL_UNAVAILABLE).model_dump(mode="json")})
+    report = markdown_report(record)
+    assert "so 1 page that looked suspicious stays unconfirmed" in report and "backboard-api-key" in report
+    assert "Gemma wasn't available" not in markdown_report(transcript())
+
+
 def test_reports_failed_scans():
     record = ScanTranscript("https://github.com/owner/missing")
     record.add({"type": "error", "code": "repository_not_found", "message": "That repository doesn't exist or isn't public."})
