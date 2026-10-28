@@ -47,3 +47,18 @@ async def test_refused_requests_mean_the_model_is_unavailable():
     with pytest.raises(ModelUnavailableError):
         await model.generate("Judge.", "Page", Verdict)
     assert len(sent) == 1
+
+
+async def test_provider_errors_inside_an_answer_mean_the_model_is_unavailable():
+    error = "Provider returned: {'error': {'message': 'No endpoints found that can handle the requested parameters.'}}"
+    model, sent = model_answering((200, {"content": error}))
+    with pytest.raises(ModelUnavailableError, match="No endpoints found"):
+        await model.generate("Judge.", "Page", Verdict)
+    assert len(sent) == 1
+
+
+async def test_retries_without_json_mode_when_the_provider_refuses_it():
+    refusal = "Provider: {'error': {'message': 'No endpoints found. Filter by Parameters removed deepinfra/fp8'}}"
+    model, sent = model_answering((200, {"content": refusal}), (200, {"content": '{"alive": true}'}))
+    assert (await model.generate("Judge.", "Page", Verdict)).alive is True
+    assert [body["json_output"] for body in sent] == [True, False] and model.json_mode is False
