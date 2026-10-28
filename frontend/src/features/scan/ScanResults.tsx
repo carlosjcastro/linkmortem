@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import Aftercare from "../aftercare/Aftercare";
 import { useTranslation } from "../i18n/useTranslation";
 import { groupResults } from "./groupResults";
 import ResultGroup from "./ResultGroup";
@@ -26,6 +27,7 @@ export default function ScanResults({ state }: { state: ScanState }) {
       <p className="mt-3 break-all text-dusk">{state.target}</p>
       {running ? <ScanProgress state={state} /> : null}
       {state.phase === "done" && state.shareId ? <ShareLink id={state.shareId} /> : null}
+      {state.phase === "done" ? <Aftercare state={state} /> : null}
       {state.phase === "failed" ? (
         <p role="alert" className="mt-8 max-w-xl text-rose">
           {t.scanErrors[state.errorCode] ?? t.scanErrors.unavailable}
