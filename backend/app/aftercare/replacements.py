@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 
-from app.afterlife.models import Rebirth
+from app.afterlife.models import Match, Rebirth
 from app.memory.models import Recall
 from app.scan.models import Verdict
 
 NEW_HOME = "new_home"
+PROVEN_MATCHES = {Match.SAME, Match.SUCCESSOR}
 ARCHIVED_COPY = "archived_copy"
 
 
@@ -29,7 +30,7 @@ def replacements(events: list[dict]) -> list[Replacement]:
             continue
         link = event["diagnosis"]["link"]
         afterlife, memory = afterlives.get(link["url"], {}), memories.get(link["url"], {})
-        if afterlife.get("status") == Rebirth.FOUND:
+        if afterlife.get("status") == Rebirth.FOUND and afterlife.get("match") in PROVEN_MATCHES:
             found.append(Replacement(link["source"], link["url"], afterlife["url"], NEW_HOME))
         elif memory.get("status") == Recall.FOUND:
             found.append(Replacement(link["source"], link["url"], memory["archived_url"], ARCHIVED_COPY))
