@@ -4,11 +4,12 @@ import { streamPreservation } from "./preserveStream";
 export type Preservation = {
   phase: "idle" | "running" | "done" | "failed";
   total: number;
-  saved: { url: string; status: "queued" | "failed"; detail: string }[];
+  saved: { url: string; status: "queued" | "recent" | "failed"; detail: string }[];
+  waiting: number;
   errorCode: string;
 };
 
-const IDLE: Preservation = { phase: "idle", total: 0, saved: [], errorCode: "" };
+const IDLE: Preservation = { phase: "idle", total: 0, saved: [], waiting: 0, errorCode: "" };
 
 export function usePreservation(id: string) {
   const [state, setState] = useState<Preservation>(IDLE);
@@ -18,7 +19,8 @@ export function usePreservation(id: string) {
     try {
       for await (const event of streamPreservation(id, new AbortController().signal)) {
         if (event.type === "preserving") setState((previous) => ({ ...previous, total: event.total }));
-        if (event.type === "preserved") setState((previous) => ({ ...previous, saved: [...previous.saved, { url: event.url, status: event.status, detail: event.detail }] }));
+        if (event.type === "waiting") setState((previous) => ({ ...previous, waiting: event.seconds }));
+        if (event.type === "preserved") setState((previous) => ({ ...previous, waiting: 0, saved: [...previous.saved, { url: event.url, status: event.status, detail: event.detail }] }));
         if (event.type === "done") setState((previous) => ({ ...previous, phase: "done" }));
         if (event.type === "error") setState((previous) => ({ ...previous, phase: "failed", errorCode: event.code }));
       }

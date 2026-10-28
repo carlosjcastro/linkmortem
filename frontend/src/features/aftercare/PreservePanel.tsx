@@ -1,5 +1,12 @@
 import { useTranslation } from "../i18n/useTranslation";
+import type { Dictionary } from "../i18n/dictionaries";
 import { usePreservation } from "./usePreservation";
+
+const PRESERVE_LABELS = {
+  queued: (t: Dictionary) => t.preserveQueued,
+  recent: (t: Dictionary) => t.preserveRecent,
+  failed: (t: Dictionary) => t.preserveFailed,
+};
 
 export default function PreservePanel({ id, living }: { id: string; living: number }) {
   const { t } = useTranslation();
@@ -20,8 +27,9 @@ export default function PreservePanel({ id, living }: { id: string; living: numb
         </button>
       ) : null}
       <p aria-live="polite" className="mt-3 text-[0.95rem] text-dusk">
-        {running ? t.preserveProgress(state.saved.length, state.total) : null}
-        {state.phase === "done" ? t.preserveDone(state.saved.filter((item) => item.status === "queued").length) : null}
+        {running && state.waiting ? t.preserveWaiting : null}
+        {running && !state.waiting ? t.preserveProgress(state.saved.length, state.total) : null}
+        {state.phase === "done" ? t.preserveDone(state.saved.filter((item) => item.status !== "failed").length) : null}
       </p>
       {state.phase === "failed" ? (
         <p role="alert" className="mt-2 text-rose">
@@ -32,7 +40,7 @@ export default function PreservePanel({ id, living }: { id: string; living: numb
         <ul className="mt-2 space-y-1 text-[0.9rem]">
           {state.saved.map((item) => (
             <li key={item.url} className="break-all text-dusk">
-              <span className={item.status === "queued" ? "text-spectral" : "text-rose"}>{item.status === "queued" ? t.preserveQueued : t.preserveFailed}</span> {item.url}
+              <span className={item.status === "failed" ? "text-rose" : "text-spectral"}>{PRESERVE_LABELS[item.status](t)}</span> {item.url}
               {item.status === "failed" && item.detail ? <span className="block pl-4 text-[0.85rem]">{item.detail}</span> : null}
             </li>
           ))}

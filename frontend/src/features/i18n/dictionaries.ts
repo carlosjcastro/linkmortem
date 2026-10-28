@@ -42,6 +42,19 @@ export type Dictionary = {
   shareHint: string;
   shareCopy: string;
   shareCopied: string;
+  restTitle: string;
+  restText: (count: number) => string;
+  restDownload: string;
+  restApply: string;
+  preserveTitle: string;
+  preserveText: (count: number) => string;
+  preserveAction: string;
+  preserveProgress: (sent: number, total: number) => string;
+  preserveDone: (queued: number) => string;
+  preserveQueued: string;
+  preserveFailed: string;
+  preserveRecent: string;
+  preserveWaiting: string;
   causes: Record<CauseName, string>;
   scanErrors: Record<string, string>;
   caseTitle: string;
@@ -100,6 +113,19 @@ export const dictionaries: Record<Language, Dictionary> = {
     shareHint: "Anyone with the link can read these results for 30 days.",
     shareCopy: "Copy link",
     shareCopied: "Link copied",
+    restTitle: "Lay these links to rest",
+    restText: (count) => `A patch replaces ${count === 1 ? "1 dead link" : `${count} dead links`} with ${count === 1 ? "its" : "their"} new home or last healthy copy. Review it before applying.`,
+    restDownload: "Download patch",
+    restApply: "Apply it from your repository with",
+    preserveTitle: "Preserve the living",
+    preserveText: (count) => `Ask the Internet Archive to save up to ${count} living ${count === 1 ? "link that wasn't" : "links that weren't"} saved this month, before ${count === 1 ? "it becomes a ghost" : "they become ghosts"} too.`,
+    preserveAction: "Preserve living links",
+    preserveProgress: (sent, total) => `Sending pages to the Internet Archive, ${sent} of ${total}`,
+    preserveDone: (safe) => `${safe === 1 ? "1 page is" : `${safe} pages are`} safe in the Internet Archive or being saved now.`,
+    preserveQueued: "Saving",
+    preserveFailed: "Not saved",
+    preserveRecent: "Already saved recently",
+    preserveWaiting: "The Internet Archive is busy with these pages. Waiting a minute before the next one.",
     causes: {
       alive: "Alive",
       unreadable: "Alive, though its content loads with scripts",
@@ -123,6 +149,8 @@ export const dictionaries: Record<Language, Dictionary> = {
       source_unreachable: "The source didn't answer. Try again in a few minutes.",
       github_rate_limited: "GitHub's hourly limit for this server ran out. Try again in an hour, or set GITHUB_TOKEN in the backend.",
       scan_not_found: "That autopsy doesn't exist or has expired.",
+      preserve_unavailable: "Preserving pages isn't configured on this server.",
+      already_preserved: "The living links of this autopsy were already sent to the archive.",
       nothing_found: "No links were found at that address.",
       too_many_scans: "You reached the scan limit. Try again in a few minutes.",
       busy: "Linkmortem is busy with other scans. Try again in a minute.",
@@ -196,6 +224,19 @@ export const dictionaries: Record<Language, Dictionary> = {
     shareHint: "Cualquiera con el enlace puede leer estos resultados durante 30 días.",
     shareCopy: "Copiar enlace",
     shareCopied: "Enlace copiado",
+    restTitle: "Dales descanso a estos enlaces",
+    restText: (count) => `Un parche reemplaza ${count === 1 ? "1 enlace muerto" : `${count} enlaces muertos`} por su nuevo hogar o su última copia sana. Revisalo antes de aplicarlo.`,
+    restDownload: "Descargar parche",
+    restApply: "Aplicalo desde tu repositorio con",
+    preserveTitle: "Preservá a los vivos",
+    preserveText: (count) => `Pedile al Internet Archive que guarde hasta ${count} ${count === 1 ? "enlace vivo" : "enlaces vivos"} sin copia de este mes, antes de que también se vuelvan fantasmas.`,
+    preserveAction: "Preservar enlaces vivos",
+    preserveProgress: (sent, total) => `Enviando páginas al Internet Archive, ${sent} de ${total}`,
+    preserveDone: (safe) => `${safe === 1 ? "1 página está a salvo" : `${safe} páginas están a salvo`} en el Internet Archive o guardándose ahora.`,
+    preserveQueued: "Guardando",
+    preserveFailed: "No guardada",
+    preserveRecent: "Ya guardada hace poco",
+    preserveWaiting: "El Internet Archive está ocupado con estas páginas. Esperando un minuto antes de la siguiente.",
     causes: {
       alive: "Vivo",
       unreadable: "Vivo, aunque su contenido carga con scripts",
@@ -219,6 +260,8 @@ export const dictionaries: Record<Language, Dictionary> = {
       source_unreachable: "La fuente no respondió. Probá de nuevo en unos minutos.",
       github_rate_limited: "Se agotó el límite por hora de GitHub para este servidor. Probá en una hora o configurá GITHUB_TOKEN en el backend.",
       scan_not_found: "Esa autopsia no existe o ya venció.",
+      preserve_unavailable: "Preservar páginas no está configurado en este servidor.",
+      already_preserved: "Los enlaces vivos de esta autopsia ya se enviaron al archivo.",
       nothing_found: "No se encontraron enlaces en esa dirección.",
       too_many_scans: "Llegaste al límite de escaneos. Probá de nuevo en unos minutos.",
       busy: "Linkmortem está ocupado con otros escaneos. Probá de nuevo en un minuto.",
