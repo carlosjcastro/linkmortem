@@ -25,3 +25,15 @@ class FakeCollection:
     async def aggregate(self, pipeline: list[dict]) -> FakeCursor:
         self.pipelines.append(pipeline)
         return FakeCursor(self.matches)
+
+    async def update_one(self, query: dict, change: dict) -> "FakeUpdate":
+        found = self.documents.get(query["_id"])
+        if not found or any(key in found for key, rule in query.items() if key != "_id" and rule == {"$exists": False}):
+            return FakeUpdate(0)
+        found.update(change["$set"])
+        return FakeUpdate(1)
+
+
+class FakeUpdate:
+    def __init__(self, modified_count: int) -> None:
+        self.modified_count = modified_count
