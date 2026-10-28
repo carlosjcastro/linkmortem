@@ -7,6 +7,7 @@ title="Replace dead links found by Linkmortem"
 finish() {
   echo "pull-request-status=$1" >> "$GITHUB_OUTPUT"
   echo "pull-request=${2:-}" >> "$GITHUB_OUTPUT"
+  printf '\nPull request: %s %s\n' "$1" "${2:-}" >> "$GITHUB_STEP_SUMMARY"
   exit 0
 }
 
