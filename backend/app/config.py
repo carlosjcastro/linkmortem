@@ -45,6 +45,8 @@ class Settings:
     serpapi_api_key: str
     max_searches: int
     capture_file: str
+    archive_access_key: str
+    archive_secret_key: str
 
 
 @lru_cache
@@ -74,4 +76,6 @@ def get_settings() -> Settings:
         serpapi_api_key=env("SERPAPI_API_KEY"),
         max_searches=env_int("LINKMORTEM_MAX_SEARCHES", 5),
         capture_file=env("LINKMORTEM_CAPTURE_FILE"),
+        archive_access_key=env("ARCHIVE_ACCESS_KEY"),
+        archive_secret_key=env("ARCHIVE_SECRET_KEY"),
     )
