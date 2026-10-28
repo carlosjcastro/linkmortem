@@ -7,6 +7,8 @@ from app.llm.usage import ModelUsage
 from evals.metrics import CaseResult
 from evals.tasks import TASKS, predicted_label
 
+ERROR_CHARS = 500
+
 
 class UsageMeter:
     def __init__(self) -> None:
@@ -22,10 +24,11 @@ class UsageMeter:
 
 async def run_case(model: StructuredModel, meter: UsageMeter, case: EvalCase) -> CaseResult:
     task = TASKS[case.task]
+    error = ""
     try:
         predicted = predicted_label(task, await model.generate(task.system, case.prompt, task.schema))
-    except ModelOutputError:
-        predicted = None
+    except ModelOutputError as failure:
+        predicted, error = None, str(failure)[:ERROR_CHARS]
     calls = meter.take()
     expected = case.expected or ""
     return CaseResult(
@@ -37,6 +40,7 @@ async def run_case(model: StructuredModel, meter: UsageMeter, case: EvalCase) ->
         seconds=sum(call.seconds for call in calls),
         input_tokens=sum(call.input_tokens for call in calls),
         output_tokens=sum(call.output_tokens for call in calls),
+        error=error,
     )
 
 

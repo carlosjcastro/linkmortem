@@ -68,9 +68,9 @@ class BackboardModel:
         try:
             response = await self._client.post(MESSAGES_PATH, json=body)
         except httpx2.HTTPError as error:
-            raise ModelUnavailableError(f"Backboard isn't answering: {error}") from error
+            raise ModelUnavailableError(f"Backboard isn't answering: {type(error).__name__} {error}".strip()) from error
         if response.status_code in REFUSED_STATUSES:
             raise ModelUnavailableError(f"Backboard refused the request with status {response.status_code}.")
         if response.is_error:
-            raise ModelOutputError(f"Backboard answered with status {response.status_code}.")
+            raise ModelOutputError(f"Backboard answered with status {response.status_code}: {response.text[:300]}")
         return response

@@ -72,3 +72,11 @@ async def test_cloudflare_checks_are_restricted_without_the_model():
     page = Page(200, LINK.url, "text/html", html("One moment, please...", "Please wait while your request is being verified..."))
     result = await Diagnoser(FakeFetcher(page), classifier).diagnose(LINK)
     assert (result.cause, classifier.calls) == (Cause.RESTRICTED, 0)
+
+
+async def test_github_and_tiktok_bot_answers_are_restricted():
+    classifier = FakeClassifier(PageKind.ERROR_PAGE)
+    for title, text in [("GitHub Copilot", "You can\u2019t perform that action at this time."), ("", "Please wait...")]:
+        result = await Diagnoser(FakeFetcher(Page(200, LINK.url, "text/html", html(title, text))), classifier).diagnose(LINK)
+        assert result.cause == Cause.RESTRICTED
+    assert classifier.calls == 0

@@ -12,6 +12,7 @@ class CaseResult:
     seconds: float
     input_tokens: int
     output_tokens: int
+    error: str = ""
 
 
 @dataclass(frozen=True)

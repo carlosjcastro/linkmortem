@@ -1,3 +1,4 @@
+from app.llm.base import ModelOutputError
 from app.llm.cases import EvalCase, load_cases, save_cases
 from app.llm.recorder import RecordingModel
 from app.llm.usage import ModelUsage
@@ -60,3 +61,15 @@ def test_summarizes_and_ranks_models():
 
 def test_cases_are_replayed_with_the_current_prompts():
     assert TASKS["PageClassification"].system == SYSTEM
+
+
+class BrokenModel:
+    name = "fake/broken"
+
+    async def generate(self, system, prompt, schema):
+        raise ModelOutputError("The model answer has no JSON object.")
+
+
+async def test_keeps_the_reason_for_invalid_answers():
+    result = await run_case(BrokenModel(), UsageMeter(), case("alive"))
+    assert result.predicted is None and result.error == "The model answer has no JSON object."
