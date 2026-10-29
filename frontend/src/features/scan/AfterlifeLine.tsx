@@ -1,5 +1,6 @@
 import { useTranslation } from "../i18n/useTranslation";
 import type { Afterlife } from "./scanTypes";
+import { externalHref } from "../../lib/externalHref";
 
 type AfterlifeLineProps = { afterlife?: Afterlife; seeking: boolean };
 
@@ -41,7 +42,7 @@ export default function AfterlifeLine({
             : t.afterlifeSuccessor}
       </p>
       <a
-        href={afterlife.url}
+        href={externalHref(afterlife.url)}
         rel="noopener noreferrer"
         target="_blank"
         className="mt-1 inline-block break-all text-bone underline decoration-marigold/40 underline-offset-4 hover:decoration-marigold"

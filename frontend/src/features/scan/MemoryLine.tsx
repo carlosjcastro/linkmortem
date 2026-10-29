@@ -1,5 +1,6 @@
 import { useTranslation } from "../i18n/useTranslation";
 import type { Memory } from "./scanTypes";
+import { externalHref } from "../../lib/externalHref";
 
 type MemoryLineProps = { memory?: Memory; remembering: boolean };
 
@@ -30,7 +31,7 @@ export default function MemoryLine({ memory, remembering }: MemoryLineProps) {
   return (
     <div>
       <a
-        href={memory.archived_url}
+        href={externalHref(memory.archived_url)}
         rel="noopener noreferrer"
         target="_blank"
         className="font-semibold text-spectral underline decoration-spectral/40 underline-offset-4 hover:decoration-spectral"

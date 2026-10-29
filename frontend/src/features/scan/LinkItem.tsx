@@ -1,12 +1,13 @@
 import CauseLine from "./CauseLine";
 import SourceLine from "./SourceLine";
 import type { Diagnosis } from "./scanTypes";
+import { externalHref } from "../../lib/externalHref";
 
 export default function LinkItem({ result }: { result: Diagnosis }) {
   return (
     <li className="py-5">
       <a
-        href={result.link.url}
+        href={externalHref(result.link.url)}
         rel="noopener noreferrer nofollow"
         target="_blank"
         className="break-all font-semibold text-bone underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-marigold"
