@@ -10,7 +10,7 @@ MOVE = re.compile(
     re.IGNORECASE,
 )
 TRAILING = ".,;:!?)]}'\""
-CONTEXT_CHARS = 60
+CONTEXT_CHARS = 32
 QUOTE_CHARS = 160
 
 

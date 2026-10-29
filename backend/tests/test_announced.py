@@ -4,9 +4,9 @@ ORIGINAL = "https://airbnb.io/enzyme/index.html"
 
 
 def test_reads_the_new_address_a_dead_page_announced():
-    move = announced_move(ORIGINAL, "Airbnb.io Mobile Open Source Enzyme has moved. Redirecting now to enzymejs.github.io ... Careers")
+    move = announced_move(ORIGINAL, "Airbnb.io Mobile Open Source Events Blog Github Careers Airbnb.io Enzyme has moved. Redirecting now to enzymejs.github.io ... Careers")
     assert move.candidates == ["https://enzymejs.github.io/enzyme/index.html", "https://enzymejs.github.io"]
-    assert move.quote == "Airbnb.io Mobile Open Source Enzyme has moved. Redirecting now to enzymejs.github.io"
+    assert move.quote == "Airbnb.io Enzyme has moved. Redirecting now to enzymejs.github.io"
 
 
 def test_keeps_a_full_destination_as_written():
