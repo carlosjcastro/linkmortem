@@ -8,6 +8,7 @@ type Finding = {
 };
 type Fact = { figure: string; text: string; source: string; url: string };
 type CauseName = import("../scan/scanTypes").Cause;
+type TargetProblem = import("../../lib/target").TargetProblem;
 type FooterGroupKey =
   import("../../components/footer/footerLinks").FooterGroupKey;
 type FooterLinkKey =
@@ -28,7 +29,7 @@ export type Dictionary = {
   targetLabel: string;
   targetHint: string;
   targetPlaceholder: string;
-  targetInvalid: string;
+  targetProblems: Record<TargetProblem, string>;
   scanAction: string;
   tryExample: string;
   scanCollecting: string;
@@ -146,8 +147,15 @@ export const dictionaries: Record<Language, Dictionary> = {
     targetHint:
       "Only public pages are read, and nothing changes without your approval.",
     targetPlaceholder: "example.com or github.com/owner/repo",
-    targetInvalid:
-      "Enter a public web address, like example.com or github.com/owner/repo.",
+    targetProblems: {
+      invalid:
+        "Enter a public web address, like example.com or github.com/owner/repo.",
+      credentials:
+        "Leave the user name and password out of the address. Linkmortem only reads public pages.",
+      port: "Use the standard web address without a port. Linkmortem only reads pages on ports 80 and 443.",
+      length:
+        "That address is too long. Shorten it to the site or repository you want to check.",
+    },
     scanAction: "Find dead links",
     tryExample: "Or try it on the demo repository",
     scanCollecting: "Gathering the links to check",
@@ -410,8 +418,15 @@ export const dictionaries: Record<Language, Dictionary> = {
     targetHint:
       "Solo se leen páginas públicas, y nada cambia sin tu aprobación.",
     targetPlaceholder: "ejemplo.com o github.com/usuario/repositorio",
-    targetInvalid:
-      "Ingresá una dirección web pública, como ejemplo.com o github.com/usuario/repositorio.",
+    targetProblems: {
+      invalid:
+        "Ingresá una dirección web pública, como ejemplo.com o github.com/usuario/repositorio.",
+      credentials:
+        "Sacá el usuario y la contraseña de la dirección. Linkmortem solo lee páginas públicas.",
+      port: "Usá la dirección web estándar, sin puerto. Linkmortem solo lee páginas en los puertos 80 y 443.",
+      length:
+        "Esa dirección es demasiado larga. Acortala al sitio o repositorio que querés revisar.",
+    },
     scanAction: "Buscar enlaces muertos",
     tryExample: "O probalo con el repositorio de demostración",
     scanCollecting: "Reuniendo los enlaces para revisar",

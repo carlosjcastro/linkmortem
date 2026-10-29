@@ -1,6 +1,10 @@
 import { useId, useState, type FormEvent } from "react";
 import { EXAMPLE_TARGET } from "../../lib/example";
-import { normalizeTarget } from "../../lib/target";
+import {
+  checkTarget,
+  MAX_TARGET_LENGTH,
+  type TargetProblem,
+} from "../../lib/target";
 import { useTranslation } from "../i18n/useTranslation";
 
 type ScanFormProps = { onScan: (target: string) => void; busy?: boolean };
@@ -8,20 +12,21 @@ type ScanFormProps = { onScan: (target: string) => void; busy?: boolean };
 export default function ScanForm({ onScan, busy = false }: ScanFormProps) {
   const { t } = useTranslation();
   const [value, setValue] = useState("");
-  const [invalid, setInvalid] = useState(false);
+  const [problem, setProblem] = useState<TargetProblem | null>(null);
+  const invalid = problem !== null;
   const inputId = useId();
   const hintId = useId();
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const target = normalizeTarget(value);
-    setInvalid(target === null);
-    if (target) onScan(target);
+    const check = checkTarget(value);
+    setProblem(check.ok ? null : check.problem);
+    if (check.ok) onScan(check.target);
   };
 
   const tryExample = () => {
     setValue(EXAMPLE_TARGET);
-    setInvalid(false);
+    setProblem(null);
     onScan(EXAMPLE_TARGET);
   };
 
@@ -37,6 +42,7 @@ export default function ScanForm({ onScan, busy = false }: ScanFormProps) {
           inputMode="url"
           autoComplete="url"
           spellCheck={false}
+          maxLength={MAX_TARGET_LENGTH}
           value={value}
           onChange={(event) => setValue(event.target.value)}
           placeholder={t.targetPlaceholder}
@@ -57,7 +63,7 @@ export default function ScanForm({ onScan, busy = false }: ScanFormProps) {
         role={invalid ? "alert" : undefined}
         className={`mt-3 text-[0.95rem] ${invalid ? "text-rose" : "text-dusk"}`}
       >
-        {invalid ? t.targetInvalid : t.targetHint}
+        {problem ? t.targetProblems[problem] : t.targetHint}
       </p>
       <button
         type="button"

@@ -34,6 +34,18 @@ describe("ScanForm", () => {
     expect(onScan).not.toHaveBeenCalled();
   });
 
+  it("explains why an address with a password is refused", () => {
+    const onScan = renderForm();
+    fireEvent.change(screen.getByRole("textbox"), {
+      target: { value: "https://user:secret@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Find dead links" }));
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Leave the user name and password out",
+    );
+    expect(onScan).not.toHaveBeenCalled();
+  });
+
   it("scans the demo repository in one click and shows it", () => {
     const onScan = renderForm();
     fireEvent.click(screen.getByRole("button", { name: /demo repository/ }));
