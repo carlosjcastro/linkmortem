@@ -1,6 +1,6 @@
+from app.aftercare.replacements import ARCHIVED_COPY, NEW_HOME, Replacement
 from app.afterlife.models import Afterlife, Match, Rebirth
 from app.memory.models import Memory, Recall
-from app.aftercare.replacements import ARCHIVED_COPY, NEW_HOME, Replacement
 from app.report.markdown import markdown_report, plain
 from app.report.pull_request import pull_request_body
 from app.report.transcript import ScanTranscript

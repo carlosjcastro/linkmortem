@@ -4,9 +4,9 @@ from urllib.parse import quote, urldefrag
 import httpx2
 
 from app.scan.errors import ScanError
-from app.scan.markdown import markdown_links
 from app.scan.harvest import REPOSITORY, Harvest
 from app.scan.link_index import LinkIndex
+from app.scan.markdown import markdown_links
 from app.scan.repo_paths import repository_path
 from app.scan.sections import section_slugs
 

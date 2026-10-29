@@ -1,3 +1,4 @@
+import json
 from types import SimpleNamespace
 
 import pytest
@@ -7,8 +8,6 @@ from sentry_sdk.transport import Transport
 
 from app.llm.local import OllamaModel
 from app.llm.usage import ModelUsage
-import json
-
 from app.tracing import agent_span, agent_summary, finish_agent, traced_tool
 
 

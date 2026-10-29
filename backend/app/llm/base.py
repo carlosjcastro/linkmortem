@@ -1,9 +1,7 @@
 from collections.abc import Awaitable, Callable
-from typing import Protocol, TypeVar
+from typing import Protocol
 
 from pydantic import BaseModel, ValidationError
-
-Schema = TypeVar("Schema", bound=BaseModel)
 
 
 class ModelOutputError(Exception):
@@ -18,10 +16,10 @@ class StructuredModel(Protocol):
     @property
     def name(self) -> str: ...
 
-    async def generate(self, system: str, prompt: str, schema: type[Schema]) -> Schema: ...
+    async def generate[Schema: BaseModel](self, system: str, prompt: str, schema: type[Schema]) -> Schema: ...
 
 
-def parse_output(raw: str | None, schema: type[Schema]) -> Schema:
+def parse_output[Schema: BaseModel](raw: str | None, schema: type[Schema]) -> Schema:
     if not raw:
         raise ModelOutputError("The model returned an empty answer.")
     start, end = raw.find("{"), raw.rfind("}")
@@ -33,7 +31,7 @@ def parse_output(raw: str | None, schema: type[Schema]) -> Schema:
         raise ModelOutputError(str(error)) from error
 
 
-async def with_retries(attempt: Callable[[], Awaitable[Schema]], retries: int) -> Schema:
+async def with_retries[Schema: BaseModel](attempt: Callable[[], Awaitable[Schema]], retries: int) -> Schema:
     failure = ModelOutputError("The model was not called.")
     for _ in range(retries + 1):
         try:

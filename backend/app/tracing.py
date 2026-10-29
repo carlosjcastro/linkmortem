@@ -2,7 +2,7 @@ import json
 from collections.abc import Awaitable, Callable, Iterator
 from contextlib import contextmanager
 from functools import wraps
-from typing import Any, ParamSpec, TypeVar
+from typing import Any
 
 import sentry_sdk
 from pydantic import BaseModel
@@ -17,8 +17,6 @@ PIPELINE_NAME = "autopsy"
 OUTPUT_CHARS = 500
 INPUT_CHARS = 2000
 
-Params = ParamSpec("Params")
-Result = TypeVar("Result")
 
 
 def messages(*turns: tuple[str, str, int]) -> str:
@@ -79,7 +77,7 @@ def describe(value: Any) -> str:
     return str(getattr(value, "url", value))[:OUTPUT_CHARS]
 
 
-def traced_tool(name: str) -> Callable[[Callable[Params, Awaitable[Result]]], Callable[Params, Awaitable[Result]]]:
+def traced_tool[**Params, Result](name: str) -> Callable[[Callable[Params, Awaitable[Result]]], Callable[Params, Awaitable[Result]]]:
     def decorate(method: Callable[Params, Awaitable[Result]]) -> Callable[Params, Awaitable[Result]]:
         @wraps(method)
         async def run(*args: Params.args, **kwargs: Params.kwargs) -> Result:

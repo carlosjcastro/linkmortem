@@ -9,6 +9,7 @@ from app.scan.noise import is_noise
 from app.scan.repo_paths import repository_path
 from app.scan.site_source import SiteSource
 
+
 async def allow(url: str) -> None:
     return None
 

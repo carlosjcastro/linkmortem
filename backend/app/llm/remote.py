@@ -3,8 +3,9 @@ import re
 from time import perf_counter
 
 import httpx2
+from pydantic import BaseModel
 
-from app.llm.base import ModelOutputError, ModelUnavailableError, Schema, parse_output, with_retries
+from app.llm.base import ModelOutputError, ModelUnavailableError, parse_output, with_retries
 from app.llm.usage import ModelUsage, UsageListener
 from app.tracing import model_span, record_usage
 
@@ -19,7 +20,7 @@ class JsonModeRefusedError(Exception):
     pass
 
 
-def schema_instructions(system: str, schema: type[Schema]) -> str:
+def schema_instructions(system: str, schema: type[BaseModel]) -> str:
     return (
         f"{system}\n\nAnswer only with one JSON object that follows this JSON schema, "
         f"with no text before or after it.\n{json.dumps(schema.model_json_schema())}"
@@ -58,14 +59,14 @@ class BackboardModel:
     def json_mode(self) -> bool:
         return self._json_mode
 
-    async def generate(self, system: str, prompt: str, schema: type[Schema]) -> Schema:
+    async def generate[Schema: BaseModel](self, system: str, prompt: str, schema: type[Schema]) -> Schema:
         try:
             return await self._generate(system, prompt, schema)
         except JsonModeRefusedError:
             self._json_mode = False
             return await self._generate(system, prompt, schema)
 
-    async def _generate(self, system: str, prompt: str, schema: type[Schema]) -> Schema:
+    async def _generate[Schema: BaseModel](self, system: str, prompt: str, schema: type[Schema]) -> Schema:
         body = {
             "content": prompt,
             "system_prompt": schema_instructions(system, schema),
