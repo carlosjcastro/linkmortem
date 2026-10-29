@@ -11,7 +11,9 @@ from app.scan.diagnoser import Diagnoser
 from app.scan.errors import ScanError
 from app.scan.models import Diagnosis, Link, Verdict
 from app.scan.targets import parse_target
-from app.tracing import agent_span
+from app.tracing import agent_span, agent_summary, finish_agent
+
+OUTCOMES = {"done", "error"}
 
 
 class Scanner:
@@ -32,8 +34,10 @@ class Scanner:
         self._max_searches = max_searches
 
     async def events(self, raw_target: str) -> AsyncIterator[dict]:
-        with agent_span(raw_target):
+        with agent_span(raw_target) as span:
             async for event in self._autopsy(raw_target):
+                if event["type"] in OUTCOMES:
+                    finish_agent(span, agent_summary(event["summary"]) if event["type"] == "done" else event["message"])
                 yield event
 
     async def _autopsy(self, raw_target: str) -> AsyncIterator[dict]:
