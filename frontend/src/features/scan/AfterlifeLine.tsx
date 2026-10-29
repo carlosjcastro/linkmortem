@@ -3,21 +3,32 @@ import type { Afterlife } from "./scanTypes";
 
 type AfterlifeLineProps = { afterlife?: Afterlife; seeking: boolean };
 
-export default function AfterlifeLine({ afterlife, seeking }: AfterlifeLineProps) {
+export default function AfterlifeLine({
+  afterlife,
+  seeking,
+}: AfterlifeLineProps) {
   const { t } = useTranslation();
 
   if (!afterlife) {
-    return seeking ? <p className="memory-searching mt-3 text-[0.95rem] text-dusk">{t.afterlifeSearching}</p> : null;
+    return seeking ? (
+      <p className="memory-searching text-dusk">{t.afterlifeSearching}</p>
+    ) : null;
   }
 
   if (afterlife.status !== "found") {
-    const notes = { none: t.afterlifeNone, unavailable: t.afterlifeUnavailable, skipped: t.afterlifeSkipped };
-    return <p className="mt-3 text-[0.95rem] text-dusk">{notes[afterlife.status]}</p>;
+    const notes = {
+      none: t.afterlifeNone,
+      unavailable: t.afterlifeUnavailable,
+      skipped: t.afterlifeSkipped,
+    };
+    return <p className="text-dusk">{notes[afterlife.status]}</p>;
   }
 
   return (
-    <div className="mt-3 border-l-2 border-marigold/60 pl-4">
-      <p className="font-semibold text-marigold">{afterlife.match === "same" ? t.afterlifeSame : t.afterlifeSuccessor}</p>
+    <div>
+      <p className="font-semibold text-marigold">
+        {afterlife.match === "same" ? t.afterlifeSame : t.afterlifeSuccessor}
+      </p>
       <a
         href={afterlife.url}
         rel="noopener noreferrer"
@@ -26,9 +37,21 @@ export default function AfterlifeLine({ afterlife, seeking }: AfterlifeLineProps
       >
         {afterlife.title || afterlife.url}
       </a>
-      {afterlife.title ? <p className="mt-1 break-all text-[0.9rem] text-dusk">{afterlife.url}</p> : null}
-      {afterlife.evidence ? <p className="mt-1 max-w-[65ch] leading-[1.6] text-dusk">"{afterlife.evidence}"</p> : null}
-      {afterlife.source === "graveyard" ? <p className="mt-1 text-[0.9rem] text-dusk">{t.afterlifeFromGraveyard}</p> : null}
+      {afterlife.title ? (
+        <p className="mt-1 break-all text-[0.9rem] text-dusk">
+          {afterlife.url}
+        </p>
+      ) : null}
+      {afterlife.evidence ? (
+        <p className="mt-1 max-w-[65ch] leading-[1.6] text-dusk">
+          "{afterlife.evidence}"
+        </p>
+      ) : null}
+      {afterlife.source === "graveyard" ? (
+        <p className="mt-1 text-[0.9rem] text-dusk">
+          {t.afterlifeFromGraveyard}
+        </p>
+      ) : null}
     </div>
   );
 }
