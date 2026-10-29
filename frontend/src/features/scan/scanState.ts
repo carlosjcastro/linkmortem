@@ -6,7 +6,8 @@ import type {
   ScanEvent,
 } from "./scanTypes";
 
-export type ScanPhase = "idle" | "collecting" | "checking" | "done" | "failed";
+export type ScanPhase =
+  "idle" | "loading" | "collecting" | "checking" | "done" | "failed";
 
 export type ScanState = {
   phase: ScanPhase;
