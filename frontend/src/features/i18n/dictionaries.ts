@@ -21,6 +21,7 @@ export type Dictionary = {
   targetPlaceholder: string;
   targetInvalid: string;
   scanAction: string;
+  tryExample: string;
   scanCollecting: string;
   scanChecked: (checked: number, total: number) => string;
   resultsTitle: string;
@@ -29,6 +30,13 @@ export type Dictionary = {
   unknownTitle: string;
   aliveTitle: string;
   foundOn: string;
+  moreSources: (count: number) => string;
+  coverageLinks: (checked: number, found: number) => string;
+  coverageSources: (
+    read: number,
+    available: number,
+    repository: boolean,
+  ) => string;
   scanRemembering: (remembered: number, ghosts: number) => string;
   scanReincarnating: (sought: number, total: number) => string;
   memorySearching: string;
@@ -37,12 +45,19 @@ export type Dictionary = {
   memoryUnavailable: string;
   afterlifeSearching: string;
   afterlifeSame: string;
+  afterlifeSection: string;
   afterlifeSuccessor: string;
   afterlifeNone: string;
   afterlifeUnavailable: string;
   afterlifeSkipped: string;
   afterlifeFromGraveyard: string;
   shareTitle: string;
+  watchTitle: string;
+  watchText: string;
+  watchCopy: string;
+  watchCopied: string;
+  watchShow: string;
+  watchSetup: string;
   shareHint: string;
   shareCopy: string;
   shareCopied: string;
@@ -106,6 +121,7 @@ export const dictionaries: Record<Language, Dictionary> = {
     targetInvalid:
       "Enter a public web address, like example.com or github.com/owner/repo.",
     scanAction: "Find dead links",
+    tryExample: "Or try it on the demo repository",
     scanCollecting: "Gathering every link from the pages",
     scanChecked: (checked, total) => `Checked ${checked} of ${total} links`,
     resultsTitle: "Searching for ghosts",
@@ -118,7 +134,12 @@ export const dictionaries: Record<Language, Dictionary> = {
     ghostsTitle: "Ghosts",
     unknownTitle: "Could not confirm",
     aliveTitle: "Still alive",
-    foundOn: "Found on",
+    foundOn: "Found in",
+    moreSources: (count) => `and ${count} more`,
+    coverageLinks: (checked, found) =>
+      `Linkmortem checked the first ${checked} of the ${found} links it found.`,
+    coverageSources: (read, available, repository) =>
+      `It read ${read} of the ${available} ${repository ? "Markdown files" : "pages"} it could reach.`,
     scanRemembering: (remembered, ghosts) =>
       `Searching the Wayback Machine for ${ghosts === 1 ? "the lost page" : "the lost pages"}, ${remembered} of ${ghosts}`,
     scanReincarnating: (sought, total) =>
@@ -131,6 +152,7 @@ export const dictionaries: Record<Language, Dictionary> = {
       "The Wayback Machine didn't answer. Try again in a few minutes.",
     afterlifeSearching: "Looking for where this page lives now",
     afterlifeSame: "Reincarnated at a new address",
+    afterlifeSection: "Closest section in the same document",
     afterlifeSuccessor: "Lives on in a newer version",
     afterlifeNone:
       "No new home found. The archived copy is the best replacement.",
@@ -141,6 +163,14 @@ export const dictionaries: Record<Language, Dictionary> = {
     afterlifeFromGraveyard:
       "Found in Linkmortem's graveyard of resolved links, without a new web search.",
     shareTitle: "Share this autopsy",
+    watchTitle: "Keep watching this repository",
+    watchText:
+      "Add the Linkmortem Action and it scans your Markdown every Monday, keeps one issue up to date and opens one pull request with the replacements it can prove. It never merges on its own.",
+    watchCopy: "Copy the workflow",
+    watchCopied: "Copied",
+    watchShow: "Show the workflow",
+    watchSetup:
+      "Save it as .github/workflows/linkmortem.yml, add the secrets you have and allow GitHub Actions to create pull requests in Settings, Actions, General.",
     shareHint: "Anyone with the link can read these results for 30 days.",
     shareCopy: "Copy link",
     shareCopied: "Link copied",
@@ -203,6 +233,7 @@ export const dictionaries: Record<Language, Dictionary> = {
       blocked: "Private address, not checked",
       unclassified: "Gemma could not decide",
       model_unavailable: "Gemma wasn't available to read it",
+      missing_section: "The section no longer exists",
     },
     scanErrors: {
       invalid_target:
@@ -315,6 +346,7 @@ export const dictionaries: Record<Language, Dictionary> = {
     targetInvalid:
       "Ingresá una dirección web pública, como ejemplo.com o github.com/usuario/repositorio.",
     scanAction: "Buscar enlaces muertos",
+    tryExample: "O probalo con el repositorio de demostración",
     scanCollecting: "Reuniendo todos los enlaces de las páginas",
     scanChecked: (checked, total) => `Revisados ${checked} de ${total} enlaces`,
     resultsTitle: "Buscando fantasmas",
@@ -328,6 +360,11 @@ export const dictionaries: Record<Language, Dictionary> = {
     unknownTitle: "Sin confirmar",
     aliveTitle: "Siguen vivos",
     foundOn: "Encontrado en",
+    moreSources: (count) => `y ${count} más`,
+    coverageLinks: (checked, found) =>
+      `Linkmortem revisó los primeros ${checked} de los ${found} enlaces que encontró.`,
+    coverageSources: (read, available, repository) =>
+      `Leyó ${read} de ${repository ? `los ${available} archivos Markdown` : `las ${available} páginas`} que pudo alcanzar.`,
     scanRemembering: (remembered, ghosts) =>
       `Buscando ${ghosts === 1 ? "la página perdida" : "las páginas perdidas"} en el Wayback Machine, ${remembered} de ${ghosts}`,
     scanReincarnating: (sought, total) =>
@@ -340,6 +377,7 @@ export const dictionaries: Record<Language, Dictionary> = {
       "El Wayback Machine no respondió. Probá de nuevo en unos minutos.",
     afterlifeSearching: "Buscando dónde vive hoy esta página",
     afterlifeSame: "Reencarnó en una nueva dirección",
+    afterlifeSection: "La sección más parecida del mismo documento",
     afterlifeSuccessor: "Sigue viva en una versión más nueva",
     afterlifeNone:
       "No encontramos un nuevo hogar. La copia archivada es el mejor reemplazo.",
@@ -350,6 +388,14 @@ export const dictionaries: Record<Language, Dictionary> = {
     afterlifeFromGraveyard:
       "Encontrada en el cementerio de enlaces resueltos de Linkmortem, sin una nueva búsqueda web.",
     shareTitle: "Compartí esta autopsia",
+    watchTitle: "Seguí vigilando este repositorio",
+    watchText:
+      "Sumá la Action de Linkmortem y revisa tu Markdown cada lunes, mantiene un issue al día y abre un pull request con los reemplazos que puede probar. Nunca mergea por su cuenta.",
+    watchCopy: "Copiar el workflow",
+    watchCopied: "Copiado",
+    watchShow: "Ver el workflow",
+    watchSetup:
+      "Guardalo como .github/workflows/linkmortem.yml, agregá los secretos que tengas y permití que GitHub Actions cree pull requests en Settings, Actions, General.",
     shareHint:
       "Cualquiera con el enlace puede leer estos resultados durante 30 días.",
     shareCopy: "Copiar enlace",
@@ -417,6 +463,7 @@ export const dictionaries: Record<Language, Dictionary> = {
       blocked: "Dirección privada, no se revisó",
       unclassified: "Gemma no pudo decidir",
       model_unavailable: "Gemma no estuvo disponible para leerla",
+      missing_section: "La sección ya no existe",
     },
     scanErrors: {
       invalid_target:
