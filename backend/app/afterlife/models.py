@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from app.llm.evidence import Evidence
 
 SECTION_SOURCE = "section"
+ANNOUNCED_SOURCE = "announced"
 
 
 class Match(StrEnum):

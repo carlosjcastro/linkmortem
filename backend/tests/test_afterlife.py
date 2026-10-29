@@ -147,3 +147,17 @@ async def test_a_spent_budget_never_calls_serpapi():
     with pytest.raises(SearchBudgetSpentError):
         await search.results("second")
     assert len(calls) == 1
+
+
+async def test_follows_the_move_the_archived_page_announced_without_searching():
+    moved = MEMORY.model_copy(update={"content": "Space Shooter has moved. Redirecting now to moved.dev"})
+    afterlife = await seeker_for([], {}, error=SearchUnavailableError).seek(ORIGINAL, moved)
+    assert afterlife.status == Rebirth.FOUND and afterlife.source == "announced" and afterlife.match == Match.SAME
+    assert afterlife.url == "https://moved.dev/learn/space-shooter"
+    assert afterlife.evidence == "Space Shooter has moved. Redirecting now to moved.dev"
+
+
+async def test_searches_when_the_announced_address_is_dead_too():
+    moved = MEMORY.model_copy(update={"content": "Space Shooter has moved to gone.dev/learn/space-shooter"})
+    afterlife = await seeker_for(["https://same.dev/a"], {"same.dev": Match.SAME}).seek(ORIGINAL, moved)
+    assert afterlife.source == "search" and afterlife.url == "https://same.dev/a"

@@ -61,6 +61,7 @@ export type Dictionary = {
   afterlifeSkipped: string;
   afterlifeBudgetSpent: string;
   afterlifeFromGraveyard: string;
+  afterlifeAnnounced: string;
   shareTitle: string;
   watchTitle: string;
   watchText: string;
@@ -185,6 +186,8 @@ export const dictionaries: Record<Language, Dictionary> = {
       "This scan reached its search limit, so this page wasn't looked up.",
     afterlifeBudgetSpent:
       "Linkmortem used up its web searches for today, so this page wasn't looked up. Its archived copy still works as a replacement.",
+    afterlifeAnnounced:
+      "The archived page itself announced this new address, and Linkmortem checked that it's alive.",
     afterlifeFromGraveyard:
       "Found in Linkmortem's graveyard of resolved links, without a new web search.",
     shareTitle: "Share this autopsy",
@@ -440,6 +443,8 @@ export const dictionaries: Record<Language, Dictionary> = {
       "Este escaneo llegó a su límite de búsquedas, así que esta página no se buscó.",
     afterlifeBudgetSpent:
       "Linkmortem agotó sus búsquedas web por hoy, así que esta página no se buscó. Su copia archivada sigue sirviendo como reemplazo.",
+    afterlifeAnnounced:
+      "La propia página archivada anunciaba esta dirección nueva, y Linkmortem comprobó que está viva.",
     afterlifeFromGraveyard:
       "Encontrada en el cementerio de enlaces resueltos de Linkmortem, sin una nueva búsqueda web.",
     shareTitle: "Compartí esta autopsia",

@@ -25,6 +25,12 @@ export default function AfterlifeLine({
     return <p className="text-dusk">{notes[afterlife.status]}</p>;
   }
 
+  const sourceNotes: Partial<Record<Afterlife["source"], string>> = {
+    graveyard: t.afterlifeFromGraveyard,
+    announced: t.afterlifeAnnounced,
+  };
+  const sourceNote = sourceNotes[afterlife.source];
+
   return (
     <div>
       <p className="font-semibold text-marigold">
@@ -49,13 +55,13 @@ export default function AfterlifeLine({
       ) : null}
       {afterlife.evidence ? (
         <p className="mt-1 max-w-[65ch] leading-[1.6] text-dusk">
-          "{afterlife.evidence}"
+          {afterlife.source === "section"
+            ? afterlife.evidence
+            : `"${afterlife.evidence}"`}
         </p>
       ) : null}
-      {afterlife.source === "graveyard" ? (
-        <p className="mt-1 text-[0.9rem] text-dusk">
-          {t.afterlifeFromGraveyard}
-        </p>
+      {sourceNote ? (
+        <p className="mt-1 text-[0.9rem] text-dusk">{sourceNote}</p>
       ) : null}
     </div>
   );

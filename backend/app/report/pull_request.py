@@ -1,5 +1,5 @@
 from app.aftercare.replacements import NEW_HOME, Replacement
-from app.afterlife.models import SECTION_SOURCE, Match
+from app.afterlife.models import ANNOUNCED_SOURCE, SECTION_SOURCE, Match
 from app.report.markdown import cause_line, coverage_note, link, plain
 from app.report.transcript import ScanTranscript
 from app.scan.models import Verdict
@@ -18,6 +18,8 @@ def evidence(transcript: ScanTranscript, change: Replacement) -> str:
     afterlife = transcript.afterlives[change.dead_link]
     if afterlife.source == SECTION_SOURCE:
         return plain(afterlife.evidence)
+    if afterlife.source == ANNOUNCED_SOURCE:
+        return f"The archived page announced the move, \"{plain(afterlife.evidence)}\""
     kind = "Same content at a new address" if afterlife.match == Match.SAME else "A newer version of the same content"
     quote = f", Gemma noted \"{plain(afterlife.evidence)}\"" if afterlife.evidence else ""
     return kind + quote

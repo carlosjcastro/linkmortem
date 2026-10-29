@@ -2,9 +2,10 @@ import asyncio
 import logging
 from typing import Protocol
 
+from app.afterlife.announced import announced_move
 from app.afterlife.candidates import pick_candidates, search_query
 from app.afterlife.judge import CandidateJudge
-from app.afterlife.models import Afterlife, CandidateJudgement, Match, Rebirth
+from app.afterlife.models import ANNOUNCED_SOURCE, Afterlife, CandidateJudgement, Match, Rebirth
 from app.afterlife.search import SearchBudgetSpentError, SearchUnavailableError, SerpSearch
 from app.llm.base import ModelOutputError, ModelUnavailableError
 from app.memory.models import Memory
@@ -47,6 +48,9 @@ class Seeker:
             return Afterlife(status=Rebirth.UNAVAILABLE)
 
     async def _seek(self, original_url: str, memory: Memory, query: str) -> Afterlife:
+        announced = await self._announced(original_url, memory)
+        if announced:
+            return announced
         remembered = await self._graves.similar(original_url, memory) if self._graves else []
         known = await self._best(memory, remembered, GRAVEYARD_SOURCE)
         if known and known.match == Match.SAME:
@@ -63,6 +67,15 @@ class Seeker:
         if afterlife and self._graves:
             await self._graves.bury(original_url, memory, afterlife)
         return afterlife or Afterlife(status=Rebirth.NONE)
+
+    async def _announced(self, original_url: str, memory: Memory) -> Afterlife | None:
+        move = announced_move(original_url, memory.content)
+        for url in move.candidates:
+            living = await self._living_page(url)
+            if living:
+                final_url, page = living
+                return Afterlife(status=Rebirth.FOUND, url=final_url, title=page.title, match=Match.SAME, evidence=move.quote, source=ANNOUNCED_SOURCE)
+        return None
 
     async def _best(self, memory: Memory, links: list[str], source: str) -> Afterlife | None:
         found = await asyncio.gather(*(self._living_page(link) for link in links))
