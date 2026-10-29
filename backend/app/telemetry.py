@@ -12,7 +12,7 @@ PRIVATE_DATA_COLLECTION = {
     "http_bodies": [],
     "http_headers": {"request": {"mode": "denylist", "terms": IP_TERMS}},
     "url_query_params": {"mode": "denylist", "terms": IP_TERMS},
-    "gen_ai": {"inputs": False, "outputs": False},
+    "gen_ai": {"inputs": True, "outputs": True},
     "database_query_data": False,
 }
 LOG_FORMAT = "%(levelname)s:     %(name)s %(message)s"
