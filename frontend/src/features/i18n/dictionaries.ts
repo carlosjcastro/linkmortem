@@ -8,6 +8,10 @@ type Finding = {
 };
 type Fact = { figure: string; text: string; source: string; url: string };
 type CauseName = import("../scan/scanTypes").Cause;
+type FooterGroupKey =
+  import("../../components/footer/footerLinks").FooterGroupKey;
+type FooterLinkKey =
+  import("../../components/footer/footerLinks").FooterLinkKey;
 
 export type Dictionary = {
   skip: string;
@@ -98,9 +102,17 @@ export type Dictionary = {
   steps: Step[];
   lostTitle: string;
   facts: Fact[];
-  footerNote: string;
-  footerSource: string;
-  footerAuthor: string;
+  footer: {
+    memoriam: string;
+    epitaph: string;
+    note: string;
+    navigation: string;
+    groups: Record<FooterGroupKey, string>;
+    links: Record<FooterLinkKey, string>;
+    rights: string;
+    challenge: string;
+    disclaimer: string;
+  };
 };
 
 const ARCHIVE_STUDY =
@@ -329,10 +341,33 @@ export const dictionaries: Record<Language, Dictionary> = {
         url: ARCHIVE_STUDY,
       },
     ],
-    footerNote:
-      "Linkmortem reads public pages only and never edits anything on its own.",
-    footerSource: "Source code under the MIT license",
-    footerAuthor: "Built by Carlos José Castro Galante",
+    footer: {
+      memoriam: "In memoriam",
+      epitaph:
+        "Here lie the links that led nowhere. May they rest, and may their pages be remembered.",
+      note: "Linkmortem reads public pages only and never edits anything on its own.",
+      navigation: "Footer",
+      groups: {
+        autopsy: "The autopsy",
+        project: "The project",
+        credits: "Kept alive by",
+      },
+      links: {
+        scan: "Find dead links",
+        action: "GitHub Action",
+        actionDemo: "Action demo",
+        source: "Source code",
+        contributing: "Contributing",
+        security: "Report a vulnerability",
+        license: "MIT license",
+        wayback: "Internet Archive's Wayback Machine",
+        gemma: "Gemma, an open model by Google",
+      },
+      rights: "Code under the MIT license. Built for the",
+      challenge: "DEV Hacktoberfest Open Source AI Challenge",
+      disclaimer:
+        "Results are automated and can be wrong, so review every replacement before you use it. Archived copies belong to the Internet Archive and to their original authors. Linkmortem isn't affiliated with the Internet Archive or Google.",
+    },
   },
   es: {
     skip: "Saltar al contenido",
@@ -563,9 +598,32 @@ export const dictionaries: Record<Language, Dictionary> = {
         url: ARCHIVE_STUDY,
       },
     ],
-    footerNote:
-      "Linkmortem solo lee páginas públicas y nunca edita nada por su cuenta.",
-    footerSource: "Código fuente bajo licencia MIT",
-    footerAuthor: "Hecho por Carlos José Castro Galante",
+    footer: {
+      memoriam: "En memoria",
+      epitaph:
+        "Aquí yacen los enlaces que no llevaban a ningún lado. Que descansen, y que sus páginas sean recordadas.",
+      note: "Linkmortem solo lee páginas públicas y nunca edita nada por su cuenta.",
+      navigation: "Pie de página",
+      groups: {
+        autopsy: "La autopsia",
+        project: "El proyecto",
+        credits: "Lo mantienen vivo",
+      },
+      links: {
+        scan: "Buscar enlaces muertos",
+        action: "Action de GitHub",
+        actionDemo: "Demo de la Action",
+        source: "Código fuente",
+        contributing: "Cómo contribuir",
+        security: "Reportar una vulnerabilidad",
+        license: "Licencia MIT",
+        wayback: "Wayback Machine del Internet Archive",
+        gemma: "Gemma, un modelo abierto de Google",
+      },
+      rights: "Código bajo licencia MIT. Hecho para el",
+      challenge: "Hacktoberfest Open Source AI Challenge de DEV",
+      disclaimer:
+        "Los resultados son automáticos y pueden fallar, así que revisá cada reemplazo antes de usarlo. Las copias archivadas pertenecen al Internet Archive y a sus autores originales. Linkmortem no está afiliado al Internet Archive ni a Google.",
+    },
   },
 };

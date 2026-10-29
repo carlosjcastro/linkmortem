@@ -12,6 +12,7 @@
   --spectral: #a8e6df;
   --rose: #f07a95;
   --veil: rgb(239 230 216 / 0.14);
+  --grave: #0c0818;
 }
 
 @theme inline {
@@ -23,6 +24,7 @@
   --color-spectral: var(--spectral);
   --color-rose: var(--rose);
   --color-veil: var(--veil);
+  --color-grave: var(--grave);
   --font-display: "Gloock", "Iowan Old Style", Georgia, serif;
   --font-sans: "Atkinson Hyperlegible Next Variable", system-ui, sans-serif;
 }
@@ -80,9 +82,27 @@ body {
   }
 }
 
+@keyframes flicker {
+  30% {
+    opacity: 0.7;
+    transform: scaleY(0.85);
+  }
+  60% {
+    opacity: 1;
+    transform: scaleY(1.1);
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .memory-searching {
     animation: seance 2.4s ease-in-out infinite;
+  }
+
+  .horizon-flame,
+  .horizon-candle {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: flicker 2.8s ease-in-out infinite;
   }
 }
 
