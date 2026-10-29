@@ -4,6 +4,7 @@ import type { ScanState } from "../scan/scanState";
 import ShareLink from "../scan/ShareLink";
 import PreservePanel from "./PreservePanel";
 import RestPanel from "./RestPanel";
+import WatchPanel from "./WatchPanel";
 import {
   isRepositoryScan,
   livingCount,
@@ -12,9 +13,8 @@ import {
 
 export default function NextSteps({ state }: { state: ScanState }) {
   const { t } = useTranslation();
-  const replacements = isRepositoryScan(state.target)
-    ? replacementCount(state)
-    : 0;
+  const repository = isRepositoryScan(state.target);
+  const replacements = repository ? replacementCount(state) : 0;
   const living = livingCount(state);
   const steps: { key: string; content: ReactNode }[] = [];
   if (state.shareId && replacements)
@@ -27,6 +27,7 @@ export default function NextSteps({ state }: { state: ScanState }) {
       key: "preserve",
       content: <PreservePanel id={state.shareId} living={living} />,
     });
+  if (repository) steps.push({ key: "watch", content: <WatchPanel /> });
   if (state.shareId)
     steps.push({ key: "share", content: <ShareLink id={state.shareId} /> });
   if (steps.length === 0) return null;
@@ -39,7 +40,7 @@ export default function NextSteps({ state }: { state: ScanState }) {
       <h3 id="nextTitle" className="font-display text-[1.75rem] text-bone">
         {t.nextTitle}
       </h3>
-      <ol className="mt-8 grid gap-10 md:grid-cols-2 xl:grid-cols-3">
+      <ol className="mt-8 grid gap-10 md:grid-cols-2">
         {steps.map(({ key, content }, index) => (
           <li key={key} className="grid grid-cols-[2rem_1fr] gap-4">
             <span
