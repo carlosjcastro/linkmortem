@@ -132,3 +132,17 @@ async def test_tells_when_a_site_has_more_pages_than_it_read(monkeypatch):
         harvest = await SiteSource(Fetcher(client, allow, retry_pause=0)).links("https://site.dev/")
     assert (harvest.read, harvest.available, harvest.source) == (1, 3, "site")
     assert {link.url for link in harvest.links} == {"https://site.dev/a", "https://site.dev/b", "https://other.dev"}
+
+
+@pytest.mark.parametrize(
+    ("response", "problem"),
+    [
+        (httpx2.Response(200, headers={"content-type": "text/html"}, text='<div id="root"></div><script type="module" src="/main.js"></script>'), "script_rendered"),
+        (httpx2.Response(403, headers={"content-type": "text/html"}, text="<p>Forbidden</p>"), "site_unreachable"),
+        (httpx2.Response(200, headers={"content-type": "text/html"}, text="<p>" + "A page about nothing, with plenty of words. " * 10 + "</p>"), "nothing_found"),
+    ],
+)
+async def test_explains_why_a_site_gave_no_links(response, problem):
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(lambda request: response)) as client:
+        harvest = await SiteSource(Fetcher(client, allow, retry_pause=0)).links("https://site.dev/")
+    assert harvest.links == [] and harvest.problem == problem
