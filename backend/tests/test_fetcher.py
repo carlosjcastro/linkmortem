@@ -1,8 +1,9 @@
 import httpx2
+import pytest
 
 from app.scan.fetcher import Fetcher
 from app.scan.models import Cause
-from app.scan.safety import UnresolvableAddressError, UnsafeAddressError, is_public
+from app.scan.safety import UnresolvableAddressError, UnsafeAddressError, ensure_public, is_public
 
 
 async def allow(url: str) -> None:
@@ -103,3 +104,9 @@ async def test_stops_meta_refresh_loops():
     loop = '<meta content="0;url=/loop" http-equiv="refresh">'
     handler = lambda request: httpx2.Response(200, headers={"content-type": "text/html"}, text=loop)
     assert (await fetcher_for(handler).fetch("https://a.dev/loop")).failure == Cause.UNREACHABLE
+
+
+@pytest.mark.parametrize("url", ["https://a.dev:99999/x", "https://user:secret@a.dev", "https://a.dev:8080", "file:///etc/passwd"])
+async def test_refuses_malformed_ports_and_credentials_before_any_lookup(url):
+    with pytest.raises(UnsafeAddressError):
+        await ensure_public(url)

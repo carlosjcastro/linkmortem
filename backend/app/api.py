@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.aftercare.routes import build_aftercare_router
+from app.body_limit import BodyLimit
 from app.config import get_settings
 from app.container import Container, build_container
 from app.report.transcript import ScanTranscript
@@ -27,6 +28,7 @@ def create_app(container: Container | None = None) -> FastAPI:
         await services.close()
 
     app = FastAPI(title="Linkmortem", docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
+    app.add_middleware(BodyLimit)
     app.add_middleware(SecurityHeaders)
 
     @app.get("/api/health")

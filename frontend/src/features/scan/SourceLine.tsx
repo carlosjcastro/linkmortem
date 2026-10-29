@@ -1,6 +1,7 @@
 import { useTranslation } from "../i18n/useTranslation";
 import type { Diagnosis } from "./scanTypes";
 import { sourceLabel } from "./sourceLabel";
+import { externalHref } from "../../lib/externalHref";
 
 const SHOWN_SOURCES = 3;
 
@@ -16,7 +17,7 @@ export default function SourceLine({ link }: { link: Diagnosis["link"] }) {
         <span key={source}>
           {index > 0 ? ", " : null}
           <a
-            href={source}
+            href={externalHref(source)}
             rel="noopener noreferrer"
             target="_blank"
             className="break-all underline decoration-veil underline-offset-4 hover:text-bone"
