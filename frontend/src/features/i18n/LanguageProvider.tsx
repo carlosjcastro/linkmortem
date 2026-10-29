@@ -1,29 +1,26 @@
 import { createContext, useEffect, useState, type ReactNode } from "react";
 import { dictionaries, type Dictionary, type Language } from "./dictionaries";
-import { initialLanguage, saveLanguage } from "./languageStorage";
+
+const FIRST_LANGUAGE: Language = "en";
 
 type LanguageState = {
   language: Language;
   t: Dictionary;
-  switchLanguage: () => void;
+  chooseLanguage: (language: Language) => void;
 };
 
 export const LanguageContext = createContext<LanguageState | null>(null);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState(initialLanguage);
+  const [language, chooseLanguage] = useState<Language>(FIRST_LANGUAGE);
 
   useEffect(() => {
     document.documentElement.lang = language;
-    saveLanguage(language);
   }, [language]);
-
-  const switchLanguage = () =>
-    setLanguage((current) => (current === "en" ? "es" : "en"));
 
   return (
     <LanguageContext
-      value={{ language, t: dictionaries[language], switchLanguage }}
+      value={{ language, t: dictionaries[language], chooseLanguage }}
     >
       {children}
     </LanguageContext>
