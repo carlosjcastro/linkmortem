@@ -2,8 +2,9 @@ from time import perf_counter
 
 import httpx
 from ollama import AsyncClient, ResponseError
+from pydantic import BaseModel
 
-from app.llm.base import ModelOutputError, ModelUnavailableError, Schema, parse_output, with_retries
+from app.llm.base import ModelOutputError, ModelUnavailableError, parse_output, with_retries
 from app.llm.usage import ModelUsage, UsageListener
 from app.tracing import model_span, record_usage
 
@@ -23,7 +24,7 @@ class OllamaModel:
     def name(self) -> str:
         return f"{PROVIDER}/{self._model}"
 
-    async def generate(self, system: str, prompt: str, schema: type[Schema]) -> Schema:
+    async def generate[Schema: BaseModel](self, system: str, prompt: str, schema: type[Schema]) -> Schema:
         async def attempt() -> Schema:
             with model_span(PROVIDER, self._model, system, prompt) as span:
                 started = perf_counter()
@@ -37,7 +38,7 @@ class OllamaModel:
 
         return await with_retries(attempt, self._retries)
 
-    async def _chat(self, system: str, prompt: str, schema: type[Schema]):
+    async def _chat(self, system: str, prompt: str, schema: type[BaseModel]):
         try:
             return await self._client.chat(
                 model=self._model,

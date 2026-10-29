@@ -5,7 +5,14 @@ import ModelNotice from "./ModelNotice";
 import type { Cause, Diagnosis } from "./scanTypes";
 
 function result(cause: Cause): Diagnosis {
-  return { link: { url: `https://a.dev/${cause}`, source: "x", text: "" }, verdict: "unknown", cause, status_code: 200, final_url: null, evidence: "" };
+  return {
+    link: { url: `https://a.dev/${cause}`, source: "x", text: "" },
+    verdict: "unknown",
+    cause,
+    status_code: 200,
+    final_url: null,
+    evidence: "",
+  };
 }
 
 function renderNotice(results: Diagnosis[]) {
@@ -18,8 +25,14 @@ function renderNotice(results: Diagnosis[]) {
 
 describe("ModelNotice", () => {
   it("counts the pages Gemma couldn't read", () => {
-    renderNotice([result("model_unavailable"), result("model_unavailable"), result("timeout")]);
-    expect(screen.getByText(/2 pages that looked suspicious stay unconfirmed/)).toBeInTheDocument();
+    renderNotice([
+      result("model_unavailable"),
+      result("model_unavailable"),
+      result("timeout"),
+    ]);
+    expect(
+      screen.getByText(/2 pages that looked suspicious stay unconfirmed/),
+    ).toBeInTheDocument();
   });
 
   it("stays silent when Gemma answered", () => {

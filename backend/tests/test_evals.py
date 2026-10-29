@@ -4,11 +4,11 @@ from app.llm.base import ModelOutputError, ModelUnavailableError
 from app.llm.cases import EvalCase, load_cases, save_cases
 from app.llm.recorder import RecordingModel
 from app.llm.usage import ModelUsage
+from app.scan.classifier import SYSTEM
 from app.scan.models import PageClassification, PageKind
 from evals.metrics import CaseResult, summarize
 from evals.report import markdown_report
 from evals.runner import UsageMeter, run_case, run_model
-from app.scan.classifier import SYSTEM
 from evals.tasks import TASKS
 
 

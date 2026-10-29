@@ -26,6 +26,7 @@ jobs:
           cache: pip
           cache-dependency-path: backend/requirements*.txt
       - run: pip install -r requirements_dev.txt
+      - run: ruff check .
       - run: python -m pytest
 
   frontend:
@@ -41,5 +42,6 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      - run: npm run format:check
       - run: npm test
       - run: npm run build

@@ -10,7 +10,10 @@ export function replacementCount(state: ScanState): number {
   return state.results.filter((result) => {
     if (result.verdict !== "ghost") return false;
     const url = result.link.url;
-    return state.afterlives[url]?.status === "found" || state.memories[url]?.status === "found";
+    return (
+      state.afterlives[url]?.status === "found" ||
+      state.memories[url]?.status === "found"
+    );
   }).length;
 }
 

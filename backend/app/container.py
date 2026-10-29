@@ -4,13 +4,13 @@ from pathlib import Path
 import httpx2
 from ollama import AsyncClient
 
-from app.config import Settings
 from app.aftercare.patch import PatchBuilder
 from app.aftercare.preserver import Preserver
 from app.aftercare.savepagenow import SavePageNow
 from app.afterlife.judge import CandidateJudge
 from app.afterlife.search import SerpSearch
 from app.afterlife.seeker import Seeker
+from app.config import Settings
 from app.llm.base import StructuredModel
 from app.llm.local import OllamaModel
 from app.llm.recorder import RecordingModel

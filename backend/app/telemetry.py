@@ -4,7 +4,6 @@ import sentry_sdk
 
 from app.config import Settings
 
-
 IP_TERMS = ["forwarded", "-ip", "remote-", "via", "-user"]
 PRIVATE_DATA_COLLECTION = {
     "user_info": False,

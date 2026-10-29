@@ -12,7 +12,10 @@ export function shareUrl(id: string): string {
   return `${window.location.origin}/r/${id}`;
 }
 
-export async function fetchSavedScan(id: string, signal: AbortSignal): Promise<SavedScan | null> {
+export async function fetchSavedScan(
+  id: string,
+  signal: AbortSignal,
+): Promise<SavedScan | null> {
   const response = await fetch(`/api/scans/${id}`, { signal });
   return response.ok ? ((await response.json()) as SavedScan) : null;
 }

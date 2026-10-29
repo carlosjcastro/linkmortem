@@ -1,4 +1,10 @@
-import { BufferAttribute, BufferGeometry, Color, Points, ShaderMaterial } from "three";
+import {
+  BufferAttribute,
+  BufferGeometry,
+  Color,
+  Points,
+  ShaderMaterial,
+} from "three";
 import { seededRandom } from "../haunting/random";
 
 const COUNT = 46;
@@ -37,7 +43,14 @@ export function mist(color: string) {
   const positions = new Float32Array(COUNT * 3);
   const seeds = new Float32Array(COUNT);
   for (let index = 0; index < COUNT; index += 1) {
-    positions.set([(random() - 0.5) * FIELD.width, 0.15 + random() * 0.35, -0.5 + random() * FIELD.depth], index * 3);
+    positions.set(
+      [
+        (random() - 0.5) * FIELD.width,
+        0.15 + random() * 0.35,
+        -0.5 + random() * FIELD.depth,
+      ],
+      index * 3,
+    );
     seeds[index] = random();
   }
   const geometry = new BufferGeometry();
@@ -46,10 +59,19 @@ export function mist(color: string) {
   const material = new ShaderMaterial({
     vertexShader,
     fragmentShader,
-    uniforms: { uTime: { value: 0 }, uScale: { value: 1 }, uWidth: { value: FIELD.width }, uColor: { value: new Color(color) } },
+    uniforms: {
+      uTime: { value: 0 },
+      uScale: { value: 1 },
+      uWidth: { value: FIELD.width },
+      uColor: { value: new Color(color) },
+    },
     transparent: true,
     depthWrite: false,
   });
   const points = new Points(geometry, material);
-  return { points, uniforms: material.uniforms, dispose: () => (geometry.dispose(), material.dispose()) };
+  return {
+    points,
+    uniforms: material.uniforms,
+    dispose: () => (geometry.dispose(), material.dispose()),
+  };
 }

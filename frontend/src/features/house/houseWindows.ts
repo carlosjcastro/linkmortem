@@ -1,4 +1,17 @@
-import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, InstancedBufferAttribute, InstancedMesh, Matrix4, PlaneGeometry, Points, Quaternion, ShaderMaterial, Vector3 } from "three";
+import {
+  AdditiveBlending,
+  BufferAttribute,
+  BufferGeometry,
+  Color,
+  InstancedBufferAttribute,
+  InstancedMesh,
+  Matrix4,
+  PlaneGeometry,
+  Points,
+  Quaternion,
+  ShaderMaterial,
+  Vector3,
+} from "three";
 import { seededRandom } from "../haunting/random";
 import type { Slot } from "./facade";
 import { FLICKER_GLSL } from "./flicker";
@@ -68,8 +81,14 @@ void main() {
 }
 `;
 
-export function houseWindows(slots: Slot[], states: number[], colors: { warm: string; frame: Color; spirit: string }) {
-  const random = seededRandom(slots.length * 3 + states.reduce((sum, state) => sum + state, 0));
+export function houseWindows(
+  slots: Slot[],
+  states: number[],
+  colors: { warm: string; frame: Color; spirit: string },
+) {
+  const random = seededRandom(
+    slots.length * 3 + states.reduce((sum, state) => sum + state, 0),
+  );
   const seeds = new Float32Array(slots.map(() => random()));
   const stateArray = new Float32Array(states);
   const plane = new PlaneGeometry(1, 1);
@@ -78,23 +97,44 @@ export function houseWindows(slots: Slot[], states: number[], colors: { warm: st
   const paneMaterial = new ShaderMaterial({
     vertexShader: paneVertex,
     fragmentShader: paneFragment,
-    uniforms: { uTime: { value: 0 }, uWarm: { value: new Color(colors.warm) }, uFrame: { value: colors.frame }, uSpirit: { value: new Color(colors.spirit) } },
+    uniforms: {
+      uTime: { value: 0 },
+      uWarm: { value: new Color(colors.warm) },
+      uFrame: { value: colors.frame },
+      uSpirit: { value: new Color(colors.spirit) },
+    },
   });
   const panes = new InstancedMesh(plane, paneMaterial, slots.length);
   const matrix = new Matrix4();
   slots.forEach((slot, index) => {
-    matrix.compose(new Vector3(slot.x, slot.y, slot.z), new Quaternion(), new Vector3(slot.width, slot.height, 1));
+    matrix.compose(
+      new Vector3(slot.x, slot.y, slot.z),
+      new Quaternion(),
+      new Vector3(slot.width, slot.height, 1),
+    );
     panes.setMatrixAt(index, matrix);
   });
 
   const glowGeometry = new BufferGeometry();
-  glowGeometry.setAttribute("position", new BufferAttribute(new Float32Array(slots.flatMap((slot) => [slot.x, slot.y, slot.z + 0.15])), 3));
+  glowGeometry.setAttribute(
+    "position",
+    new BufferAttribute(
+      new Float32Array(
+        slots.flatMap((slot) => [slot.x, slot.y, slot.z + 0.15]),
+      ),
+      3,
+    ),
+  );
   glowGeometry.setAttribute("aState", new BufferAttribute(stateArray, 1));
   glowGeometry.setAttribute("aSeed", new BufferAttribute(seeds, 1));
   const glowMaterial = new ShaderMaterial({
     vertexShader: glowVertex,
     fragmentShader: glowFragment,
-    uniforms: { uTime: { value: 0 }, uScale: { value: 1 }, uWarm: { value: new Color(colors.warm) } },
+    uniforms: {
+      uTime: { value: 0 },
+      uScale: { value: 1 },
+      uWarm: { value: new Color(colors.warm) },
+    },
     transparent: true,
     depthWrite: false,
     blending: AdditiveBlending,
@@ -110,6 +150,9 @@ export function houseWindows(slots: Slot[], states: number[], colors: { warm: st
     scale: (pixelsPerUnit: number) => {
       glowMaterial.uniforms.uScale.value = pixelsPerUnit;
     },
-    dispose: () => [plane, paneMaterial, glowGeometry, glowMaterial].forEach((item) => item.dispose()),
+    dispose: () =>
+      [plane, paneMaterial, glowGeometry, glowMaterial].forEach((item) =>
+        item.dispose(),
+      ),
   };
 }
