@@ -1,3 +1,4 @@
+import json
 from collections.abc import Awaitable, Callable, Iterator
 from contextlib import contextmanager
 from functools import wraps
@@ -13,9 +14,22 @@ from app.llm.usage import ModelUsage
 AGENT_NAME = "Linkmortem"
 PIPELINE_NAME = "autopsy"
 OUTPUT_CHARS = 500
+INPUT_CHARS = 2000
 
 Params = ParamSpec("Params")
 Result = TypeVar("Result")
+
+
+def messages(*turns: tuple[str, str, int]) -> str:
+    return json.dumps([{"role": role, "parts": [{"type": "text", "content": text[:limit]}]} for role, text, limit in turns])
+
+
+def agent_summary(tally: dict[str, int]) -> str:
+    ghosts = tally.get("ghost", 0)
+    return (
+        f"Checked {sum(tally.values())} links: {ghosts} {'ghost' if ghosts == 1 else 'ghosts'}, "
+        f"{tally.get('unknown', 0)} could not be confirmed, {tally.get('alive', 0)} alive."
+    )
 
 
 def tag_agent(span: Span) -> None:
@@ -29,17 +43,23 @@ def agent_span(target: str) -> Iterator[Span]:
         span.set_data(SPANDATA.GEN_AI_OPERATION_NAME, "invoke_agent")
         tag_agent(span)
         span.set_data("linkmortem.target", target)
+        span.set_data(SPANDATA.GEN_AI_INPUT_MESSAGES, messages(("user", f"Find the dead links in {target}", OUTPUT_CHARS)))
         yield span
 
 
+def finish_agent(span: Span, outcome: str) -> None:
+    span.set_data(SPANDATA.GEN_AI_OUTPUT_MESSAGES, messages(("assistant", outcome, OUTPUT_CHARS)))
+
+
 @contextmanager
-def model_span(provider: str, model: str) -> Iterator[Span]:
+def model_span(provider: str, model: str, system: str, prompt: str) -> Iterator[Span]:
     with sentry_sdk.start_span(op=OP.GEN_AI_CHAT, name=f"chat {model}") as span:
         span.set_data(SPANDATA.GEN_AI_OPERATION_NAME, "chat")
         tag_agent(span)
         span.set_data(SPANDATA.GEN_AI_PROVIDER_NAME, provider)
         span.set_data(SPANDATA.GEN_AI_REQUEST_MODEL, model)
         span.set_data(SPANDATA.GEN_AI_REQUEST_TEMPERATURE, 0)
+        span.set_data(SPANDATA.GEN_AI_INPUT_MESSAGES, messages(("system", system, INPUT_CHARS), ("user", prompt, INPUT_CHARS)))
         yield span
 
 
@@ -48,7 +68,7 @@ def record_usage(span: Span, usage: ModelUsage, answer: str) -> None:
     span.set_data(SPANDATA.GEN_AI_USAGE_INPUT_TOKENS, usage.input_tokens)
     span.set_data(SPANDATA.GEN_AI_USAGE_OUTPUT_TOKENS, usage.output_tokens)
     span.set_data(SPANDATA.GEN_AI_USAGE_TOTAL_TOKENS, usage.total_tokens)
-    span.set_data(SPANDATA.GEN_AI_RESPONSE_TEXT, answer[:OUTPUT_CHARS])
+    span.set_data(SPANDATA.GEN_AI_OUTPUT_MESSAGES, messages(("assistant", answer, OUTPUT_CHARS)))
 
 
 def describe(value: Any) -> str:
