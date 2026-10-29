@@ -122,7 +122,7 @@ export const dictionaries: Record<Language, Dictionary> = {
       "Enter a public web address, like example.com or github.com/owner/repo.",
     scanAction: "Find dead links",
     tryExample: "Or try it on the demo repository",
-    scanCollecting: "Gathering every link from the pages",
+    scanCollecting: "Gathering the links to check",
     scanChecked: (checked, total) => `Checked ${checked} of ${total} links`,
     resultsTitle: "Searching for ghosts",
     resultsDone: (ghosts) =>
@@ -288,11 +288,11 @@ export const dictionaries: Record<Language, Dictionary> = {
     steps: [
       {
         title: "Find",
-        text: "Collects every link from the pages of a site or the Markdown files of a public repository.",
+        text: "Collects up to 150 links from the pages of a site or the Markdown files of a public repository, and says so when there were more.",
       },
       {
         title: "Diagnose",
-        text: "Checks each link and spots pages that answer but are dead inside, like parked domains or error pages in disguise.",
+        text: "Checks each link, down to the section it points to, and spots pages that answer but are dead inside, like parked domains or error pages in disguise.",
       },
       {
         title: "Remember",
@@ -304,7 +304,7 @@ export const dictionaries: Record<Language, Dictionary> = {
       },
       {
         title: "Rest",
-        text: "Proposes a replacement for each link, with the evidence behind it, ready to apply.",
+        text: "Writes a patch with the replacements it can prove and the evidence behind each one. The GitHub Action turns it into a pull request.",
       },
       {
         title: "Preserve",
@@ -347,7 +347,7 @@ export const dictionaries: Record<Language, Dictionary> = {
       "Ingresá una dirección web pública, como ejemplo.com o github.com/usuario/repositorio.",
     scanAction: "Buscar enlaces muertos",
     tryExample: "O probalo con el repositorio de demostración",
-    scanCollecting: "Reuniendo todos los enlaces de las páginas",
+    scanCollecting: "Reuniendo los enlaces para revisar",
     scanChecked: (checked, total) => `Revisados ${checked} de ${total} enlaces`,
     resultsTitle: "Buscando fantasmas",
     resultsDone: (ghosts) =>
@@ -520,11 +520,11 @@ export const dictionaries: Record<Language, Dictionary> = {
     steps: [
       {
         title: "Encontrar",
-        text: "Reúne todos los enlaces de las páginas de un sitio o de los archivos Markdown de un repositorio público.",
+        text: "Reúne hasta 150 enlaces de las páginas de un sitio o de los archivos Markdown de un repositorio público, y avisa cuando había más.",
       },
       {
         title: "Diagnosticar",
-        text: "Revisa cada enlace y detecta páginas que responden pero están muertas por dentro, como dominios en venta o errores disfrazados.",
+        text: "Revisa cada enlace, hasta la sección a la que apunta, y detecta páginas que responden pero están muertas por dentro, como dominios en venta o errores disfrazados.",
       },
       {
         title: "Recordar",
@@ -536,7 +536,7 @@ export const dictionaries: Record<Language, Dictionary> = {
       },
       {
         title: "Descansar",
-        text: "Propone un reemplazo para cada enlace, con la evidencia que lo respalda, listo para aplicar.",
+        text: "Escribe un parche con los reemplazos que puede probar y la evidencia de cada uno. La Action de GitHub lo convierte en un pull request.",
       },
       {
         title: "Preservar",
