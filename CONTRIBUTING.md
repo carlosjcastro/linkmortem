@@ -56,22 +56,26 @@ LINKMORTEM_MODEL_PROVIDER=backboard
 From `backend`:
 
 ```bash
+ruff check .
 python -m pytest
 ```
 
 From `frontend`:
 
 ```bash
+npm run format:check
 npm test
 npm run build
 ```
+
+`npm run format` applies the Prettier style, and `ruff check . --fix` sorts imports.
 
 CI runs the same checks.
 
 ## Project rules
 
 - Keep one responsibility per file.
-- Do not add comments in code.
+- Do not add comments in code, and do not use em dashes or hyphens as separators in text.
 - Avoid duplicated logic.
 - Use current APIs only.
 - Every user-facing frontend string must exist in English and Spanish in `frontend/src/features/i18n/dictionaries.ts`.
