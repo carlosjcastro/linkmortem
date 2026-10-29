@@ -10,6 +10,7 @@ from app.scan.collector import Collector
 from app.scan.diagnoser import Diagnoser
 from app.scan.errors import ScanError
 from app.scan.models import Diagnosis, Link, Verdict
+from app.scan.section_check import check_section, document_of, is_section_link
 from app.scan.targets import parse_target
 from app.tracing import agent_span, agent_summary, finish_agent
 
@@ -42,14 +43,29 @@ class Scanner:
 
     async def _autopsy(self, raw_target: str) -> AsyncIterator[dict]:
         try:
-            links = await self._collector.collect(parse_target(raw_target))
+            collection = await self._collector.collect(parse_target(raw_target))
         except ScanError as error:
             yield {"type": "error", "code": error.code, "message": error.message}
             return
-        yield {"type": "collected", "total": len(links), "reincarnation": self._seeker is not None}
+        yield {
+            "type": "collected",
+            "total": len(collection.links),
+            "found": collection.found,
+            "read": collection.read,
+            "available": collection.available,
+            "source": collection.source,
+            "reincarnation": self._seeker is not None,
+        }
         tally: Counter[str] = Counter()
         ghosts: list[str] = []
-        async for result in self._diagnoses(links):
+        sections = collection.sections
+        for link in (link for link in collection.links if is_section_link(link, sections)):
+            result, afterlife = check_section(link, sections[document_of(link.url)])
+            tally[result.verdict] += 1
+            yield {"type": "link", "diagnosis": result.model_dump(mode="json")}
+            if afterlife:
+                yield {"type": "afterlife", "url": link.url, "afterlife": afterlife.model_dump(mode="json")}
+        async for result in self._diagnoses([link for link in collection.links if not is_section_link(link, sections)]):
             tally[result.verdict] += 1
             if result.verdict == Verdict.GHOST:
                 ghosts.append(result.link.url)
