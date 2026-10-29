@@ -154,7 +154,8 @@ The backend is Python 3.12 or newer with FastAPI, httpx2, Pydantic and PyMongo. 
 ## Security
 
 - Every request, and every redirect hop, resolves DNS and only reaches public addresses on ports 80 and 443, with at most 5 redirects and 400 KB per page.
-- Scans are limited per client and in total.
+- The address you enter is checked in the browser and again on the server: web addresses only, no spaces, credentials or unusual ports, up to 300 characters. Request bodies are capped at 16 KB.
+- Scans are limited per client, keyed by the address Cloudflare saw so a forged header can't dodge the limit, and in total.
 - Text from the internet is fenced as data in prompts and escaped in reports and pull requests.
 - Patches are built on the server from the saved autopsy, never from what the browser sends.
 - Each autopsy can be preserved only once, to respect the Internet Archive.
