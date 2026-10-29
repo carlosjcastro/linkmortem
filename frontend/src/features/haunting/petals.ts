@@ -13,6 +13,7 @@ const FIELD = { width: 14, height: 9, depth: 6 };
 const vertexShader = `
 uniform float uTime;
 uniform float uPixelRatio;
+uniform float uViewport;
 uniform float uHeight;
 attribute float aSeed;
 varying float vSeed;
@@ -23,7 +24,7 @@ void main() {
   point.x += sin(uTime * 0.6 + aSeed * 12.0) * 0.4;
   vec4 view = modelViewMatrix * vec4(point, 1.0);
   gl_Position = projectionMatrix * view;
-  gl_PointSize = (12.0 + aSeed * 14.0) * uPixelRatio * (5.0 / -view.z);
+  gl_PointSize = (12.0 + aSeed * 14.0) * uPixelRatio * uViewport * (5.0 / -view.z);
   vSeed = aSeed;
 }
 `;
@@ -71,6 +72,7 @@ export function petals(
     uniforms: {
       uTime: { value: 0 },
       uPixelRatio: { value: pixelRatio },
+      uViewport: { value: 1 },
       uHeight: { value: FIELD.height },
       uColor: { value: new Color(color) },
     },

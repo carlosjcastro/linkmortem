@@ -5,6 +5,7 @@ uniform float uTime;
 uniform float uProgress;
 uniform float uPulse;
 uniform float uPixelRatio;
+uniform float uViewport;
 uniform float uSize;
 uniform float uOpacity;
 attribute vec3 aScatter;
@@ -22,7 +23,7 @@ void main() {
   point *= 1.0 + uPulse * 0.06;
   vec4 view = modelViewMatrix * vec4(point, 1.0);
   gl_Position = projectionMatrix * view;
-  gl_PointSize = uSize * (1.0 + aSeed) * (1.0 + uPulse * 0.9) * uPixelRatio * (6.0 / -view.z);
+  gl_PointSize = uSize * (1.0 + aSeed) * (1.0 + uPulse * 0.9) * uPixelRatio * uViewport * (6.0 / -view.z);
   float front = mix(0.08, 1.0, smoothstep(-0.6, 0.85, position.z));
   vAlpha = uOpacity * mix(0.1, 1.0, settle) * front * (0.7 + 0.3 * sin(uTime * 1.7 + aSeed * 21.0));
 }
@@ -54,6 +55,7 @@ export function ghostMaterial(
       uProgress: { value: 0 },
       uPulse: { value: 0 },
       uPixelRatio: { value: pixelRatio },
+      uViewport: { value: 1 },
       uSize: { value: layer.size },
       uOpacity: { value: layer.opacity },
       uColor: { value: new Color(color) },
