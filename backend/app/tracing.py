@@ -10,6 +10,7 @@ from sentry_sdk.consts import OP, SPANDATA
 from sentry_sdk.tracing import Span
 
 from app.llm.usage import ModelUsage
+from app.wording import counted
 
 AGENT_NAME = "Linkmortem"
 PIPELINE_NAME = "autopsy"
@@ -22,10 +23,6 @@ Result = TypeVar("Result")
 
 def messages(*turns: tuple[str, str, int]) -> str:
     return json.dumps([{"role": role, "parts": [{"type": "text", "content": text[:limit]}]} for role, text, limit in turns])
-
-
-def counted(count: int, word: str) -> str:
-    return f"{count} {word}" if count == 1 else f"{count} {word}s"
 
 
 def agent_summary(tally: dict[str, int]) -> str:
