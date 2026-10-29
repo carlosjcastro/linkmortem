@@ -22,6 +22,11 @@ export default function ResultsSummary({
   const { t } = useTranslation();
   const running = state.phase === "collecting" || state.phase === "checking";
   const done = state.phase === "done";
+  const title = done
+    ? t.resultsDone(groups.ghost.length)
+    : state.phase === "failed"
+      ? t.resultsFailed
+      : t.resultsTitle;
 
   return (
     <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-14">
@@ -32,7 +37,7 @@ export default function ResultsSummary({
           tabIndex={-1}
           className="max-w-[18ch] font-display text-[clamp(2.1rem,4.2vw,3.4rem)] leading-[1.05] outline-none"
         >
-          {done ? t.resultsDone(groups.ghost.length) : t.resultsTitle}
+          {title}
         </h2>
         <p className="mt-3 break-all text-dusk">{state.target}</p>
         {running ? <ScanProgress state={state} /> : null}
