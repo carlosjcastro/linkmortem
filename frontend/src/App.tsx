@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import SiteFooter from "./components/SiteFooter";
+import SiteFooter from "./components/footer/SiteFooter";
 import SiteHeader from "./components/SiteHeader";
 import CaseFile from "./features/home/CaseFile";
 import Hero from "./features/home/Hero";
