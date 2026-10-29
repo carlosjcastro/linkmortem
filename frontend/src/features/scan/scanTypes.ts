@@ -42,7 +42,7 @@ export type Afterlife = {
   title: string;
   match: "same" | "successor" | "different" | null;
   evidence: string;
-  source: "search" | "graveyard" | "section" | "";
+  source: "search" | "graveyard" | "section" | "announced" | "";
 };
 
 export type Coverage = {

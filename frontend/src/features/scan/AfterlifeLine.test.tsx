@@ -55,4 +55,27 @@ describe("AfterlifeLine", () => {
       screen.getByText(/web searches for today|búsquedas web por hoy/),
     ).toBeInTheDocument();
   });
+  it("credits a move the archived page announced", () => {
+    renderLine(
+      { ...FOUND, source: "announced", evidence: "Enzyme has moved" },
+      false,
+    );
+    expect(
+      screen.getByText(/announced this new address|anunciaba esta dirección/),
+    ).toBeInTheDocument();
+  });
+
+  it("shows section evidence without quotes", () => {
+    renderLine(
+      {
+        ...FOUND,
+        source: "section",
+        evidence: "The closest heading is #images.",
+      },
+      false,
+    );
+    expect(
+      screen.getByText("The closest heading is #images."),
+    ).toBeInTheDocument();
+  });
 });
