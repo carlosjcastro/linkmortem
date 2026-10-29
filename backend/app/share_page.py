@@ -3,7 +3,7 @@ from html import escape
 
 from app.report.transcript import ScanTranscript
 from app.scan.models import Verdict
-from app.wording import counted
+from app.wording import counted, verdict_line
 
 TITLE = re.compile(r"<title>.*?</title>", re.DOTALL)
 CANONICAL = re.compile(r'(<link\s+rel="canonical"\s+href=")[^"]*(")')
@@ -18,9 +18,8 @@ def share_title(transcript: ScanTranscript) -> str:
 
 
 def share_description(transcript: ScanTranscript) -> str:
-    ghosts = counted(len(transcript.with_verdict(Verdict.GHOST)), "ghost")
-    unknown = len(transcript.with_verdict(Verdict.UNKNOWN))
-    return f"Linkmortem checked {counted(transcript.total, 'link')}: {ghosts}, {unknown} could not be confirmed. Read why each link died and how to bring it back."
+    verdicts = verdict_line(len(transcript.with_verdict(Verdict.GHOST)), len(transcript.with_verdict(Verdict.UNKNOWN)))
+    return f"Linkmortem checked {counted(transcript.total, 'link')}: {verdicts}. Read why each link died and how to bring it back."
 
 
 def share_page(index_html: str, address: str, transcript: ScanTranscript) -> str:

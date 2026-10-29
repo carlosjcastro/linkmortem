@@ -29,7 +29,7 @@ def test_names_the_autopsy_in_link_previews():
     page = share_page(INDEX, "https://linkmortem.tech/r/abc123abc123", transcript("https://github.com/owner/repo"))
     assert "<title>1 ghost in https://github.com/owner/repo, a Linkmortem autopsy</title>" in page
     assert 'content="1 ghost in https://github.com/owner/repo, a Linkmortem autopsy"' in page
-    assert "Linkmortem checked 2 links: 1 ghost, 0 could not be confirmed." in page
+    assert "Linkmortem checked 2 links: 1 ghost. Read" in page
     assert 'property="og:url" content="https://linkmortem.tech/r/abc123abc123"' in page
     assert 'rel="canonical" href="https://linkmortem.tech/r/abc123abc123"' in page
 

@@ -4,12 +4,21 @@ ghosts_in() {
   grep -oP '^- `\K[^`]+' | sort -u || true
 }
 
+summary() {
+  printf '\nIssue: %s %s\n' "$1" "$2" >> "$GITHUB_STEP_SUMMARY"
+}
+
+issue_url() {
+  gh issue view "$1" --json url --jq .url
+}
+
 existing=$(gh issue list --state open --search "\"$TITLE\" in:title" --json number --jq '.[0].number // empty')
 
 if [ "$GHOSTS" = "0" ]; then
   if [ -n "$existing" ]; then
     gh issue comment "$existing" --body "Linkmortem found no dead links in the latest scan. Every ghost has been laid to rest, so this issue is closing."
     gh issue close "$existing" --reason completed
+    summary closed "$(issue_url "$existing")"
   fi
   exit 0
 fi
@@ -25,13 +34,14 @@ if [ -n "$PULL_REQUEST" ]; then
 fi
 
 if [ -z "$existing" ]; then
-  gh issue create --title "$TITLE" --body-file "$body"
+  summary opened "$(gh issue create --title "$TITLE" --body-file "$body")"
   exit 0
 fi
 
 before=$(gh issue view "$existing" --json body --jq .body | ghosts_in)
 after=$(ghosts_in < "$REPORT")
 gh issue edit "$existing" --body-file "$body" > /dev/null
+summary updated "$(issue_url "$existing")"
 appeared=$(comm -13 <(echo "$before") <(echo "$after") | sed '/^$/d')
 rested=$(comm -23 <(echo "$before") <(echo "$after") | sed '/^$/d')
 if [ -z "$appeared$rested" ]; then
