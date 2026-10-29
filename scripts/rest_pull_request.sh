@@ -23,7 +23,11 @@ git commit --quiet --all --message "fix: replace dead links found by Linkmortem"
 if git fetch --quiet origin "$branch" 2>/dev/null; then
   [ "$(git log -1 --format=%ae FETCH_HEAD)" = "$bot_email" ] || finish edited-by-people
   if git diff --quiet FETCH_HEAD HEAD; then
-    finish unchanged "$(gh pr list --head "$branch" --state open --json url --jq '.[0].url // empty')"
+    current=$(gh pr list --head "$branch" --state open --json url --jq '.[0].url // empty')
+    if [ -n "$current" ]; then
+      gh pr edit "$current" --body-file "$BODY" > /dev/null
+    fi
+    finish unchanged "$current"
   fi
 fi
 
