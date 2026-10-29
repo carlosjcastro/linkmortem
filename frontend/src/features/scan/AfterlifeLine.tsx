@@ -20,6 +20,7 @@ export default function AfterlifeLine({
       none: t.afterlifeNone,
       unavailable: t.afterlifeUnavailable,
       skipped: t.afterlifeSkipped,
+      budget_spent: t.afterlifeBudgetSpent,
     };
     return <p className="text-dusk">{notes[afterlife.status]}</p>;
   }

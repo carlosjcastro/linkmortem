@@ -49,4 +49,10 @@ describe("AfterlifeLine", () => {
       screen.getByText("Closest section in the same document"),
     ).toBeInTheDocument();
   });
+  it("explains when the daily searches ran out", () => {
+    renderLine({ ...FOUND, status: "budget_spent" }, false);
+    expect(
+      screen.getByText(/web searches for today|búsquedas web por hoy/),
+    ).toBeInTheDocument();
+  });
 });
