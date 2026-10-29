@@ -12,7 +12,7 @@ Do not open a public issue for security problems.
 
 ## Security model
 
-Linkmortem reads public web pages and repository documentation. It does not edit external systems on its own.
+Linkmortem reads public web pages and repository documentation. It never edits anything on its own: patches are built on the server from the saved autopsy, never from what the browser sends, and the GitHub Action only opens a pull request and an issue for people to review.
 
 Outbound requests are handled through `backend/app/scan/fetcher.py` and safety checks in `backend/app/scan/safety.py`:
 
@@ -28,9 +28,15 @@ Scan traffic is controlled in `backend/app/ratelimit.py`:
 - Per-client rate limiting.
 - A cap on concurrent scans.
 
-Prompt handling in `backend/app/llm/prompting.py` fences fetched text as data before model use.
+Prompt handling in `backend/app/llm/prompting.py` fences fetched text as data before model use. Text from the internet is escaped in reports, issues and pull requests.
 
-Secrets are stored only in `backend/.env` (git ignored). The file `backend/.env.example` documents all required variables without secret values.
+Every response carries the headers set in `backend/app/security.py`: a strict Content Security Policy, HSTS, `nosniff`, `no-referrer`, a Permissions Policy and a Cross Origin Opener Policy.
+
+Sentry receives the agent traces, including the prompts and answers built from public pages, but never IP addresses, cookies or request bodies.
+
+Each autopsy can be preserved in the Internet Archive only once.
+
+Secrets never live in the repository. Locally they go in `backend/.env` (git ignored), in production in the Render dashboard and for the Action in GitHub repository secrets. The file `backend/.env.example` documents every variable without secret values.
 
 ## Supported versions
 

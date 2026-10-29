@@ -1,5 +1,5 @@
 name: Linkmortem
-description: Find dead links in a repository's Markdown, recover their last healthy copy and look for where they live now.
+description: Find dead links and sections in a repository's Markdown, recover what they said and propose proven fixes.
 author: Carlos José Castro Galante
 branding:
   icon: link
