@@ -2,6 +2,8 @@ import { useTranslation } from "../i18n/useTranslation";
 import type { Dictionary } from "../i18n/dictionaries";
 import { usePreservation } from "./usePreservation";
 
+const ALREADY_PRESERVED = "already_preserved";
+
 const PRESERVE_LABELS = {
   queued: (t: Dictionary) => t.preserveQueued,
   recent: (t: Dictionary) => t.preserveRecent,
@@ -18,6 +20,7 @@ export default function PreservePanel({
   const { t } = useTranslation();
   const { state, start } = usePreservation(id);
   const running = state.phase === "running";
+  const settled = state.errorCode === ALREADY_PRESERVED;
 
   return (
     <div>
@@ -45,7 +48,12 @@ export default function PreservePanel({
             )
           : null}
       </p>
-      {state.phase === "failed" ? (
+      {state.phase === "failed" && settled ? (
+        <p role="status" className="mt-2 text-spectral">
+          {t.scanErrors.already_preserved}
+        </p>
+      ) : null}
+      {state.phase === "failed" && !settled ? (
         <p role="alert" className="mt-2 text-rose">
           {t.scanErrors[state.errorCode] ?? t.scanErrors.unavailable}
         </p>

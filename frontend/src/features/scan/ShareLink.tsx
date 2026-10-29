@@ -1,3 +1,4 @@
+import CopyStatusNote from "../../components/CopyStatusNote";
 import { useCopy } from "../../lib/useCopy";
 import { useTranslation } from "../i18n/useTranslation";
 import { shareUrl } from "./savedScan";
@@ -5,7 +6,7 @@ import { shareUrl } from "./savedScan";
 export default function ShareLink({ id }: { id: string }) {
   const { t } = useTranslation();
   const url = shareUrl(id);
-  const { copied, copy } = useCopy(url);
+  const { status, copy } = useCopy(url);
 
   return (
     <div>
@@ -18,7 +19,7 @@ export default function ShareLink({ id }: { id: string }) {
         onClick={copy}
         className="mt-4 rounded-full px-1 py-2 font-semibold text-bone underline decoration-veil underline-offset-4 hover:decoration-bone focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marigold"
       >
-        {copied ? t.shareCopied : t.shareCopy}
+        {status === "copied" ? t.shareCopied : t.shareCopy}
       </button>
       <a
         href={url}
@@ -26,9 +27,7 @@ export default function ShareLink({ id }: { id: string }) {
       >
         {url}
       </a>
-      <span aria-live="polite" className="sr-only">
-        {copied ? t.shareCopied : ""}
-      </span>
+      <CopyStatusNote status={status} copied={t.shareCopied} />
     </div>
   );
 }

@@ -38,7 +38,7 @@ export function useScan() {
   const load = useCallback(
     async (id: string) => {
       const current = renew();
-      setState({ ...INITIAL_SCAN, phase: "collecting" });
+      setState({ ...INITIAL_SCAN, phase: "loading" });
       try {
         const saved = await fetchSavedScan(id, current.signal);
         if (!saved) {

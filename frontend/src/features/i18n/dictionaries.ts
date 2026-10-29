@@ -34,6 +34,10 @@ export type Dictionary = {
   scanCollecting: string;
   scanChecked: (checked: number, total: number) => string;
   resultsTitle: string;
+  resultsFailed: string;
+  loadingAutopsy: string;
+  loadingAutopsyHint: string;
+  copyFailed: string;
   resultsDone: (ghosts: number) => string;
   ghostsTitle: string;
   unknownTitle: string;
@@ -149,6 +153,12 @@ export const dictionaries: Record<Language, Dictionary> = {
     scanCollecting: "Gathering the links to check",
     scanChecked: (checked, total) => `Checked ${checked} of ${total} links`,
     resultsTitle: "Searching for ghosts",
+    resultsFailed: "This autopsy couldn't be completed",
+    loadingAutopsy: "Raising this autopsy from the graveyard",
+    loadingAutopsyHint:
+      "Linkmortem is reading the saved results. Nothing is being scanned again.",
+    copyFailed:
+      "Your browser didn't allow copying. Select the text and copy it yourself.",
     resultsDone: (ghosts) =>
       ghosts === 0
         ? "No ghosts here. Every link still leads somewhere."
@@ -271,7 +281,8 @@ export const dictionaries: Record<Language, Dictionary> = {
         "The source didn't answer. Try again in a few minutes.",
       github_rate_limited:
         "GitHub's hourly limit for this server ran out. Try again in an hour, or set GITHUB_TOKEN in the backend.",
-      scan_not_found: "That autopsy doesn't exist or has expired.",
+      scan_not_found:
+        "That autopsy doesn't exist or has expired. Autopsies last 30 days, so paste the address above to scan it again.",
       preserve_unavailable: "Preserving pages isn't configured on this server.",
       already_preserved:
         "The living links of this autopsy were already sent to the archive.",
@@ -406,6 +417,12 @@ export const dictionaries: Record<Language, Dictionary> = {
     scanCollecting: "Reuniendo los enlaces para revisar",
     scanChecked: (checked, total) => `Revisados ${checked} de ${total} enlaces`,
     resultsTitle: "Buscando fantasmas",
+    resultsFailed: "Esta autopsia no se pudo completar",
+    loadingAutopsy: "Levantando esta autopsia del cementerio",
+    loadingAutopsyHint:
+      "Linkmortem está leyendo los resultados guardados. No se vuelve a escanear nada.",
+    copyFailed:
+      "Tu navegador no permitió copiar. Seleccioná el texto y copialo a mano.",
     resultsDone: (ghosts) =>
       ghosts === 0
         ? "No hay fantasmas. Todos los enlaces siguen llevando a algún lado."
@@ -533,7 +550,8 @@ export const dictionaries: Record<Language, Dictionary> = {
         "La fuente no respondió. Probá de nuevo en unos minutos.",
       github_rate_limited:
         "Se agotó el límite por hora de GitHub para este servidor. Probá en una hora o configurá GITHUB_TOKEN en el backend.",
-      scan_not_found: "Esa autopsia no existe o ya venció.",
+      scan_not_found:
+        "Esa autopsia no existe o ya venció. Las autopsias duran 30 días, así que pegá la dirección arriba para escanearla de nuevo.",
       preserve_unavailable:
         "Preservar páginas no está configurado en este servidor.",
       already_preserved:

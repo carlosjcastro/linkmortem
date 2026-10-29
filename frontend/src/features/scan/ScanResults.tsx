@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import NextSteps from "../aftercare/NextSteps";
 import { useTranslation } from "../i18n/useTranslation";
+import AutopsyWait from "./AutopsyWait";
 import GhostAutopsy from "./GhostAutopsy";
 import { groupResults } from "./groupResults";
 import LinkItem from "./LinkItem";
@@ -12,14 +13,18 @@ import type { ScanState } from "./scanState";
 export default function ScanResults({ state }: { state: ScanState }) {
   const { t } = useTranslation();
   const heading = useRef<HTMLHeadingElement>(null);
+  const previous = useRef(state.phase);
   const groups = groupResults(state.results);
   const running = state.phase === "collecting" || state.phase === "checking";
 
   useEffect(() => {
-    if (state.phase === "collecting") heading.current?.focus();
+    const loaded = previous.current === "loading" && state.phase !== "loading";
+    if (state.phase === "collecting" || loaded) heading.current?.focus();
+    previous.current = state.phase;
   }, [state.phase, state.target]);
 
   if (state.phase === "idle") return null;
+  if (state.phase === "loading") return <AutopsyWait />;
 
   return (
     <section
