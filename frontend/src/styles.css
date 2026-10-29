@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "@fontsource/gloock";
+@import "@fontsource/im-fell-english";
 @import "@fontsource-variable/atkinson-hyperlegible-next";
 
 :root {
@@ -25,8 +25,17 @@
   --color-rose: var(--rose);
   --color-veil: var(--veil);
   --color-grave: var(--grave);
-  --font-display: "Gloock", "Iowan Old Style", Georgia, serif;
+  --font-display: "IM Fell English", "Iowan Old Style", Georgia, serif;
   --font-sans: "Atkinson Hyperlegible Next Variable", system-ui, sans-serif;
+}
+
+@layer base {
+  a[href],
+  summary,
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
 }
 
 html {
