@@ -93,7 +93,7 @@ The pull request is careful by design:
 - Whole links only, so fixing `https://old.dev/a` never touches `https://old.dev/abc`, and never inside code blocks or inline code.
 - One pull request on the `linkmortem/rest` branch, updated instead of duplicated and left alone when nothing changed.
 - It never forces a patch that no longer applies, never overwrites a branch someone edited, never reopens a closed pull request and never merges.
-- Each row of the description says why the old link died and what backs the new one.
+- Each item of the description says why the old link died and what backs the new one.
 
 ### From the command line
 
