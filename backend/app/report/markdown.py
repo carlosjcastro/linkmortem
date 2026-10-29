@@ -5,7 +5,7 @@ from app.memory.models import Recall
 from app.report.transcript import NOTHING_FOUND, ScanTranscript
 from app.scan.harvest import REPOSITORY
 from app.scan.models import Cause, Diagnosis, Verdict
-from app.wording import counted
+from app.wording import counted, verdict_line
 
 CAUSE_LABELS: dict[Cause, str] = {
     Cause.ALIVE: "Alive",
@@ -112,7 +112,7 @@ def markdown_report(transcript: ScanTranscript) -> str:
     unknown = transcript.with_verdict(Verdict.UNKNOWN)
     parts = [
         "# Linkmortem report",
-        f"Checked {counted(transcript.total, 'link')} in `{transcript.target}`: {counted(len(ghosts), 'ghost')}, {len(unknown)} could not be confirmed.",
+        f"Checked {counted(transcript.total, 'link')} in `{transcript.target}`: {verdict_line(len(ghosts), len(unknown))}.",
     ]
     coverage = coverage_note(transcript)
     if coverage:

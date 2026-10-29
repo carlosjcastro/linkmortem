@@ -12,6 +12,7 @@ from app.report.pull_request import pull_request_body
 from app.report.transcript import ScanTranscript
 from app.scan.models import Verdict
 from app.telemetry import configure_logging, init_telemetry
+from app.wording import counted, verdict_line
 
 FAILED_SCAN = 2
 GHOSTS_FOUND = 1
@@ -72,11 +73,11 @@ def main() -> int:
     outputs = {"ghosts": str(ghosts), "unknown": str(unknown), "report": str(options.report)}
     if options.patch:
         outputs |= write_patch(outcome, options.patch)
-        print(f"{outcome.proven} proven replacements, {len(outcome.patch.changes)} written into the patch")
+        print(f"{counted(outcome.proven, 'proven replacement')}, {len(outcome.patch.changes)} written into the patch")
     if options.github_output:
         with options.github_output.open("a", encoding="utf8") as output:
             output.writelines(f"{key}={value}\n" for key, value in outputs.items())
-    print(f"{transcript.total} links checked, {ghosts} ghosts, {unknown} could not be confirmed")
+    print(f"Checked {counted(transcript.total, 'link')}: {verdict_line(ghosts, unknown)}")
     if transcript.failed:
         return FAILED_SCAN
     return GHOSTS_FOUND if ghosts and options.fail_on_ghosts else 0
