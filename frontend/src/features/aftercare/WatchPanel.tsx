@@ -25,9 +25,7 @@ export default function WatchPanel() {
         open={status === "failed" || undefined}
         className="mt-3 text-[0.9rem] text-dusk"
       >
-        <summary className="cursor-pointer hover:text-bone">
-          {t.watchShow}
-        </summary>
+        <summary className="hover:text-bone">{t.watchShow}</summary>
         <pre className="mt-2 overflow-x-auto rounded-md bg-night-deep p-3 text-[0.8rem] leading-[1.5] text-bone">
           <code>{WATCH_WORKFLOW}</code>
         </pre>

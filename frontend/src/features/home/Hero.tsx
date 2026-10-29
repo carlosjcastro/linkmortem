@@ -22,7 +22,7 @@ export default function Hero({ onScan, pulses, scanning }: HeroProps) {
       <div className="relative mx-auto w-full max-w-7xl px-5 pb-20 sm:px-10 lg:pt-[12svh]">
         <h1
           id="heroTitle"
-          className="spectral-type max-w-[11ch] font-display text-[clamp(3.1rem,8.4vw,7.6rem)] leading-[0.95] tracking-[-0.02em] text-bone"
+          className="spectral-type max-w-[14ch] font-display text-[clamp(3.1rem,8.4vw,7.6rem)] leading-[0.95] tracking-[-0.02em] text-bone"
         >
           {t.heroTitle}
         </h1>
