@@ -7,6 +7,7 @@ from app.wording import counted, verdict_line
 
 TITLE = re.compile(r"<title>.*?</title>", re.DOTALL)
 CANONICAL = re.compile(r'(<link\s+rel="canonical"\s+href=")[^"]*(")')
+TEMPORARY = "noindex, follow"
 
 
 def meta(attribute: str, name: str) -> re.Pattern[str]:
@@ -32,6 +33,7 @@ def share_page(index_html: str, address: str, transcript: ScanTranscript) -> str
         (meta("property", "og:description"), description),
         (meta("property", "og:url"), escape(address)),
         (CANONICAL, escape(address)),
+        (meta("name", "robots"), TEMPORARY),
     ]
     for pattern, value in replacements:
         page = pattern.sub(lambda match, value=value: f"{match.group(1)}{value}{match.group(2)}", page, count=1)
