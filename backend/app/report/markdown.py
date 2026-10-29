@@ -1,6 +1,6 @@
 import re
 
-from app.afterlife.models import SECTION_SOURCE, Match, Rebirth
+from app.afterlife.models import ANNOUNCED_SOURCE, SECTION_SOURCE, Match, Rebirth
 from app.memory.models import Recall
 from app.report.transcript import NOTHING_FOUND, ScanTranscript
 from app.scan.harvest import REPOSITORY
@@ -59,7 +59,8 @@ def afterlife_line(transcript: ScanTranscript, url: str) -> str:
         return ""
     if afterlife.source == SECTION_SOURCE:
         return f"  Closest section: {link(afterlife.title, afterlife.url)}"
-    kind = "same content at a new address" if afterlife.match == Match.SAME else "a newer version"
+    kinds = {ANNOUNCED_SOURCE: "announced by the archived page"}
+    kind = kinds.get(afterlife.source) or ("same content at a new address" if afterlife.match == Match.SAME else "a newer version")
     return f"  New home: {link(afterlife.title or afterlife.url, afterlife.url)}, {kind}"
 
 

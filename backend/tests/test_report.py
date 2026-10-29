@@ -97,3 +97,12 @@ def test_pull_request_body_explains_a_moved_section():
     body = pull_request_body(record, (Replacement("x", "GUIDE.md#install", "GUIDE.md#installation", NEW_HOME, f"{guide}#install"),))
     assert "| The section no longer exists | `GUIDE.md#installation` |" in body and "closest heading in GUIDE.md" in body
     assert "Closest section: [\\#installation]" in markdown_report(record)
+
+
+def test_credits_a_move_the_archived_page_announced():
+    record = transcript()
+    announced = Afterlife(status=Rebirth.FOUND, url="https://moved.dev/tutorial", title="Tutorial", match=Match.SAME, evidence="The tutorial has moved to moved.dev", source="announced")
+    record.add({"type": "afterlife", "url": DEAD, "afterlife": announced.model_dump(mode="json")})
+    body = pull_request_body(record, (Replacement("x", DEAD, "https://moved.dev/tutorial", NEW_HOME),))
+    assert 'The archived page announced the move, "The tutorial has moved to moved.dev"' in body and "Gemma noted" not in body
+    assert "announced by the archived page" in markdown_report(record)
