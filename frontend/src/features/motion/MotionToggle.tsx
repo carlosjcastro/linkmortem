@@ -10,7 +10,7 @@ export default function MotionToggle() {
       type="button"
       onClick={toggle}
       aria-pressed={enabled}
-      className="inline-flex items-center gap-3 py-2 text-dusk transition-colors hover:text-bone"
+      className="inline-flex items-center gap-3 py-2 pl-1 text-dusk sm:pl-2 transition-colors hover:text-bone"
     >
       <span className="sr-only sm:not-sr-only">{t.motion}</span>
       <span

@@ -1,4 +1,7 @@
-const REPOSITORY = "https://github.com/carlosjcastro/linkmortem";
+import {
+  ACTION_GUIDE_URL,
+  REPOSITORY_URL as REPOSITORY,
+} from "../../lib/links";
 
 export const AUTHOR_URL = "https://carlosjcastrog.com";
 export const CHALLENGE_URL =
@@ -26,7 +29,7 @@ export const FOOTER_GROUPS: {
     key: "autopsy",
     links: [
       { key: "scan", href: "/#main" },
-      { key: "action", href: `${REPOSITORY}#as-a-github-action` },
+      { key: "action", href: ACTION_GUIDE_URL },
       {
         key: "actionDemo",
         href: "https://github.com/carlosjcastro/linkmortem-playground/pull/1",

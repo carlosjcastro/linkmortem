@@ -17,7 +17,12 @@ export type Dictionary = {
   skip: string;
   motion: string;
   language: string;
-  otherLanguage: string;
+  nav: {
+    label: string;
+    howItWorks: string;
+    action: string;
+    repository: string;
+  };
   heroTitle: string;
   heroLead: string;
   targetLabel: string;
@@ -123,7 +128,12 @@ export const dictionaries: Record<Language, Dictionary> = {
     skip: "Skip to content",
     motion: "Animations",
     language: "Language",
-    otherLanguage: "Español",
+    nav: {
+      label: "Main",
+      howItWorks: "How it works",
+      action: "GitHub Action",
+      repository: "Source code on GitHub",
+    },
     heroTitle: "Every dead link is a ghost.",
     heroLead:
       "Linkmortem searches your website or your repository docs for links that lead nowhere, recovers what each lost page said from the Internet Archive and finds where it lives now.",
@@ -373,7 +383,12 @@ export const dictionaries: Record<Language, Dictionary> = {
     skip: "Saltar al contenido",
     motion: "Animaciones",
     language: "Idioma",
-    otherLanguage: "English",
+    nav: {
+      label: "Principal",
+      howItWorks: "Cómo funciona",
+      action: "Action de GitHub",
+      repository: "Código fuente en GitHub",
+    },
     heroTitle: "Cada enlace muerto es un fantasma.",
     heroLead:
       "Linkmortem revisa tu sitio web o la documentación de tu repositorio en busca de enlaces que no llevan a ningún lado, recupera lo que decía cada página perdida desde el Internet Archive y encuentra dónde vive ahora.",
