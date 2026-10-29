@@ -20,17 +20,9 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v7
-      - id: linkmortem
-        uses: ./
+      - uses: ./
         with:
           backboard-api-key: ${{ secrets.BACKBOARD_API_KEY }}
           serpapi-api-key: ${{ secrets.SERPAPI_API_KEY }}
           open-pull-request: ${{ github.event_name != 'pull_request' }}
-      - if: github.event_name != 'pull_request' && steps.linkmortem.outputs.ghosts != '0'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPORT: ${{ steps.linkmortem.outputs.report }}
-          PULL_REQUEST: ${{ steps.linkmortem.outputs.pull-request }}
-          PULL_REQUEST_STATUS: ${{ steps.linkmortem.outputs.pull-request-status }}
-          TITLE: Linkmortem found dead links
-        run: bash scripts/report_issue.sh
+          open-issue: ${{ github.event_name != 'pull_request' }}

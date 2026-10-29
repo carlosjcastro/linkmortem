@@ -30,6 +30,9 @@ inputs:
   open-pull-request:
     description: Open or update one pull request with the replacements Linkmortem can prove. Needs a checkout of this repository plus contents and pull-requests write permissions.
     default: "false"
+  open-issue:
+    description: Keep one issue with the latest report, comment only when ghosts appear or are laid to rest, and close it when none are left. Needs issues write permission.
+    default: "false"
 
 outputs:
   ghosts:
@@ -83,7 +86,7 @@ runs:
         cat "$RUNNER_TEMP/linkmortem.md" >> "$GITHUB_STEP_SUMMARY"
         exit "$status"
     - id: rest
-      if: inputs.open-pull-request == 'true' && steps.scan.outputs.patch != '' && inputs.repository == github.repository
+      if: always() && inputs.open-pull-request == 'true' && steps.scan.outputs.patch != '' && inputs.repository == github.repository
       shell: bash
       working-directory: ${{ github.workspace }}
       env:
@@ -91,3 +94,14 @@ runs:
         PATCH: ${{ steps.scan.outputs.patch }}
         BODY: ${{ steps.scan.outputs.pull-request-body }}
       run: bash "$GITHUB_ACTION_PATH/scripts/rest_pull_request.sh"
+    - if: always() && inputs.open-issue == 'true' && steps.scan.outputs.ghosts != '' && inputs.repository == github.repository
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        GH_REPO: ${{ github.repository }}
+        GHOSTS: ${{ steps.scan.outputs.ghosts }}
+        REPORT: ${{ steps.scan.outputs.report }}
+        PULL_REQUEST: ${{ steps.rest.outputs.pull-request }}
+        PULL_REQUEST_STATUS: ${{ steps.rest.outputs.pull-request-status }}
+        TITLE: Linkmortem found dead links
+      run: bash "$GITHUB_ACTION_PATH/scripts/report_issue.sh"
