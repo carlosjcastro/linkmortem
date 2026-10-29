@@ -46,10 +46,11 @@ export function createScene(
 ): Haunting {
   const renderer = new WebGLRenderer({
     canvas,
-    alpha: true,
+    alpha: false,
     antialias: false,
     powerPreference: "low-power",
   });
+  renderer.setClearColor(colors.night);
   const pixelRatio = Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO);
   renderer.setPixelRatio(pixelRatio);
 
