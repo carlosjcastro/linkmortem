@@ -5,8 +5,9 @@ export default function Procession() {
 
   return (
     <section
+      id="how-it-works"
       aria-labelledby="stepsTitle"
-      className="mx-auto grid w-full max-w-7xl gap-12 px-5 py-24 sm:px-10 lg:grid-cols-[1fr_1.1fr] lg:gap-20"
+      className="scroll-mt-8 mx-auto grid w-full max-w-7xl gap-12 px-5 py-24 sm:px-10 lg:grid-cols-[1fr_1.1fr] lg:gap-20"
     >
       <div className="lg:sticky lg:top-16 lg:self-start">
         <h2
