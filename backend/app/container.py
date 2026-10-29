@@ -9,6 +9,7 @@ from app.aftercare.preserver import Preserver
 from app.aftercare.savepagenow import SavePageNow
 from app.afterlife.judge import CandidateJudge
 from app.afterlife.search import SerpSearch
+from app.afterlife.search_budget import SearchBudget
 from app.afterlife.seeker import Seeker
 from app.config import Settings
 from app.llm.base import StructuredModel
@@ -74,7 +75,7 @@ def build_seeker(settings: Settings, model: StructuredModel, web: httpx2.AsyncCl
     if not settings.serpapi_api_key:
         return None
     graves = store.collection(GRAVEYARD)
-    seeker = Seeker(SerpSearch(web, settings.serpapi_api_key), fetcher, CandidateJudge(model, settings.model_concurrency), Graveyard(graves) if graves is not None else None)
+    seeker = Seeker(SerpSearch(web, settings.serpapi_api_key, SearchBudget(settings.search_daily_budget)), fetcher, CandidateJudge(model, settings.model_concurrency), Graveyard(graves) if graves is not None else None)
     cached = store.collection(AFTERLIVES)
     return CachedSeeker(seeker, ResultCache(cached, CACHE_DAYS)) if cached is not None else seeker
 

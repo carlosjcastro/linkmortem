@@ -44,6 +44,7 @@ class Settings:
     trust_proxy: bool
     serpapi_api_key: str
     max_searches: int
+    search_daily_budget: int
     capture_file: str
     archive_access_key: str
     archive_secret_key: str
@@ -76,6 +77,7 @@ def get_settings() -> Settings:
         trust_proxy=env_flag("LINKMORTEM_TRUST_PROXY"),
         serpapi_api_key=env("SERPAPI_API_KEY"),
         max_searches=env_int("LINKMORTEM_MAX_SEARCHES", 5),
+        search_daily_budget=env_int("LINKMORTEM_SEARCH_DAILY_BUDGET", 20),
         capture_file=env("LINKMORTEM_CAPTURE_FILE"),
         archive_access_key=env("ARCHIVE_ACCESS_KEY"),
         archive_secret_key=env("ARCHIVE_SECRET_KEY"),

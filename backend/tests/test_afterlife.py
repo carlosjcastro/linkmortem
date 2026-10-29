@@ -4,7 +4,8 @@ import pytest
 from app.afterlife.candidates import pick_candidates, search_query
 from app.afterlife.judge import CandidateJudge
 from app.afterlife.models import CandidateJudgement, Match, Rebirth, SearchResult
-from app.afterlife.search import SearchUnavailableError, SerpSearch
+from app.afterlife.search import SearchBudgetSpentError, SearchUnavailableError, SerpSearch
+from app.afterlife.search_budget import SearchBudget
 from app.afterlife.seeker import Seeker
 from app.llm.base import ModelUnavailableError
 from app.memory.models import Memory, Recall
@@ -25,12 +26,12 @@ async def allow(url: str) -> None:
 
 
 class FakeSearch:
-    def __init__(self, links: list[str], error: bool = False) -> None:
+    def __init__(self, links: list[str], error: type[Exception] | None = None) -> None:
         self.links, self.error = links, error
 
     async def results(self, query: str) -> list[SearchResult]:
         if self.error:
-            raise SearchUnavailableError(query)
+            raise self.error(query)
         return [SearchResult(link=link, title="Space Shooter tutorial") for link in self.links]
 
 
@@ -53,7 +54,7 @@ def site(request: httpx2.Request) -> httpx2.Response:
     return httpx2.Response(200, headers={"content-type": "text/html"}, text=f"<title>{request.url.host}</title><p>{LONG}</p>")
 
 
-def seeker_for(links: list[str], matches: dict[str, Match], error: bool = False) -> Seeker:
+def seeker_for(links: list[str], matches: dict[str, Match], error: type[Exception] | None = None) -> Seeker:
     fetcher = Fetcher(httpx2.AsyncClient(transport=httpx2.MockTransport(site)), allow)
     return Seeker(FakeSearch(links, error), fetcher, CandidateJudge(FakeModel(matches), 1))
 
@@ -118,17 +119,31 @@ async def test_a_missing_model_is_unavailable_not_nothing_found():
 
 
 async def test_reports_an_unavailable_search():
-    assert (await seeker_for([], {}, error=True).seek(ORIGINAL, MEMORY)).status == Rebirth.UNAVAILABLE
+    assert (await seeker_for([], {}, error=SearchUnavailableError).seek(ORIGINAL, MEMORY)).status == Rebirth.UNAVAILABLE
+
+
+async def test_reports_a_spent_search_budget():
+    assert (await seeker_for([], {}, error=SearchBudgetSpentError).seek(ORIGINAL, MEMORY)).status == Rebirth.BUDGET_SPENT
 
 
 @pytest.mark.parametrize(("status", "payload"), [(200, {"error": "Invalid API key"}), (429, {})])
 async def test_search_errors_become_unavailable(status, payload):
     client = httpx2.AsyncClient(transport=httpx2.MockTransport(lambda request: httpx2.Response(status, json=payload)))
     with pytest.raises(SearchUnavailableError):
-        await SerpSearch(client, "key").results("query")
+        await SerpSearch(client, "key", SearchBudget(1)).results("query")
 
 
 async def test_reads_organic_results():
     payload = {"organic_results": [{"link": "https://a.dev", "title": "A"}, {"title": "no link"}]}
     client = httpx2.AsyncClient(transport=httpx2.MockTransport(lambda request: httpx2.Response(200, json=payload)))
-    assert await SerpSearch(client, "key").results("query") == [SearchResult(link="https://a.dev", title="A")]
+    assert await SerpSearch(client, "key", SearchBudget(1)).results("query") == [SearchResult(link="https://a.dev", title="A")]
+
+
+async def test_a_spent_budget_never_calls_serpapi():
+    calls = []
+    client = httpx2.AsyncClient(transport=httpx2.MockTransport(lambda request: calls.append(request) or httpx2.Response(200, json={})))
+    search = SerpSearch(client, "key", SearchBudget(1))
+    await search.results("first")
+    with pytest.raises(SearchBudgetSpentError):
+        await search.results("second")
+    assert len(calls) == 1
