@@ -37,7 +37,7 @@ export type Memory = {
 };
 
 export type Afterlife = {
-  status: "found" | "none" | "unavailable" | "skipped";
+  status: "found" | "none" | "unavailable" | "skipped" | "budget_spent";
   url: string;
   title: string;
   match: "same" | "successor" | "different" | null;

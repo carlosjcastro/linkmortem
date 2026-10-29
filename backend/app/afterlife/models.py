@@ -18,6 +18,7 @@ class Rebirth(StrEnum):
     NONE = "none"
     UNAVAILABLE = "unavailable"
     SKIPPED = "skipped"
+    BUDGET_SPENT = "budget_spent"
 
 
 class SearchResult(BaseModel):

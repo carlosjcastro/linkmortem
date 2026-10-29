@@ -141,7 +141,7 @@ flowchart LR
 | **Gemma 4** | Classifies suspicious pages and compares candidates for a new home. Local with Ollama or in the cloud |
 | **Backboard** | Serves Gemma in production and ran the comparison of nine open models with one API key |
 | **Internet Archive** | Wayback Machine for the last healthy copy, Save Page Now to preserve living links |
-| **SerpApi** | Live web search for the new home of a dead page, with a cap per scan |
+| **SerpApi** | Live web search for the new home of a dead page, with a cap per scan and a daily budget so one busy day can't spend the whole monthly quota |
 | **MongoDB Atlas** | Shared autopsies, a 7 day cache of memories and new homes, and a graveyard with Vector Search and Automated Embedding that answers before spending a search |
 | **Sentry** | Agent tracing: one `invoke_agent` per scan, `execute_tool` for each step and `gen_ai.chat` for each Gemma call, with prompts, answers, tokens and cost |
 | **GitHub Actions** | CI, the reusable Action, the weekly scan of this repository, the automatic pull request and the issue |

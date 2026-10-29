@@ -5,7 +5,7 @@ from typing import Protocol
 from app.afterlife.candidates import pick_candidates, search_query
 from app.afterlife.judge import CandidateJudge
 from app.afterlife.models import Afterlife, CandidateJudgement, Match, Rebirth
-from app.afterlife.search import SearchUnavailableError, SerpSearch
+from app.afterlife.search import SearchBudgetSpentError, SearchUnavailableError, SerpSearch
 from app.llm.base import ModelOutputError, ModelUnavailableError
 from app.memory.models import Memory
 from app.scan.fetcher import Fetcher
@@ -53,6 +53,8 @@ class Seeker:
             return known
         try:
             results = await self._search.results(query)
+        except SearchBudgetSpentError:
+            return known or Afterlife(status=Rebirth.BUDGET_SPENT)
         except SearchUnavailableError:
             return known or Afterlife(status=Rebirth.UNAVAILABLE)
         links = [link for link in pick_candidates(original_url, memory.title, results) if link not in remembered]
