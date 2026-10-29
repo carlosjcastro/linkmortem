@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: linkmortem
+    runtime: docker
+    plan: free
+    region: virginia
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeployTrigger: checksPass
+    domains:
+      - linkmortem.tech
+    envVars:
+      - key: LINKMORTEM_ENVIRONMENT
+        value: production
+      - key: LINKMORTEM_MODEL_PROVIDER
+        value: backboard
+      - key: LINKMORTEM_TRUST_PROXY
+        value: "true"
+      - key: BACKBOARD_API_KEY
+        sync: false
+      - key: SERPAPI_API_KEY
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: ARCHIVE_ACCESS_KEY
+        sync: false
+      - key: ARCHIVE_SECRET_KEY
+        sync: false
