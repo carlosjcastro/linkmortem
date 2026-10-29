@@ -33,7 +33,7 @@ export default function ResultGroup({
   if (collapsed) {
     return (
       <details id={id} className="mt-10 scroll-mt-24 border-t border-veil pt-8">
-        <summary className="cursor-pointer font-display text-[1.6rem] text-bone marker:text-marigold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-marigold">
+        <summary className="font-display text-[1.6rem] text-bone marker:text-marigold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-marigold">
           {heading}
         </summary>
         {body}
