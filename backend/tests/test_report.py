@@ -80,13 +80,15 @@ def test_pull_request_body_explains_every_replacement():
     )
     body = pull_request_body(transcript(), changes)
     assert "found 1 dead link with" in body and body.count(f"`{DEAD}`") == 1
-    assert "The page no longer exists (HTTP 404)" in body and 'Gemma noted "Same tutorial \\| moved"' in body
+    assert f"1. `{DEAD}` → [https://learn.dev/tutorial](<https://learn.dev/tutorial>)" in body
+    assert "Why it's dead: The page no longer exists (HTTP 404)" in body and 'Gemma noted "Same tutorial \\| moved"' in body
     assert "never merges on its own" in body
 
 
 def test_pull_request_body_dates_archived_copies():
     archived = Replacement("x", DEAD, f"https://web.archive.org/web/2019/{DEAD}", ARCHIVED_COPY)
-    assert "captured on 2019-10-16" in pull_request_body(transcript(), (archived,))
+    body = pull_request_body(transcript(), (archived,))
+    assert "captured on 2019-10-16" in body and "[the Wayback Machine copy](<https://web.archive.org/web/2019/" in body
 
 
 def test_pull_request_body_explains_a_moved_section():
@@ -95,7 +97,7 @@ def test_pull_request_body_explains_a_moved_section():
     record.add({"type": "link", "diagnosis": Diagnosis(link=Link(url=f"{guide}#install", source="x"), verdict=Verdict.GHOST, cause=Cause.MISSING_SECTION, evidence='No heading in GUIDE.md creates "#install".').model_dump(mode="json")})
     record.add({"type": "afterlife", "url": f"{guide}#install", "afterlife": Afterlife(status=Rebirth.FOUND, url=f"{guide}#installation", title="#installation", match=Match.SUCCESSOR, evidence='The closest heading in GUIDE.md is "#installation".', source="section").model_dump(mode="json")})
     body = pull_request_body(record, (Replacement("x", "GUIDE.md#install", "GUIDE.md#installation", NEW_HOME, f"{guide}#install"),))
-    assert "| The section no longer exists | `GUIDE.md#installation` |" in body and "closest heading in GUIDE.md" in body
+    assert "1. `GUIDE.md#install` → `GUIDE.md#installation`" in body and "closest heading in GUIDE.md" in body
     assert "Closest section: [\\#installation]" in markdown_report(record)
 
 

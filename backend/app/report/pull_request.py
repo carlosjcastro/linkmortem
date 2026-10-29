@@ -5,7 +5,6 @@ from app.report.transcript import ScanTranscript
 from app.scan.models import Verdict
 from app.wording import counted
 
-HEADER = "| Dead link | Why it's dead | Replaced with | Evidence |\n| --- | --- | --- | --- |"
 CLOSING = (
     "Linkmortem never merges on its own, so please open each new link before merging. "
     "Dead links without a proven replacement stay listed in the Linkmortem issue."
@@ -26,19 +25,30 @@ def evidence(transcript: ScanTranscript, change: Replacement) -> str:
 
 
 def code(text: str) -> str:
-    return f"`{text.replace('`', '%60').replace('|', '%7C')}`"
+    return f"`{text.replace('`', '%60')}`"
 
 
-def row(transcript: ScanTranscript, change: Replacement, causes: dict[str, str]) -> str:
-    absolute = change.replacement.startswith(("http://", "https://"))
-    target = link(change.replacement, change.replacement.replace("|", "%7C")) if absolute else code(change.replacement)
-    return f"| {code(change.dead_link)} | {causes[change.dead_link]} | {target} | {evidence(transcript, change)} |"
+def target(change: Replacement) -> str:
+    if not change.replacement.startswith(("http://", "https://")):
+        return code(change.replacement)
+    label = "the Wayback Machine copy" if change.kind != NEW_HOME else change.replacement
+    return link(label, change.replacement)
+
+
+def entry(transcript: ScanTranscript, change: Replacement, causes: dict[str, str]) -> str:
+    return "\n".join(
+        [
+            f"1. {code(change.url)} → {target(change)}",
+            f"   - Why it's dead: {causes[change.dead_link]}",
+            f"   - What backs the new link: {evidence(transcript, change)}",
+        ]
+    )
 
 
 def pull_request_body(transcript: ScanTranscript, changes: tuple[Replacement, ...]) -> str:
     causes = {item.link.url: cause_line(item) for item in transcript.with_verdict(Verdict.GHOST)}
     unique = {change.dead_link: change for change in changes}
-    rows = "\n".join(row(transcript, unique[url], causes) for url in sorted(unique))
-    intro = f"Linkmortem found {counted(len(unique), 'dead link')} with a replacement it could prove. Each row says why the old link is dead and what backs the new one."
+    entries = "\n".join(entry(transcript, unique[url], causes) for url in sorted(unique))
+    intro = f"Linkmortem found {counted(len(unique), 'dead link')} with a replacement it could prove. Each one says why the old link is dead and what backs the new one."
     closing = f"{coverage_note(transcript)} {CLOSING}".strip()
-    return f"# Linkmortem replaced dead links\n\n{intro}\n\n{HEADER}\n{rows}\n\n{closing}\n"
+    return f"# Linkmortem replaced dead links\n\n{intro}\n\n{entries}\n\n{closing}\n"
