@@ -24,10 +24,13 @@ def messages(*turns: tuple[str, str, int]) -> str:
     return json.dumps([{"role": role, "parts": [{"type": "text", "content": text[:limit]}]} for role, text, limit in turns])
 
 
+def counted(count: int, word: str) -> str:
+    return f"{count} {word}" if count == 1 else f"{count} {word}s"
+
+
 def agent_summary(tally: dict[str, int]) -> str:
-    ghosts = tally.get("ghost", 0)
     return (
-        f"Checked {sum(tally.values())} links: {ghosts} {'ghost' if ghosts == 1 else 'ghosts'}, "
+        f"Checked {counted(sum(tally.values()), 'link')}: {counted(tally.get('ghost', 0), 'ghost')}, "
         f"{tally.get('unknown', 0)} could not be confirmed, {tally.get('alive', 0)} alive."
     )
 

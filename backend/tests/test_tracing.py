@@ -68,6 +68,7 @@ async def test_records_agent_tool_and_model_spans_with_tokens(transport):
     agent = transport.spans["gen_ai.invoke_agent"]
     assert json.loads(agent["gen_ai.input.messages"])[0]["parts"][0]["content"] == "Find the dead links in github.com/owner/repo"
     assert "Checked 3 links: 1 ghost," in agent["gen_ai.output.messages"]
+    assert agent_summary({"ghost": 1}).startswith("Checked 1 link: 1 ghost,")
     asked = json.loads(chat["gen_ai.input.messages"])
     assert [turn["role"] for turn in asked] == ["system", "user"] and asked[1]["parts"][0]["content"] == "Page"
     assert json.loads(chat["gen_ai.output.messages"])[0]["parts"][0]["content"] == '{"alive": true}'
