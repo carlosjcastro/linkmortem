@@ -295,6 +295,10 @@ export const dictionaries: Record<Language, Dictionary> = {
       already_preserved:
         "The living links of this autopsy were already sent to the archive.",
       nothing_found: "No links were found at that address.",
+      site_unreachable:
+        "Linkmortem couldn't open that page, so there were no links to check. Check the address or try again later.",
+      script_rendered:
+        "This site builds its pages with JavaScript, so its links aren't in the HTML Linkmortem reads. If its code is on GitHub, scan the repository instead.",
       too_many_scans: "You reached the scan limit. Try again in a few minutes.",
       busy: "Linkmortem is busy with other scans. Try again in a minute.",
       unavailable:
@@ -572,6 +576,10 @@ export const dictionaries: Record<Language, Dictionary> = {
       already_preserved:
         "Los enlaces vivos de esta autopsia ya se enviaron al archivo.",
       nothing_found: "No se encontraron enlaces en esa dirección.",
+      site_unreachable:
+        "Linkmortem no pudo abrir esa página, así que no hubo enlaces para revisar. Revisá la dirección o probá más tarde.",
+      script_rendered:
+        "Este sitio arma sus páginas con JavaScript, así que sus enlaces no están en el HTML que lee Linkmortem. Si su código está en GitHub, escaneá el repositorio.",
       too_many_scans:
         "Llegaste al límite de escaneos. Probá de nuevo en unos minutos.",
       busy: "Linkmortem está ocupado con otros escaneos. Probá de nuevo en un minuto.",
