@@ -47,6 +47,7 @@ class Settings:
     capture_file: str
     archive_access_key: str
     archive_secret_key: str
+    public_url: str
 
 
 @lru_cache
@@ -78,4 +79,5 @@ def get_settings() -> Settings:
         capture_file=env("LINKMORTEM_CAPTURE_FILE"),
         archive_access_key=env("ARCHIVE_ACCESS_KEY"),
         archive_secret_key=env("ARCHIVE_SECRET_KEY"),
+        public_url=env("LINKMORTEM_PUBLIC_URL", "https://linkmortem.tech").rstrip("/"),
     )
