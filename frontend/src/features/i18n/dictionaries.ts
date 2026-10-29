@@ -1,7 +1,11 @@
 export type Language = "en" | "es";
 
 type Step = { title: string; text: string };
-type Finding = { term: string; value: string; tone: "dead" | "found" | "action" };
+type Finding = {
+  term: string;
+  value: string;
+  tone: "dead" | "found" | "action";
+};
 type Fact = { figure: string; text: string; source: string; url: string };
 type CauseName = import("../scan/scanTypes").Cause;
 
@@ -56,6 +60,16 @@ export type Dictionary = {
   preserveRecent: string;
   preserveWaiting: string;
   modelMissing: (count: number) => string;
+  houseTitle: string;
+  houseLegend: Record<"alive" | "ghost" | "unknown", string>;
+  houseHint: string;
+  houseShowing: (shown: number, total: number) => string;
+  tally: Record<"ghost" | "unknown" | "alive", string>;
+  nextTitle: string;
+  rowCause: string;
+  rowMemory: string;
+  rowAfterlife: string;
+  unknownHint: string;
   causes: Record<CauseName, string>;
   scanErrors: Record<string, string>;
   caseTitle: string;
@@ -73,7 +87,8 @@ export type Dictionary = {
   footerAuthor: string;
 };
 
-const ARCHIVE_STUDY = "https://blog.archive.org/2026/04/23/gone-but-not-forgotten-recovering-the-dead-web/";
+const ARCHIVE_STUDY =
+  "https://blog.archive.org/2026/04/23/gone-but-not-forgotten-recovering-the-dead-web/";
 
 export const dictionaries: Record<Language, Dictionary> = {
   en: {
@@ -85,50 +100,90 @@ export const dictionaries: Record<Language, Dictionary> = {
     heroLead:
       "Linkmortem searches your website or your repository docs for links that lead nowhere, recovers what each lost page said from the Internet Archive and finds where it lives now.",
     targetLabel: "Website or GitHub repository",
-    targetHint: "Only public pages are read, and nothing changes without your approval.",
+    targetHint:
+      "Only public pages are read, and nothing changes without your approval.",
     targetPlaceholder: "example.com or github.com/owner/repo",
-    targetInvalid: "Enter a public web address, like example.com or github.com/owner/repo.",
+    targetInvalid:
+      "Enter a public web address, like example.com or github.com/owner/repo.",
     scanAction: "Find dead links",
     scanCollecting: "Gathering every link from the pages",
     scanChecked: (checked, total) => `Checked ${checked} of ${total} links`,
     resultsTitle: "Searching for ghosts",
-    resultsDone: (ghosts) => (ghosts === 0 ? "No ghosts here. Every link still leads somewhere." : ghosts === 1 ? "One link has become a ghost." : `${ghosts} links have become ghosts.`),
+    resultsDone: (ghosts) =>
+      ghosts === 0
+        ? "No ghosts here. Every link still leads somewhere."
+        : ghosts === 1
+          ? "One link has become a ghost."
+          : `${ghosts} links have become ghosts.`,
     ghostsTitle: "Ghosts",
     unknownTitle: "Could not confirm",
     aliveTitle: "Still alive",
     foundOn: "Found on",
-    scanRemembering: (remembered, ghosts) => `Searching the Wayback Machine for ${ghosts === 1 ? "the lost page" : "the lost pages"}, ${remembered} of ${ghosts}`,
-    scanReincarnating: (sought, total) => `Looking for where the lost pages live now, ${sought} of ${total}`,
+    scanRemembering: (remembered, ghosts) =>
+      `Searching the Wayback Machine for ${ghosts === 1 ? "the lost page" : "the lost pages"}, ${remembered} of ${ghosts}`,
+    scanReincarnating: (sought, total) =>
+      `Looking for where the lost pages live now, ${sought} of ${total}`,
     memorySearching: "Searching the Wayback Machine for its last healthy copy",
     memoryFound: (date) => `Last healthy copy, ${date}`,
-    memoryMissing: "The Wayback Machine never saved a healthy copy of this page.",
-    memoryUnavailable: "The Wayback Machine didn't answer. Try again in a few minutes.",
+    memoryMissing:
+      "The Wayback Machine never saved a healthy copy of this page.",
+    memoryUnavailable:
+      "The Wayback Machine didn't answer. Try again in a few minutes.",
     afterlifeSearching: "Looking for where this page lives now",
     afterlifeSame: "Reincarnated at a new address",
     afterlifeSuccessor: "Lives on in a newer version",
-    afterlifeNone: "No new home found. The archived copy is the best replacement.",
-    afterlifeUnavailable: "The search for a new home didn't answer. Try again later.",
-    afterlifeSkipped: "This scan reached its search limit, so this page wasn't looked up.",
-    afterlifeFromGraveyard: "Found in Linkmortem's graveyard of resolved links, without a new web search.",
+    afterlifeNone:
+      "No new home found. The archived copy is the best replacement.",
+    afterlifeUnavailable:
+      "The search for a new home didn't answer. Try again later.",
+    afterlifeSkipped:
+      "This scan reached its search limit, so this page wasn't looked up.",
+    afterlifeFromGraveyard:
+      "Found in Linkmortem's graveyard of resolved links, without a new web search.",
     shareTitle: "Share this autopsy",
     shareHint: "Anyone with the link can read these results for 30 days.",
     shareCopy: "Copy link",
     shareCopied: "Link copied",
     restTitle: "Lay these links to rest",
-    restText: (count) => `A patch replaces ${count === 1 ? "1 dead link" : `${count} dead links`} with ${count === 1 ? "its" : "their"} new home or last healthy copy. Review it before applying.`,
+    restText: (count) =>
+      `A patch replaces ${count === 1 ? "1 dead link" : `${count} dead links`} with ${count === 1 ? "its" : "their"} new home or last healthy copy. Review it before applying.`,
     restDownload: "Download patch",
     restApply: "Apply it from your repository with",
     preserveTitle: "Preserve the living",
-    preserveText: (count) => `Ask the Internet Archive to save up to ${count} living ${count === 1 ? "link that wasn't" : "links that weren't"} saved this month, before ${count === 1 ? "it becomes a ghost" : "they become ghosts"} too.`,
+    preserveText: (count) =>
+      `Ask the Internet Archive to save up to ${count} living ${count === 1 ? "link that wasn't" : "links that weren't"} saved this month, before ${count === 1 ? "it becomes a ghost" : "they become ghosts"} too.`,
     preserveAction: "Preserve living links",
-    preserveProgress: (sent, total) => `Sending pages to the Internet Archive, ${sent} of ${total}`,
-    preserveDone: (safe) => `${safe === 1 ? "1 page is" : `${safe} pages are`} safe in the Internet Archive or being saved now.`,
+    preserveProgress: (sent, total) =>
+      `Sending pages to the Internet Archive, ${sent} of ${total}`,
+    preserveDone: (safe) =>
+      `${safe === 1 ? "1 page is" : `${safe} pages are`} safe in the Internet Archive or being saved now.`,
     preserveQueued: "Saving",
     preserveFailed: "Not saved",
     preserveRecent: "Already saved recently",
-    preserveWaiting: "The Internet Archive is busy with these pages. Waiting a minute before the next one.",
+    preserveWaiting:
+      "The Internet Archive is busy with these pages. Waiting a minute before the next one.",
+    houseTitle:
+      "The windows light up in proportion to your links, and every dead link rests in a grave.",
+    houseLegend: {
+      alive: "Lit, alive",
+      unknown: "Flickering, couldn't confirm",
+      ghost: "Dark window and a grave, dead",
+    },
+    houseHint: "Select a ghost to read its autopsy.",
+    houseShowing: (shown, total) =>
+      `The yard shows ${shown} of ${total} graves.`,
+    tally: { ghost: "dead", unknown: "couldn't confirm", alive: "still alive" },
+    nextTitle: "What you can do now",
+    rowCause: "Cause of death",
+    rowMemory: "Memory",
+    rowAfterlife: "Afterlife",
+    unknownHint:
+      "These links answered in a way Linkmortem can't prove dead or alive. Open them yourself before changing anything.",
     modelMissing: (count) => {
-      const pages = count === 1 ? "1 page that looked suspicious stays" : `${count} pages that looked suspicious stay`;
+      const pages =
+        count === 1
+          ? "1 page that looked suspicious stays"
+          : `${count} pages that looked suspicious stay`;
       return `Gemma wasn't available during this scan, so ${pages} unconfirmed. Every other check still ran. Try again in a few minutes.`;
     },
     causes: {
@@ -150,17 +205,22 @@ export const dictionaries: Record<Language, Dictionary> = {
       model_unavailable: "Gemma wasn't available to read it",
     },
     scanErrors: {
-      invalid_target: "Enter a public web address that starts with http or https.",
+      invalid_target:
+        "Enter a public web address that starts with http or https.",
       repository_not_found: "That repository doesn't exist or isn't public.",
-      source_unreachable: "The source didn't answer. Try again in a few minutes.",
-      github_rate_limited: "GitHub's hourly limit for this server ran out. Try again in an hour, or set GITHUB_TOKEN in the backend.",
+      source_unreachable:
+        "The source didn't answer. Try again in a few minutes.",
+      github_rate_limited:
+        "GitHub's hourly limit for this server ran out. Try again in an hour, or set GITHUB_TOKEN in the backend.",
       scan_not_found: "That autopsy doesn't exist or has expired.",
       preserve_unavailable: "Preserving pages isn't configured on this server.",
-      already_preserved: "The living links of this autopsy were already sent to the archive.",
+      already_preserved:
+        "The living links of this autopsy were already sent to the archive.",
       nothing_found: "No links were found at that address.",
       too_many_scans: "You reached the scan limit. Try again in a few minutes.",
       busy: "Linkmortem is busy with other scans. Try again in a minute.",
-      unavailable: "The scan stopped unexpectedly. Check your connection and try again.",
+      unavailable:
+        "The scan stopped unexpectedly. Check your connection and try again.",
     },
     caseTitle: "GeoCities went dark on October 26, 2009.",
     caseText:
@@ -168,27 +228,75 @@ export const dictionaries: Record<Language, Dictionary> = {
     caseExample: "Example autopsy",
     caseLink: "http://www.geocities.com/SiliconValley/",
     caseFindings: [
-      { term: "Cause of death", value: "The host shut down and the address stopped serving pages.", tone: "dead" },
-      { term: "Memory", value: "Archived copies survive in the Wayback Machine.", tone: "found" },
-      { term: "Afterlife", value: "Community mirrors such as OoCities keep part of the content online.", tone: "found" },
-      { term: "Rest", value: "Replace the link with its archived copy and note the original address.", tone: "action" },
+      {
+        term: "Cause of death",
+        value: "The host shut down and the address stopped serving pages.",
+        tone: "dead",
+      },
+      {
+        term: "Memory",
+        value: "Archived copies survive in the Wayback Machine.",
+        tone: "found",
+      },
+      {
+        term: "Afterlife",
+        value:
+          "Community mirrors such as OoCities keep part of the content online.",
+        tone: "found",
+      },
+      {
+        term: "Rest",
+        value:
+          "Replace the link with its archived copy and note the original address.",
+        tone: "action",
+      },
     ],
     stepsTitle: "How a link is laid to rest",
-    stepsLead: "Code checks every fact. Gemma only reads what code can't, like whether a page that answers is really alive.",
+    stepsLead:
+      "Code checks every fact. Gemma only reads what code can't, like whether a page that answers is really alive.",
     steps: [
-      { title: "Find", text: "Collects every link from the pages of a site or the Markdown files of a public repository." },
-      { title: "Diagnose", text: "Checks each link and spots pages that answer but are dead inside, like parked domains or error pages in disguise." },
-      { title: "Remember", text: "Recovers the last healthy copy of each lost page from the Wayback Machine." },
-      { title: "Reincarnate", text: "Looks for the content at a new address and confirms it is the same page, not a lookalike." },
-      { title: "Rest", text: "Proposes a replacement for each link, with the evidence behind it, ready to apply." },
-      { title: "Preserve", text: "Archives living links that were never saved, before they disappear too." },
+      {
+        title: "Find",
+        text: "Collects every link from the pages of a site or the Markdown files of a public repository.",
+      },
+      {
+        title: "Diagnose",
+        text: "Checks each link and spots pages that answer but are dead inside, like parked domains or error pages in disguise.",
+      },
+      {
+        title: "Remember",
+        text: "Recovers the last healthy copy of each lost page from the Wayback Machine.",
+      },
+      {
+        title: "Reincarnate",
+        text: "Looks for the content at a new address and confirms it is the same page, not a lookalike.",
+      },
+      {
+        title: "Rest",
+        text: "Proposes a replacement for each link, with the evidence behind it, ready to apply.",
+      },
+      {
+        title: "Preserve",
+        text: "Archives living links that were never saved, before they disappear too.",
+      },
     ],
     lostTitle: "The web forgets faster than we think",
     facts: [
-      { figure: "38%", text: "of the web pages that existed in 2013 were gone ten years later.", source: "Pew Research Center, 2024", url: ARCHIVE_STUDY },
-      { figure: "72%", text: "of the links in New York Times articles from 1998 no longer work.", source: "Zittrain and colleagues, 2021", url: ARCHIVE_STUDY },
+      {
+        figure: "38%",
+        text: "of the web pages that existed in 2013 were gone ten years later.",
+        source: "Pew Research Center, 2024",
+        url: ARCHIVE_STUDY,
+      },
+      {
+        figure: "72%",
+        text: "of the links in New York Times articles from 1998 no longer work.",
+        source: "Zittrain and colleagues, 2021",
+        url: ARCHIVE_STUDY,
+      },
     ],
-    footerNote: "Linkmortem reads public pages only and never edits anything on its own.",
+    footerNote:
+      "Linkmortem reads public pages only and never edits anything on its own.",
     footerSource: "Source code under the MIT license",
     footerAuthor: "Built by Carlos José Castro Galante",
   },
@@ -201,50 +309,95 @@ export const dictionaries: Record<Language, Dictionary> = {
     heroLead:
       "Linkmortem revisa tu sitio web o la documentación de tu repositorio en busca de enlaces que no llevan a ningún lado, recupera lo que decía cada página perdida desde el Internet Archive y encuentra dónde vive ahora.",
     targetLabel: "Sitio web o repositorio de GitHub",
-    targetHint: "Solo se leen páginas públicas, y nada cambia sin tu aprobación.",
+    targetHint:
+      "Solo se leen páginas públicas, y nada cambia sin tu aprobación.",
     targetPlaceholder: "ejemplo.com o github.com/usuario/repositorio",
-    targetInvalid: "Ingresá una dirección web pública, como ejemplo.com o github.com/usuario/repositorio.",
+    targetInvalid:
+      "Ingresá una dirección web pública, como ejemplo.com o github.com/usuario/repositorio.",
     scanAction: "Buscar enlaces muertos",
     scanCollecting: "Reuniendo todos los enlaces de las páginas",
     scanChecked: (checked, total) => `Revisados ${checked} de ${total} enlaces`,
     resultsTitle: "Buscando fantasmas",
-    resultsDone: (ghosts) => (ghosts === 0 ? "No hay fantasmas. Todos los enlaces siguen llevando a algún lado." : ghosts === 1 ? "Un enlace se convirtió en fantasma." : `${ghosts} enlaces se convirtieron en fantasmas.`),
+    resultsDone: (ghosts) =>
+      ghosts === 0
+        ? "No hay fantasmas. Todos los enlaces siguen llevando a algún lado."
+        : ghosts === 1
+          ? "Un enlace se convirtió en fantasma."
+          : `${ghosts} enlaces se convirtieron en fantasmas.`,
     ghostsTitle: "Fantasmas",
     unknownTitle: "Sin confirmar",
     aliveTitle: "Siguen vivos",
     foundOn: "Encontrado en",
-    scanRemembering: (remembered, ghosts) => `Buscando ${ghosts === 1 ? "la página perdida" : "las páginas perdidas"} en el Wayback Machine, ${remembered} de ${ghosts}`,
-    scanReincarnating: (sought, total) => `Buscando dónde viven hoy las páginas perdidas, ${sought} de ${total}`,
+    scanRemembering: (remembered, ghosts) =>
+      `Buscando ${ghosts === 1 ? "la página perdida" : "las páginas perdidas"} en el Wayback Machine, ${remembered} de ${ghosts}`,
+    scanReincarnating: (sought, total) =>
+      `Buscando dónde viven hoy las páginas perdidas, ${sought} de ${total}`,
     memorySearching: "Buscando su última copia sana en el Wayback Machine",
     memoryFound: (date) => `Última copia sana, ${date}`,
-    memoryMissing: "El Wayback Machine nunca guardó una copia sana de esta página.",
-    memoryUnavailable: "El Wayback Machine no respondió. Probá de nuevo en unos minutos.",
+    memoryMissing:
+      "El Wayback Machine nunca guardó una copia sana de esta página.",
+    memoryUnavailable:
+      "El Wayback Machine no respondió. Probá de nuevo en unos minutos.",
     afterlifeSearching: "Buscando dónde vive hoy esta página",
     afterlifeSame: "Reencarnó en una nueva dirección",
     afterlifeSuccessor: "Sigue viva en una versión más nueva",
-    afterlifeNone: "No encontramos un nuevo hogar. La copia archivada es el mejor reemplazo.",
-    afterlifeUnavailable: "La búsqueda de un nuevo hogar no respondió. Probá más tarde.",
-    afterlifeSkipped: "Este escaneo llegó a su límite de búsquedas, así que esta página no se buscó.",
-    afterlifeFromGraveyard: "Encontrada en el cementerio de enlaces resueltos de Linkmortem, sin una nueva búsqueda web.",
+    afterlifeNone:
+      "No encontramos un nuevo hogar. La copia archivada es el mejor reemplazo.",
+    afterlifeUnavailable:
+      "La búsqueda de un nuevo hogar no respondió. Probá más tarde.",
+    afterlifeSkipped:
+      "Este escaneo llegó a su límite de búsquedas, así que esta página no se buscó.",
+    afterlifeFromGraveyard:
+      "Encontrada en el cementerio de enlaces resueltos de Linkmortem, sin una nueva búsqueda web.",
     shareTitle: "Compartí esta autopsia",
-    shareHint: "Cualquiera con el enlace puede leer estos resultados durante 30 días.",
+    shareHint:
+      "Cualquiera con el enlace puede leer estos resultados durante 30 días.",
     shareCopy: "Copiar enlace",
     shareCopied: "Enlace copiado",
     restTitle: "Dales descanso a estos enlaces",
-    restText: (count) => `Un parche reemplaza ${count === 1 ? "1 enlace muerto" : `${count} enlaces muertos`} por su nuevo hogar o su última copia sana. Revisalo antes de aplicarlo.`,
+    restText: (count) =>
+      `Un parche reemplaza ${count === 1 ? "1 enlace muerto" : `${count} enlaces muertos`} por su nuevo hogar o su última copia sana. Revisalo antes de aplicarlo.`,
     restDownload: "Descargar parche",
     restApply: "Aplicalo desde tu repositorio con",
     preserveTitle: "Preservá a los vivos",
-    preserveText: (count) => `Pedile al Internet Archive que guarde hasta ${count} ${count === 1 ? "enlace vivo" : "enlaces vivos"} sin copia de este mes, antes de que también se vuelvan fantasmas.`,
+    preserveText: (count) =>
+      `Pedile al Internet Archive que guarde hasta ${count} ${count === 1 ? "enlace vivo" : "enlaces vivos"} sin copia de este mes, antes de que también se vuelvan fantasmas.`,
     preserveAction: "Preservar enlaces vivos",
-    preserveProgress: (sent, total) => `Enviando páginas al Internet Archive, ${sent} de ${total}`,
-    preserveDone: (safe) => `${safe === 1 ? "1 página está a salvo" : `${safe} páginas están a salvo`} en el Internet Archive o guardándose ahora.`,
+    preserveProgress: (sent, total) =>
+      `Enviando páginas al Internet Archive, ${sent} de ${total}`,
+    preserveDone: (safe) =>
+      `${safe === 1 ? "1 página está a salvo" : `${safe} páginas están a salvo`} en el Internet Archive o guardándose ahora.`,
     preserveQueued: "Guardando",
     preserveFailed: "No guardada",
     preserveRecent: "Ya guardada hace poco",
-    preserveWaiting: "El Internet Archive está ocupado con estas páginas. Esperando un minuto antes de la siguiente.",
+    preserveWaiting:
+      "El Internet Archive está ocupado con estas páginas. Esperando un minuto antes de la siguiente.",
+    houseTitle:
+      "Las ventanas se encienden en proporción a tus enlaces y cada enlace muerto descansa en una tumba.",
+    houseLegend: {
+      alive: "Encendida, vivo",
+      unknown: "Titila, sin confirmar",
+      ghost: "Ventana oscura y una tumba, muerto",
+    },
+    houseHint: "Elegí un fantasma para leer su autopsia.",
+    houseShowing: (shown, total) =>
+      `El jardín muestra ${shown} de ${total} tumbas.`,
+    tally: {
+      ghost: "muertos",
+      unknown: "sin confirmar",
+      alive: "siguen vivos",
+    },
+    nextTitle: "Qué podés hacer ahora",
+    rowCause: "Causa de muerte",
+    rowMemory: "Memoria",
+    rowAfterlife: "Más allá",
+    unknownHint:
+      "Estos enlaces respondieron de una forma que Linkmortem no puede probar como muerta ni viva. Abrilos vos antes de cambiar algo.",
     modelMissing: (count) => {
-      const pages = count === 1 ? "1 página sospechosa quedó" : `${count} páginas sospechosas quedaron`;
+      const pages =
+        count === 1
+          ? "1 página sospechosa quedó"
+          : `${count} páginas sospechosas quedaron`;
       return `Gemma no estuvo disponible en este escaneo, así que ${pages} sin confirmar. El resto de los controles se hizo igual. Probá de nuevo en unos minutos.`;
     },
     causes: {
@@ -266,17 +419,24 @@ export const dictionaries: Record<Language, Dictionary> = {
       model_unavailable: "Gemma no estuvo disponible para leerla",
     },
     scanErrors: {
-      invalid_target: "Ingresá una dirección web pública que empiece con http o https.",
+      invalid_target:
+        "Ingresá una dirección web pública que empiece con http o https.",
       repository_not_found: "Ese repositorio no existe o no es público.",
-      source_unreachable: "La fuente no respondió. Probá de nuevo en unos minutos.",
-      github_rate_limited: "Se agotó el límite por hora de GitHub para este servidor. Probá en una hora o configurá GITHUB_TOKEN en el backend.",
+      source_unreachable:
+        "La fuente no respondió. Probá de nuevo en unos minutos.",
+      github_rate_limited:
+        "Se agotó el límite por hora de GitHub para este servidor. Probá en una hora o configurá GITHUB_TOKEN en el backend.",
       scan_not_found: "Esa autopsia no existe o ya venció.",
-      preserve_unavailable: "Preservar páginas no está configurado en este servidor.",
-      already_preserved: "Los enlaces vivos de esta autopsia ya se enviaron al archivo.",
+      preserve_unavailable:
+        "Preservar páginas no está configurado en este servidor.",
+      already_preserved:
+        "Los enlaces vivos de esta autopsia ya se enviaron al archivo.",
       nothing_found: "No se encontraron enlaces en esa dirección.",
-      too_many_scans: "Llegaste al límite de escaneos. Probá de nuevo en unos minutos.",
+      too_many_scans:
+        "Llegaste al límite de escaneos. Probá de nuevo en unos minutos.",
       busy: "Linkmortem está ocupado con otros escaneos. Probá de nuevo en un minuto.",
-      unavailable: "El escaneo se cortó inesperadamente. Revisá tu conexión y probá de nuevo.",
+      unavailable:
+        "El escaneo se cortó inesperadamente. Revisá tu conexión y probá de nuevo.",
     },
     caseTitle: "GeoCities se apagó el 26 de octubre de 2009.",
     caseText:
@@ -284,27 +444,75 @@ export const dictionaries: Record<Language, Dictionary> = {
     caseExample: "Autopsia de ejemplo",
     caseLink: "http://www.geocities.com/SiliconValley/",
     caseFindings: [
-      { term: "Causa de muerte", value: "El servicio cerró y la dirección dejó de mostrar páginas.", tone: "dead" },
-      { term: "Memoria", value: "Quedan copias archivadas en el Wayback Machine.", tone: "found" },
-      { term: "Más allá", value: "Espejos de la comunidad como OoCities mantienen parte del contenido en línea.", tone: "found" },
-      { term: "Descanso", value: "Reemplazar el enlace por su copia archivada y dejar anotada la dirección original.", tone: "action" },
+      {
+        term: "Causa de muerte",
+        value: "El servicio cerró y la dirección dejó de mostrar páginas.",
+        tone: "dead",
+      },
+      {
+        term: "Memoria",
+        value: "Quedan copias archivadas en el Wayback Machine.",
+        tone: "found",
+      },
+      {
+        term: "Más allá",
+        value:
+          "Espejos de la comunidad como OoCities mantienen parte del contenido en línea.",
+        tone: "found",
+      },
+      {
+        term: "Descanso",
+        value:
+          "Reemplazar el enlace por su copia archivada y dejar anotada la dirección original.",
+        tone: "action",
+      },
     ],
     stepsTitle: "Cómo descansa un enlace",
-    stepsLead: "El código verifica cada dato. Gemma solo lee lo que el código no puede, como si una página que responde está viva de verdad.",
+    stepsLead:
+      "El código verifica cada dato. Gemma solo lee lo que el código no puede, como si una página que responde está viva de verdad.",
     steps: [
-      { title: "Encontrar", text: "Reúne todos los enlaces de las páginas de un sitio o de los archivos Markdown de un repositorio público." },
-      { title: "Diagnosticar", text: "Revisa cada enlace y detecta páginas que responden pero están muertas por dentro, como dominios en venta o errores disfrazados." },
-      { title: "Recordar", text: "Recupera la última copia sana de cada página perdida desde el Wayback Machine." },
-      { title: "Reencarnar", text: "Busca el contenido en una dirección nueva y confirma que es la misma página, no una parecida." },
-      { title: "Descansar", text: "Propone un reemplazo para cada enlace, con la evidencia que lo respalda, listo para aplicar." },
-      { title: "Preservar", text: "Archiva los enlaces vivos que nunca se guardaron, antes de que también desaparezcan." },
+      {
+        title: "Encontrar",
+        text: "Reúne todos los enlaces de las páginas de un sitio o de los archivos Markdown de un repositorio público.",
+      },
+      {
+        title: "Diagnosticar",
+        text: "Revisa cada enlace y detecta páginas que responden pero están muertas por dentro, como dominios en venta o errores disfrazados.",
+      },
+      {
+        title: "Recordar",
+        text: "Recupera la última copia sana de cada página perdida desde el Wayback Machine.",
+      },
+      {
+        title: "Reencarnar",
+        text: "Busca el contenido en una dirección nueva y confirma que es la misma página, no una parecida.",
+      },
+      {
+        title: "Descansar",
+        text: "Propone un reemplazo para cada enlace, con la evidencia que lo respalda, listo para aplicar.",
+      },
+      {
+        title: "Preservar",
+        text: "Archiva los enlaces vivos que nunca se guardaron, antes de que también desaparezcan.",
+      },
     ],
     lostTitle: "La web olvida más rápido de lo que creemos",
     facts: [
-      { figure: "38%", text: "de las páginas web que existían en 2013 ya no estaban diez años después.", source: "Pew Research Center, 2024", url: ARCHIVE_STUDY },
-      { figure: "72%", text: "de los enlaces de los artículos del New York Times de 1998 ya no funcionan.", source: "Zittrain y colegas, 2021", url: ARCHIVE_STUDY },
+      {
+        figure: "38%",
+        text: "de las páginas web que existían en 2013 ya no estaban diez años después.",
+        source: "Pew Research Center, 2024",
+        url: ARCHIVE_STUDY,
+      },
+      {
+        figure: "72%",
+        text: "de los enlaces de los artículos del New York Times de 1998 ya no funcionan.",
+        source: "Zittrain y colegas, 2021",
+        url: ARCHIVE_STUDY,
+      },
     ],
-    footerNote: "Linkmortem solo lee páginas públicas y nunca edita nada por su cuenta.",
+    footerNote:
+      "Linkmortem solo lee páginas públicas y nunca edita nada por su cuenta.",
     footerSource: "Código fuente bajo licencia MIT",
     footerAuthor: "Hecho por Carlos José Castro Galante",
   },

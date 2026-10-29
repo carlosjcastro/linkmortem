@@ -1,50 +1,54 @@
-import GhostItem from "./GhostItem";
-import type { Afterlife, Diagnosis, Memory } from "./scanTypes";
+import type { ReactNode } from "react";
 
 type ResultGroupProps = {
+  id: string;
   title: string;
-  results: Diagnosis[];
+  count: number;
+  hint?: string;
   collapsed?: boolean;
-  memories?: Record<string, Memory>;
-  afterlives?: Record<string, Afterlife>;
-  reincarnation?: boolean;
-  remembering?: boolean;
+  children: ReactNode;
 };
 
-export default function ResultGroup({ title, results, collapsed = false, memories = {}, afterlives = {}, reincarnation = false, remembering = false }: ResultGroupProps) {
-  if (results.length === 0) return null;
-  const list = (
-    <ul className="divide-y divide-veil">
-      {results.map((result) => (
-        <GhostItem
-          key={result.link.url}
-          result={result}
-          memory={memories[result.link.url]}
-          afterlife={afterlives[result.link.url]}
-          reincarnation={reincarnation}
-          remembering={remembering}
-        />
-      ))}
-    </ul>
+export default function ResultGroup({
+  id,
+  title,
+  count,
+  hint,
+  collapsed = false,
+  children,
+}: ResultGroupProps) {
+  if (count === 0) return null;
+  const heading = (
+    <>
+      {title} <span className="text-dusk">({count})</span>
+    </>
+  );
+  const body = (
+    <>
+      {hint ? <p className="mt-2 max-w-[62ch] text-dusk">{hint}</p> : null}
+      <ul className="mt-2 divide-y divide-veil">{children}</ul>
+    </>
   );
 
   if (collapsed) {
     return (
-      <details className="mt-12 group">
-        <summary className="cursor-pointer font-display text-2xl text-bone marker:text-marigold">
-          {title} <span className="text-dusk">({results.length})</span>
+      <details id={id} className="mt-10 scroll-mt-24 border-t border-veil pt-8">
+        <summary className="cursor-pointer font-display text-[1.6rem] text-bone marker:text-marigold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-marigold">
+          {heading}
         </summary>
-        <div className="mt-2">{list}</div>
+        {body}
       </details>
     );
   }
 
   return (
-    <section className="mt-12">
-      <h3 className="font-display text-2xl text-bone">
-        {title} <span className="text-dusk">({results.length})</span>
-      </h3>
-      <div className="mt-2">{list}</div>
+    <section
+      id={id}
+      aria-label={title}
+      className="mt-16 scroll-mt-24 border-t border-veil pt-10"
+    >
+      <h3 className="font-display text-[1.75rem] text-bone">{heading}</h3>
+      {body}
     </section>
   );
 }

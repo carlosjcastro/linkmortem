@@ -9,6 +9,7 @@ import {
   Timer,
   WebGLRenderer,
 } from "three";
+import type { AnimatedScene } from "../../lib/useAnimatedScene";
 import { ghostFace } from "./ghostFace";
 import { ghostMaterial } from "./ghostMaterial";
 import { ghostPoints } from "./ghostPoints";
@@ -18,7 +19,12 @@ const GHOST_POINTS = 9000;
 const PETAL_COUNT = 70;
 const ASSEMBLY_SECONDS = 2.6;
 const MAX_PIXEL_RATIO = 1.75;
-const WIDE_ASPECT = 1.1;
+const SIDE_LAYOUT_WIDTH = 1024;
+const REFERENCE_HEIGHT = 900;
+const GHOST_SIZE = { width: 2.5, height: 2.9 };
+const MAX_SCALE = 0.95;
+const WIDE_CENTER = 0.6;
+const WIDE_ROOM = 0.72;
 const CORE_LAYER = { size: 3.8, opacity: 1 };
 const AURA_LAYER = { size: 16, opacity: 0.07 };
 
@@ -26,16 +32,12 @@ export type HauntingColors = {
   spirit: string;
   marigold: string;
   night: string;
+  bone: string;
 };
 
-export type Haunting = {
-  start: () => void;
-  stop: () => void;
-  still: () => void;
-  resize: (width: number, height: number) => void;
+export type Haunting = AnimatedScene & {
   point: (x: number, y: number) => void;
   pulse: () => void;
-  dispose: () => void;
 };
 
 export function createScene(
@@ -111,9 +113,31 @@ export function createScene(
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
-      const wide = camera.aspect > WIDE_ASPECT;
-      ghost.position.set(wide ? 1.75 : 0, wide ? 0.25 : 0.1, 0);
-      ghost.scale.setScalar(wide ? 0.82 : 0.95);
+      const halfHeight =
+        Math.tan(MathUtils.degToRad(camera.fov / 2)) * camera.position.z;
+      const halfWidth = halfHeight * camera.aspect;
+      const wide = width >= SIDE_LAYOUT_WIDTH;
+      const room = wide ? halfWidth * WIDE_ROOM : halfWidth * 1.6;
+      ghost.scale.setScalar(
+        Math.min(
+          MAX_SCALE,
+          (halfHeight * 1.5) / GHOST_SIZE.height,
+          room / GHOST_SIZE.width,
+        ),
+      );
+      ghost.position.set(
+        wide ? halfWidth * WIDE_CENTER : 0,
+        wide ? 0.15 : 0.05,
+        0,
+      );
+      const viewport = MathUtils.clamp(
+        (height / REFERENCE_HEIGHT) ** 0.75,
+        0.45,
+        1.2,
+      );
+      [...layers, petalField.material].forEach(
+        (material) => (material.uniforms.uViewport.value = viewport),
+      );
     },
     point: (x, y) => {
       pointer.x = x;

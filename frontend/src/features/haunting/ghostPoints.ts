@@ -1,13 +1,9 @@
+import { GHOST_FEATURES } from "./ghostFeatures";
 import { seededRandom } from "./random";
 
 const HEAD_CENTER = 0.3;
 const HEAD_RADIUS = 0.95;
 const HEM_LEVEL = -1.25;
-const EYES = [
-  { x: -0.34, y: 0.52, rx: 0.15, ry: 0.23 },
-  { x: 0.34, y: 0.52, rx: 0.15, ry: 0.23 },
-  { x: 0, y: 0.04, rx: 0.11, ry: 0.15 },
-];
 
 export type GhostBuffers = {
   targets: Float32Array;
@@ -24,7 +20,7 @@ function radiusAt(y: number): number {
 function insideFace(x: number, y: number, z: number): boolean {
   return (
     z > 0 &&
-    EYES.some(
+    GHOST_FEATURES.some(
       (eye) => ((x - eye.x) / eye.rx) ** 2 + ((y - eye.y) / eye.ry) ** 2 < 1,
     )
   );
