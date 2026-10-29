@@ -95,3 +95,16 @@ def test_saves_finished_scans_and_shares_them():
     shared = client.get(f"/api/scans/{scan_id}").json()
     assert shared["target"] == "https://a.dev" and shared["events"][-1]["type"] == "done"
     assert client.get("/api/scans/missing00000").status_code == 404
+
+
+def test_previews_a_shared_autopsy_with_its_own_title(web_dist):
+    (web_dist / "index.html").write_text('<title>Linkmortem</title><meta property="og:url" content="https://linkmortem.tech" />', encoding="utf8")
+    container = Container(
+        FakeModel(), FakeStore(True), [httpx2.AsyncClient()], FakeScanner(), SlidingWindowLimiter(5, 60), ConcurrencyGate(1), ScanArchive(FakeCollection())
+    )
+    client = TestClient(create_app(container))
+    scan_id = json.loads(client.post("/api/scans/stream", json={"target": "https://a.dev"}).text.splitlines()[-1])["id"]
+    page = client.get(f"/r/{scan_id}").text
+    assert "<title>0 ghosts in https://a.dev, a Linkmortem autopsy</title>" in page
+    assert f'content="https://linkmortem.tech/r/{scan_id}"' in page
+    assert "<title>Linkmortem</title>" in client.get("/r/missing00000").text

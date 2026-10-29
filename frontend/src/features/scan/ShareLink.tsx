@@ -1,20 +1,11 @@
-import { useState } from "react";
+import { useCopy } from "../../lib/useCopy";
 import { useTranslation } from "../i18n/useTranslation";
 import { shareUrl } from "./savedScan";
 
 export default function ShareLink({ id }: { id: string }) {
   const { t } = useTranslation();
-  const [copied, setCopied] = useState(false);
   const url = shareUrl(id);
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-    } catch {
-      setCopied(false);
-    }
-  };
+  const { copied, copy } = useCopy(url);
 
   return (
     <div>

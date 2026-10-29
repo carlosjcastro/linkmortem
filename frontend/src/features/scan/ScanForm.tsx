@@ -1,4 +1,5 @@
 import { useId, useState, type FormEvent } from "react";
+import { EXAMPLE_TARGET } from "../../lib/example";
 import { normalizeTarget } from "../../lib/target";
 import { useTranslation } from "../i18n/useTranslation";
 
@@ -16,6 +17,12 @@ export default function ScanForm({ onScan, busy = false }: ScanFormProps) {
     const target = normalizeTarget(value);
     setInvalid(target === null);
     if (target) onScan(target);
+  };
+
+  const tryExample = () => {
+    setValue(EXAMPLE_TARGET);
+    setInvalid(false);
+    onScan(EXAMPLE_TARGET);
   };
 
   return (
@@ -45,9 +52,21 @@ export default function ScanForm({ onScan, busy = false }: ScanFormProps) {
           {t.scanAction}
         </button>
       </div>
-      <p id={hintId} role={invalid ? "alert" : undefined} className={`mt-3 text-[0.95rem] ${invalid ? "text-rose" : "text-dusk"}`}>
+      <p
+        id={hintId}
+        role={invalid ? "alert" : undefined}
+        className={`mt-3 text-[0.95rem] ${invalid ? "text-rose" : "text-dusk"}`}
+      >
         {invalid ? t.targetInvalid : t.targetHint}
       </p>
+      <button
+        type="button"
+        onClick={tryExample}
+        disabled={busy}
+        className="mt-4 rounded-md text-[0.95rem] text-spectral underline decoration-spectral/40 underline-offset-4 hover:decoration-spectral focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-marigold disabled:cursor-progress disabled:opacity-70"
+      >
+        {t.tryExample}
+      </button>
     </form>
   );
 }

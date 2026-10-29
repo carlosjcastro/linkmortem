@@ -7,10 +7,14 @@ from urllib.parse import unquote
 import httpx2
 
 from app.aftercare.replacements import Replacement
+from app.scan.markdown import FENCED_CODE, INLINE_CODE
 
 BLOB = re.compile(r"^https://github\.com/([\w.-]+)/([\w.-]+)/blob/([^/]+)/(.+)$")
 RAW_URL = "https://raw.githubusercontent.com"
 URL_END = r"(?![\w/%~+=&?#@-]|[.,;:!*'][\w/%~+=&?#@-])"
+LINK_TARGET = r"(?:(?<=\]\()|(?<=\]\(<)|(?<=\]: )|(?<=href=\")|(?<=href='))"
+CODE = re.compile(f"{FENCED_CODE.pattern}|{INLINE_CODE.pattern}", re.MULTILINE)
+WEB_SCHEMES = ("http://", "https://")
 
 
 @dataclass(frozen=True)
@@ -32,14 +36,28 @@ def file_diff(path: str, before: str, after: str) -> str:
     return "".join(lines)
 
 
+def link_pattern(change: Replacement) -> re.Pattern[str]:
+    prefix = "" if change.url.startswith(WEB_SCHEMES) else LINK_TARGET
+    return re.compile(prefix + re.escape(change.url) + URL_END)
+
+
 def rewritten(text: str, changes: list[Replacement]) -> tuple[str, list[Replacement]]:
-    applied: list[Replacement] = []
-    for change in changes:
-        pattern = re.compile(re.escape(change.url) + URL_END, re.MULTILINE)
-        text, count = pattern.subn(lambda _: change.replacement, text)
-        if count:
-            applied.append(change)
-    return text, applied
+    applied: set[Replacement] = set()
+
+    def fix(prose: str) -> str:
+        for change in changes:
+            prose, count = link_pattern(change).subn(lambda _, value=change.replacement: value, prose)
+            if count:
+                applied.add(change)
+        return prose
+
+    pieces: list[str] = []
+    last = 0
+    for code in CODE.finditer(text):
+        pieces += [fix(text[last : code.start()]), code.group(0)]
+        last = code.end()
+    pieces.append(fix(text[last:]))
+    return "".join(pieces), [change for change in changes if change in applied]
 
 
 class PatchBuilder:

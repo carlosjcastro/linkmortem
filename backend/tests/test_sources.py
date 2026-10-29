@@ -2,10 +2,16 @@ import httpx2
 import pytest
 
 from app.scan.errors import ScanError
+from app.scan.fetcher import Fetcher
 from app.scan.github_source import GitHubSource
 from app.scan.markdown import markdown_links
 from app.scan.noise import is_noise
 from app.scan.repo_paths import repository_path
+from app.scan.site_source import SiteSource
+
+async def allow(url: str) -> None:
+    return None
+
 
 README = """
 [![Read the post](https://img.shields.io/badge/DEV-post)](https://dev.to/carlos/post)
@@ -68,16 +74,24 @@ def github_handler(request: httpx2.Request) -> httpx2.Response:
     if path == "/owner/repo/main/README.md":
         return httpx2.Response(200, text="[Guide](docs/guide.md) and [Site](https://site.dev)")
     if path == "/owner/repo/main/docs/guide.md":
-        return httpx2.Response(200, text="[Missing](./gone.md)")
+        return httpx2.Response(200, text="[Missing](./gone.md) and the [same site](https://site.dev)")
     return httpx2.Response(404)
 
 
 async def test_turns_relative_links_into_repository_pages():
     async with httpx2.AsyncClient(transport=httpx2.MockTransport(github_handler)) as client:
-        links = await GitHubSource(client, "").links("owner", "repo")
+        links = (await GitHubSource(client, "").links("owner", "repo")).links
     blob = "https://github.com/owner/repo/blob/main"
     assert {link.url for link in links} == {f"{blob}/docs/guide.md", "https://site.dev", f"{blob}/docs/gone.md"}
     assert next(link for link in links if link.url.endswith("gone.md")).source == f"{blob}/docs/guide.md"
+
+
+async def test_remembers_every_file_that_shares_a_link():
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(github_handler)) as client:
+        links = (await GitHubSource(client, "").links("owner", "repo")).links
+    site = next(link for link in links if link.url == "https://site.dev")
+    blob = "https://github.com/owner/repo/blob/main"
+    assert (site.source, site.other_sources) == (f"{blob}/README.md", [f"{blob}/docs/guide.md"])
 
 
 async def test_a_silent_github_becomes_a_scan_error():
@@ -98,3 +112,22 @@ async def test_an_exhausted_github_limit_is_named():
         with pytest.raises(ScanError) as caught:
             await GitHubSource(client, "").links("owner", "repo")
     assert caught.value.code == "github_rate_limited"
+
+
+async def test_counts_the_markdown_files_it_could_not_read(monkeypatch):
+    monkeypatch.setattr("app.scan.github_source.MAX_FILES", 1)
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(github_handler)) as client:
+        harvest = await GitHubSource(client, "").links("owner", "repo")
+    assert (harvest.read, harvest.available, harvest.source) == (1, 2, "repository")
+
+
+async def test_tells_when_a_site_has_more_pages_than_it_read(monkeypatch):
+    monkeypatch.setattr("app.scan.site_source.MAX_PAGES", 1)
+
+    def site(request: httpx2.Request) -> httpx2.Response:
+        return httpx2.Response(200, headers={"content-type": "text/html"}, text='<a href="/a">A</a><a href="/b">B</a><a href="https://other.dev">X</a>')
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(site)) as client:
+        harvest = await SiteSource(Fetcher(client, allow, retry_pause=0)).links("https://site.dev/")
+    assert (harvest.read, harvest.available, harvest.source) == (1, 3, "site")
+    assert {link.url for link in harvest.links} == {"https://site.dev/a", "https://site.dev/b", "https://other.dev"}

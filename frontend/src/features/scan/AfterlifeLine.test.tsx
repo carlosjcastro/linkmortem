@@ -33,4 +33,20 @@ describe("AfterlifeLine", () => {
     const { container } = renderLine(undefined, false);
     expect(container).toBeEmptyDOMElement();
   });
+
+  it("names the closest section of a renamed heading", () => {
+    renderLine(
+      {
+        ...FOUND,
+        source: "section",
+        title: "#installation",
+        url: "https://github.com/o/r/blob/main/GUIDE.md#installation",
+        evidence: "",
+      },
+      false,
+    );
+    expect(
+      screen.getByText("Closest section in the same document"),
+    ).toBeInTheDocument();
+  });
 });

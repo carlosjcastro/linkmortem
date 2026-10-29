@@ -2,7 +2,7 @@ services:
   - type: web
     name: linkmortem
     runtime: docker
-    plan: free
+    plan: 0.5c-512mb
     region: virginia
     dockerfilePath: ./Dockerfile
     dockerContext: .
@@ -17,6 +17,8 @@ services:
         value: backboard
       - key: LINKMORTEM_TRUST_PROXY
         value: "true"
+      - key: LINKMORTEM_PUBLIC_URL
+        value: https://linkmortem.tech
       - key: BACKBOARD_API_KEY
         sync: false
       - key: SERPAPI_API_KEY

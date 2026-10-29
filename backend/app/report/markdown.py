@@ -1,9 +1,11 @@
 import re
 
-from app.afterlife.models import Match, Rebirth
+from app.afterlife.models import SECTION_SOURCE, Match, Rebirth
 from app.memory.models import Recall
 from app.report.transcript import NOTHING_FOUND, ScanTranscript
+from app.scan.harvest import REPOSITORY
 from app.scan.models import Cause, Diagnosis, Verdict
+from app.wording import counted
 
 CAUSE_LABELS: dict[Cause, str] = {
     Cause.ALIVE: "Alive",
@@ -22,6 +24,7 @@ CAUSE_LABELS: dict[Cause, str] = {
     Cause.BLOCKED: "Private address, not checked",
     Cause.UNCLASSIFIED: "Gemma could not decide",
     Cause.MODEL_UNAVAILABLE: "Gemma wasn't available to read it",
+    Cause.MISSING_SECTION: "The section no longer exists",
 }
 MARKDOWN_SPECIALS = re.compile(r"([\\`*_{}\[\]()<>#|!])")
 TEXT_CHARS = 200
@@ -54,14 +57,21 @@ def afterlife_line(transcript: ScanTranscript, url: str) -> str:
     afterlife = transcript.afterlives.get(url)
     if not afterlife or afterlife.status != Rebirth.FOUND:
         return ""
+    if afterlife.source == SECTION_SOURCE:
+        return f"  Closest section: {link(afterlife.title, afterlife.url)}"
     kind = "same content at a new address" if afterlife.match == Match.SAME else "a newer version"
     return f"  New home: {link(afterlife.title or afterlife.url, afterlife.url)}, {kind}"
+
+
+def source_links(item: Diagnosis) -> str:
+    sources = [item.link.source, *item.link.other_sources]
+    return ", ".join(link(source.rsplit("/", 1)[-1] or source, source) for source in sources)
 
 
 def ghost_entry(transcript: ScanTranscript, item: Diagnosis) -> str:
     lines = [
         f"- `{item.link.url.replace('`', '%60')}`",
-        f"  {cause_line(item)}, found in {link(item.link.source.rsplit('/', 1)[-1] or item.link.source, item.link.source)}",
+        f"  {cause_line(item)}, found in {source_links(item)}",
         memory_line(transcript, item.link.url),
         afterlife_line(transcript, item.link.url),
     ]
@@ -83,6 +93,16 @@ def model_note(unknown: list[Diagnosis]) -> str:
     )
 
 
+def coverage_note(transcript: ScanTranscript) -> str:
+    notes = []
+    if transcript.found > transcript.total:
+        notes.append(f"Linkmortem checked the first {transcript.total} of the {transcript.found} links it found.")
+    if transcript.available > transcript.read:
+        what = "Markdown files" if transcript.source == REPOSITORY else "pages"
+        notes.append(f"It read {transcript.read} of the {transcript.available} {what} it could reach.")
+    return " ".join(notes)
+
+
 def markdown_report(transcript: ScanTranscript) -> str:
     if transcript.error_code == NOTHING_FOUND:
         return f"# Linkmortem report\n\nNo links were found in `{transcript.target}`, so there is nothing to check yet.\n"
@@ -92,8 +112,11 @@ def markdown_report(transcript: ScanTranscript) -> str:
     unknown = transcript.with_verdict(Verdict.UNKNOWN)
     parts = [
         "# Linkmortem report",
-        f"Checked {transcript.total} links in `{transcript.target}`: {len(ghosts)} ghosts, {len(unknown)} could not be confirmed.",
+        f"Checked {counted(transcript.total, 'link')} in `{transcript.target}`: {counted(len(ghosts), 'ghost')}, {len(unknown)} could not be confirmed.",
     ]
+    coverage = coverage_note(transcript)
+    if coverage:
+        parts.append(coverage)
     if ghosts:
         parts.append("## Ghosts\n\n" + "\n".join(ghost_entry(transcript, item) for item in ghosts))
     else:

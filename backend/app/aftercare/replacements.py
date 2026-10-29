@@ -1,6 +1,7 @@
 from dataclasses import dataclass
+from urllib.parse import urldefrag
 
-from app.afterlife.models import Match, Rebirth
+from app.afterlife.models import SECTION_SOURCE, Match, Rebirth
 from app.memory.models import Recall
 from app.scan.models import Verdict
 
@@ -15,10 +16,21 @@ class Replacement:
     url: str
     replacement: str
     kind: str
+    link: str = ""
+
+    @property
+    def dead_link(self) -> str:
+        return self.link or self.url
 
 
 def by_type(events: list[dict], kind: str, key: str) -> dict[str, dict]:
     return {event["url"]: event[key] for event in events if event["type"] == kind}
+
+
+def new_home_text(link: dict, afterlife: dict) -> tuple[str, str]:
+    if afterlife.get("source") != SECTION_SOURCE or not link.get("written"):
+        return link["url"], afterlife["url"]
+    return link["written"], f"{urldefrag(link['written'])[0]}#{urldefrag(afterlife['url'])[1]}"
 
 
 def replacements(events: list[dict]) -> list[Replacement]:
@@ -30,8 +42,10 @@ def replacements(events: list[dict]) -> list[Replacement]:
             continue
         link = event["diagnosis"]["link"]
         afterlife, memory = afterlives.get(link["url"], {}), memories.get(link["url"], {})
+        sources = [link["source"], *link.get("other_sources", [])]
         if afterlife.get("status") == Rebirth.FOUND and afterlife.get("match") in PROVEN_MATCHES:
-            found.append(Replacement(link["source"], link["url"], afterlife["url"], NEW_HOME))
+            written, replacement = new_home_text(link, afterlife)
+            found.extend(Replacement(source, written, replacement, NEW_HOME, link["url"]) for source in sources)
         elif memory.get("status") == Recall.FOUND:
-            found.append(Replacement(link["source"], link["url"], memory["archived_url"], ARCHIVED_COPY))
+            found.extend(Replacement(source, link["url"], memory["archived_url"], ARCHIVED_COPY) for source in sources)
     return found

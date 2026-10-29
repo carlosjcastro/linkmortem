@@ -9,7 +9,10 @@ import { revealGhost } from "./revealGhost";
 const LEGEND: { state: keyof HouseCounts; swatch: string }[] = [
   { state: "alive", swatch: "bg-marigold" },
   { state: "unknown", swatch: "bg-marigold/40" },
-  { state: "ghost", swatch: "bg-night-deep ring-1 ring-inset ring-spectral/70" },
+  {
+    state: "ghost",
+    swatch: "bg-night-deep ring-1 ring-inset ring-spectral/70",
+  },
 ];
 
 const TOOLTIP_HALF_WIDTH = 150;
@@ -17,11 +20,22 @@ const TOOLTIP_HALF_WIDTH = 150;
 type HauntedHouseProps = HouseCounts & { ghostUrls: string[] };
 type Hovered = { index: number; x: number; y: number };
 
-export default function HauntedHouse({ alive, ghost, unknown, ghostUrls }: HauntedHouseProps) {
+export default function HauntedHouse({
+  alive,
+  ghost,
+  unknown,
+  ghostUrls,
+}: HauntedHouseProps) {
   const { t } = useTranslation();
   const counts = { alive, ghost, unknown };
-  const plan = useMemo(() => housePlan({ alive, ghost, unknown }, WINDOW_SLOTS.length), [alive, ghost, unknown]);
-  const { canvasRef, sceneRef, failed, enabled } = useAnimatedScene((canvas) => loadHouse(canvas, plan), `${alive}:${ghost}:${unknown}`);
+  const plan = useMemo(
+    () => housePlan({ alive, ghost, unknown }, WINDOW_SLOTS.length),
+    [alive, ghost, unknown],
+  );
+  const { canvasRef, sceneRef, failed, enabled } = useAnimatedScene(
+    (canvas) => loadHouse(canvas, plan),
+    `${alive}:${ghost}:${unknown}`,
+  );
   const [hovered, setHovered] = useState<Hovered | null>(null);
 
   const ghostAt = (event: PointerEvent<HTMLCanvasElement>): Hovered | null => {
@@ -30,7 +44,9 @@ export default function HauntedHouse({ alive, ghost, unknown, ghostUrls }: Haunt
     const y = event.clientY - bounds.top;
     const index = sceneRef.current?.pick(x, y) ?? -1;
     const edge = Math.min(TOOLTIP_HALF_WIDTH, bounds.width / 2);
-    return index >= 0 ? { index, x: Math.min(Math.max(x, edge), bounds.width - edge), y } : null;
+    return index >= 0
+      ? { index, x: Math.min(Math.max(x, edge), bounds.width - edge), y }
+      : null;
   };
 
   const follow = (event: PointerEvent<HTMLCanvasElement>) => {
@@ -74,14 +90,26 @@ export default function HauntedHouse({ alive, ghost, unknown, ghostUrls }: Haunt
       <figcaption className="mt-4 text-[0.95rem] leading-[1.6] text-dusk">
         <p>{t.houseTitle}</p>
         <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
-          {LEGEND.map(({ state, swatch }) => (
-            <li key={state} className="inline-flex items-center gap-2">
-              <span aria-hidden className={`size-3 rounded-[3px] ${swatch}`} />
-              {t.houseLegend[state]} ({counts[state]})
-            </li>
-          ))}
+          {LEGEND.filter(({ state }) => counts[state] > 0).map(
+            ({ state, swatch }) => (
+              <li key={state} className="inline-flex items-center gap-2">
+                <span
+                  aria-hidden
+                  className={`size-3 rounded-[3px] ${swatch}`}
+                />
+                {t.houseLegend[state]} ({counts[state]})
+              </li>
+            ),
+          )}
         </ul>
-        {ghost ? <p className="mt-2">{ghost > plan.graves ? `${t.houseShowing(plan.graves, ghost)} ` : ""}{t.houseHint}</p> : null}
+        {ghost ? (
+          <p className="mt-2">
+            {ghost > plan.graves
+              ? `${t.houseShowing(plan.graves, ghost)} `
+              : ""}
+            {t.houseHint}
+          </p>
+        ) : null}
       </figcaption>
     </figure>
   );

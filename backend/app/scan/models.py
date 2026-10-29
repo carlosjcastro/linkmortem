@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.llm.evidence import Evidence
 
@@ -22,6 +22,7 @@ class Cause(StrEnum):
     BLOCKED = "blocked"
     UNCLASSIFIED = "unclassified"
     MODEL_UNAVAILABLE = "model_unavailable"
+    MISSING_SECTION = "missing_section"
 
 
 class Verdict(StrEnum):
@@ -34,6 +35,8 @@ class Link(BaseModel):
     url: str
     source: str
     text: str = ""
+    other_sources: list[str] = Field(default_factory=list)
+    written: str = ""
 
 
 class Diagnosis(BaseModel):
