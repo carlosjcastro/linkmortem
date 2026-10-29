@@ -22,7 +22,11 @@ def is_public(address: str) -> bool:
 
 async def ensure_public(url: str) -> None:
     parts = urlsplit(url)
-    if parts.scheme not in ALLOWED_SCHEMES or not parts.hostname or parts.port not in ALLOWED_PORTS:
+    try:
+        port = parts.port
+    except ValueError as error:
+        raise UnsafeAddressError(url) from error
+    if parts.scheme not in ALLOWED_SCHEMES or not parts.hostname or port not in ALLOWED_PORTS or parts.username or parts.password:
         raise UnsafeAddressError(url)
     try:
         records = await asyncio.get_running_loop().getaddrinfo(parts.hostname, None, type=socket.SOCK_STREAM)

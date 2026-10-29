@@ -82,7 +82,21 @@ def test_recognizes_github_repositories():
     assert not parse_target("https://example.com/blog").is_repository
 
 
-@pytest.mark.parametrize("raw", ["ftp://a.dev", "not a url", "https://" + "a" * 400 + ".dev"])
+@pytest.mark.parametrize(
+    "raw",
+    [
+        "ftp://a.dev",
+        "not a url",
+        "https://" + "a" * 400 + ".dev",
+        "https://user:secret@a.dev",
+        "https://token@a.dev",
+        "https://a.dev:8080",
+        "https://a.dev:99999",
+        "https://a.dev/a b",
+        "https://a.dev/\x00",
+        "javascript:alert(1)",
+    ],
+)
 def test_rejects_invalid_targets(raw):
     with pytest.raises(ScanError):
         parse_target(raw)
