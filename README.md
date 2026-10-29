@@ -10,7 +10,7 @@ Built for the DEV Hacktoberfest Open Source AI Challenge, Week 4, "Ghost in the 
 
 Every scan follows the same six steps.
 
-1. **Find.** Collects up to 150 links from up to 12 pages of a site, or from up to 40 Markdown files of a public repository at an exact branch or commit. Relative links are resolved against the repository. When a limit cuts the scan short, the results say how many links and files were left out.
+1. **Find.** Collects up to 150 links from up to 12 pages of a site, or from up to 40 Markdown files of a public repository at an exact branch or commit. Relative links are resolved against the repository. When a limit cuts the scan short, the results say how many links and files were left out. A site that builds its pages with JavaScript, or one that can't be opened, is named as such instead of reported as empty.
 2. **Diagnose.** Checks each link and names the cause of death: not found, gone, dead domain, parked domain, error page in disguise, empty placeholder, unrelated redirect, missing section. Bot checks, login walls and pages that only render with JavaScript are reported as unconfirmed, never as dead. A failure that may be temporary is retried once before any verdict.
 3. **Remember.** Finds the last healthy copy in the Wayback Machine and checks that the copy itself isn't an error page.
 4. **Reincarnate.** Searches the web for the same content at a new address and asks Gemma whether a candidate is the same page, a newer version or something else. Scrapers and lookalikes don't count.
