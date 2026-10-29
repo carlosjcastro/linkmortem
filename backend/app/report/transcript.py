@@ -11,6 +11,10 @@ NOTHING_FOUND = "nothing_found"
 class ScanTranscript:
     target: str
     total: int = 0
+    found: int = 0
+    read: int = 0
+    available: int = 0
+    source: str = ""
     diagnoses: list[Diagnosis] = field(default_factory=list)
     memories: dict[str, Memory] = field(default_factory=dict)
     afterlives: dict[str, Afterlife] = field(default_factory=dict)
@@ -21,6 +25,10 @@ class ScanTranscript:
         kind = event["type"]
         if kind == "collected":
             self.total = event["total"]
+            self.found = event.get("found", self.total)
+            self.read = event.get("read", 0)
+            self.available = event.get("available", self.read)
+            self.source = event.get("source", "")
         elif kind == "link":
             self.diagnoses.append(Diagnosis.model_validate(event["diagnosis"]))
         elif kind == "memory":
