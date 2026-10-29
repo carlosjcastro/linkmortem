@@ -1,4 +1,13 @@
-import { AdditiveBlending, CircleGeometry, Color, Group, Mesh, MeshBasicMaterial, PlaneGeometry, ShaderMaterial } from "three";
+import {
+  AdditiveBlending,
+  CircleGeometry,
+  Color,
+  Group,
+  Mesh,
+  MeshBasicMaterial,
+  PlaneGeometry,
+  ShaderMaterial,
+} from "three";
 
 const POSITION = { x: -4.4, y: 6.4, z: -9 };
 
@@ -22,7 +31,10 @@ void main() {
 
 export function moon(color: string) {
   const disc = new CircleGeometry(0.85, 48);
-  const discMaterial = new MeshBasicMaterial({ color: new Color(color), fog: false });
+  const discMaterial = new MeshBasicMaterial({
+    color: new Color(color),
+    fog: false,
+  });
   const plane = new PlaneGeometry(7, 7);
   const haloMaterial = new ShaderMaterial({
     vertexShader: glowVertex,
@@ -37,5 +49,11 @@ export function moon(color: string) {
   halo.position.z = -0.05;
   group.add(halo, new Mesh(disc, discMaterial));
   group.position.set(POSITION.x, POSITION.y, POSITION.z);
-  return { group, dispose: () => [disc, discMaterial, plane, haloMaterial].forEach((item) => item.dispose()) };
+  return {
+    group,
+    dispose: () =>
+      [disc, discMaterial, plane, haloMaterial].forEach((item) =>
+        item.dispose(),
+      ),
+  };
 }

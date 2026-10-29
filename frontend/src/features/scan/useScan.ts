@@ -24,7 +24,12 @@ export function useScan() {
           setState((previous) => applyEvent(previous, event));
         }
       } catch {
-        if (!current.signal.aborted) setState((previous) => ({ ...previous, phase: "failed", errorCode: "unavailable" }));
+        if (!current.signal.aborted)
+          setState((previous) => ({
+            ...previous,
+            phase: "failed",
+            errorCode: "unavailable",
+          }));
       }
     },
     [renew],
@@ -37,13 +42,25 @@ export function useScan() {
       try {
         const saved = await fetchSavedScan(id, current.signal);
         if (!saved) {
-          setState({ ...INITIAL_SCAN, phase: "failed", errorCode: "scan_not_found" });
+          setState({
+            ...INITIAL_SCAN,
+            phase: "failed",
+            errorCode: "scan_not_found",
+          });
           return;
         }
-        const replayed = saved.events.reduce(applyEvent, { ...INITIAL_SCAN, target: saved.target });
+        const replayed = saved.events.reduce(applyEvent, {
+          ...INITIAL_SCAN,
+          target: saved.target,
+        });
         setState({ ...replayed, shareId: id });
       } catch {
-        if (!current.signal.aborted) setState({ ...INITIAL_SCAN, phase: "failed", errorCode: "unavailable" });
+        if (!current.signal.aborted)
+          setState({
+            ...INITIAL_SCAN,
+            phase: "failed",
+            errorCode: "unavailable",
+          });
       }
     },
     [renew],

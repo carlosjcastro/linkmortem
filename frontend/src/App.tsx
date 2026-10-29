@@ -20,7 +20,10 @@ export default function App() {
   }, [load]);
 
   useEffect(() => {
-    if (state.shareId && sharedScanId(window.location.pathname) !== state.shareId) {
+    if (
+      state.shareId &&
+      sharedScanId(window.location.pathname) !== state.shareId
+    ) {
       window.history.replaceState(null, "", `/r/${state.shareId}`);
     }
   }, [state.shareId]);

@@ -1,4 +1,10 @@
-export type Slot = { x: number; y: number; z: number; width: number; height: number };
+export type Slot = {
+  x: number;
+  y: number;
+  z: number;
+  width: number;
+  height: number;
+};
 
 const MAIN_FRONT = 1.31;
 const TOWER_FRONT = 1.49;
@@ -22,9 +28,20 @@ const GRAVE_COLUMNS = [-1.45, 1.45, -2.2, 2.2, -2.95, 2.95, -3.7, 3.7];
 const GRAVE_ROWS = [2.8, 3.38];
 
 export const GRAVE_SLOTS = GRAVE_COLUMNS.flatMap((x, column) =>
-  GRAVE_ROWS.map((z, row) => ({ x: x + (row ? (column % 2 ? -0.22 : 0.22) : 0), z })),
-).sort((first, second) => first.z - second.z || Math.abs(first.x) - Math.abs(second.x));
+  GRAVE_ROWS.map((z, row) => ({
+    x: x + (row ? (column % 2 ? -0.22 : 0.22) : 0),
+    z,
+  })),
+).sort(
+  (first, second) =>
+    first.z - second.z || Math.abs(first.x) - Math.abs(second.x),
+);
 
 export const FENCE = { z: 3.95, reach: 4.7, gap: 0.62 };
 export const TREE_ROOT = { x: 4.15, z: 0.4 };
-export const SCENE_BOUNDS = { left: -4.9, right: 5.6, top: 6.3, target: { x: 0.35, y: 2.05, z: 0.8 } };
+export const SCENE_BOUNDS = {
+  left: -4.9,
+  right: 5.6,
+  top: 6.3,
+  target: { x: 0.35, y: 2.05, z: 0.8 },
+};

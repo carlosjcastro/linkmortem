@@ -37,32 +37,76 @@ const STILL_TIME = 4;
 const REFERENCE_HEIGHT = 520;
 const PICK_PADDING = 10;
 
-export type HouseScene = AnimatedScene & { pick: (x: number, y: number) => number; hover: (ghost: number) => void };
+export type HouseScene = AnimatedScene & {
+  pick: (x: number, y: number) => number;
+  hover: (ghost: number) => void;
+};
 
 function tone(base: string, toward: string, amount: number): Color {
   return new Color(base).lerp(new Color(toward), amount);
 }
 
-export function createHouse(canvas: HTMLCanvasElement, colors: HauntingColors, plan: HousePlan): HouseScene {
-  const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: "low-power" });
+export function createHouse(
+  canvas: HTMLCanvasElement,
+  colors: HauntingColors,
+  plan: HousePlan,
+): HouseScene {
+  const renderer = new WebGLRenderer({
+    canvas,
+    alpha: true,
+    antialias: true,
+    powerPreference: "low-power",
+  });
   const pixelRatio = Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO);
   renderer.setPixelRatio(pixelRatio);
 
   const scene = new Scene();
   scene.fog = new FogExp2(colors.night, 0.034);
   const camera = new PerspectiveCamera(FIELD_OF_VIEW, 1, 0.1, 80);
-  const target = new Vector3(SCENE_BOUNDS.target.x, SCENE_BOUNDS.target.y, SCENE_BOUNDS.target.z);
+  const target = new Vector3(
+    SCENE_BOUNDS.target.x,
+    SCENE_BOUNDS.target.y,
+    SCENE_BOUNDS.target.z,
+  );
 
-  const wall = new MeshStandardMaterial({ color: tone(colors.night, colors.bone, 0.2), roughness: 0.95, flatShading: true });
-  const wood = new MeshStandardMaterial({ color: tone(colors.night, "#000000", 0.35), roughness: 1, flatShading: true });
-  const stone = new MeshStandardMaterial({ color: tone(colors.night, colors.bone, 0.38), roughness: 0.9, flatShading: true });
-  const earth = new MeshStandardMaterial({ color: tone(colors.night, "#000000", 0.45), roughness: 1 });
-  const trail = new MeshStandardMaterial({ color: tone(colors.night, colors.bone, 0.1), roughness: 1 });
+  const wall = new MeshStandardMaterial({
+    color: tone(colors.night, colors.bone, 0.2),
+    roughness: 0.95,
+    flatShading: true,
+  });
+  const wood = new MeshStandardMaterial({
+    color: tone(colors.night, "#000000", 0.35),
+    roughness: 1,
+    flatShading: true,
+  });
+  const stone = new MeshStandardMaterial({
+    color: tone(colors.night, colors.bone, 0.38),
+    roughness: 0.9,
+    flatShading: true,
+  });
+  const earth = new MeshStandardMaterial({
+    color: tone(colors.night, "#000000", 0.45),
+    roughness: 1,
+  });
+  const trail = new MeshStandardMaterial({
+    color: tone(colors.night, colors.bone, 0.1),
+    roughness: 1,
+  });
 
-  const ground = new Mesh(new CircleGeometry(14, 48).rotateX(-Math.PI / 2), earth);
-  const path = new Mesh(new PlaneGeometry(0.95, 1.6).rotateX(-Math.PI / 2).translate(0, 0.006, 3.3), trail);
+  const ground = new Mesh(
+    new CircleGeometry(14, 48).rotateX(-Math.PI / 2),
+    earth,
+  );
+  const path = new Mesh(
+    new PlaneGeometry(0.95, 1.6).rotateX(-Math.PI / 2).translate(0, 0.006, 3.3),
+    trail,
+  );
   const body = houseBody(wall, wood, colors.bone);
-  const windows = houseWindows(WINDOW_SLOTS, plan.windows, { warm: colors.marigold, frame: tone(colors.night, "#000000", 0.4), spirit: colors.spirit });
+  const windows = houseWindows(WINDOW_SLOTS, plan.windows, {
+    warm: colors.marigold,
+    frame: tone(colors.night, "#000000", 0.4),
+    spirit: colors.spirit,
+  });
   const graves = graveyard(plan.graves, stone);
   const ghosts = yardGhosts(graves.origins, colors.spirit, pixelRatio);
   const faces = ghostEyes(graves.origins, GHOST_SCALE, colors.night);
@@ -71,7 +115,10 @@ export function createHouse(canvas: HTMLCanvasElement, colors: HauntingColors, p
   const sky = moon(colors.bone);
   const fog = mist(colors.bone);
 
-  const moonLight = new DirectionalLight(tone(colors.bone, colors.spirit, 0.35), 1.5);
+  const moonLight = new DirectionalLight(
+    tone(colors.bone, colors.spirit, 0.35),
+    1.5,
+  );
   moonLight.position.set(-6, 9, 4);
   const rimLight = new DirectionalLight(colors.spirit, 0.7);
   rimLight.position.set(5, 4, -6);
@@ -103,7 +150,10 @@ export function createHouse(canvas: HTMLCanvasElement, colors: HauntingColors, p
 
   const aim = (elapsed: number) => {
     const angle = Math.sin(elapsed * 0.09) * 0.12;
-    const direction = VIEW_DIRECTION.clone().applyAxisAngle(new Vector3(0, 1, 0), angle);
+    const direction = VIEW_DIRECTION.clone().applyAxisAngle(
+      new Vector3(0, 1, 0),
+      angle,
+    );
     camera.position.copy(target).addScaledVector(direction, size.distance);
     camera.lookAt(target);
   };
@@ -127,7 +177,10 @@ export function createHouse(canvas: HTMLCanvasElement, colors: HauntingColors, p
 
   const screenOf = (point: Vector3) => {
     projected.copy(point).project(camera);
-    return { x: ((projected.x + 1) / 2) * size.width, y: ((1 - projected.y) / 2) * size.height };
+    return {
+      x: ((projected.x + 1) / 2) * size.width,
+      y: ((1 - projected.y) / 2) * size.height,
+    };
   };
 
   return {
@@ -146,12 +199,22 @@ export function createHouse(canvas: HTMLCanvasElement, colors: HauntingColors, p
       camera.aspect = width / height;
       const tangent = Math.tan(MathUtils.degToRad(FIELD_OF_VIEW / 2));
       const halfWidth = (SCENE_BOUNDS.right - SCENE_BOUNDS.left) / 2;
-      size.distance = Math.max(SCENE_BOUNDS.top / 2 / tangent, halfWidth / (tangent * camera.aspect)) * 1.02 + 2.2;
+      size.distance =
+        Math.max(
+          SCENE_BOUNDS.top / 2 / tangent,
+          halfWidth / (tangent * camera.aspect),
+        ) *
+          1.02 +
+        2.2;
       camera.updateProjectionMatrix();
       const pixelsPerUnit = (height * pixelRatio) / (2 * tangent);
       windows.scale(pixelsPerUnit);
       fog.uniforms.uScale.value = pixelsPerUnit;
-      ghosts.uniforms.uViewport.value = MathUtils.clamp((height / REFERENCE_HEIGHT) ** 0.75, 0.5, 1.4);
+      ghosts.uniforms.uViewport.value = MathUtils.clamp(
+        (height / REFERENCE_HEIGHT) ** 0.75,
+        0.5,
+        1.4,
+      );
       aim(STILL_TIME);
     },
     pick: (x, y) => {
@@ -159,7 +222,9 @@ export function createHouse(canvas: HTMLCanvasElement, colors: HauntingColors, p
       let closest = Number.POSITIVE_INFINITY;
       graves.origins.forEach((origin, index) => {
         const center = screenOf(origin);
-        const top = screenOf(origin.clone().add(new Vector3(0, GHOST_SCALE * 1.4, 0)));
+        const top = screenOf(
+          origin.clone().add(new Vector3(0, GHOST_SCALE * 1.4, 0)),
+        );
         const reach = Math.abs(center.y - top.y) + PICK_PADDING;
         const distance = Math.hypot(center.x - x, center.y - y);
         if (distance < reach && distance < closest) {
@@ -175,8 +240,19 @@ export function createHouse(canvas: HTMLCanvasElement, colors: HauntingColors, p
     },
     dispose: () => {
       cancelAnimationFrame(frame);
-      [wall, wood, stone, earth, trail, ground.geometry, path.geometry, tree.geometry].forEach((item) => item.dispose());
-      [body, windows, graves, ghosts, faces, yardFence, sky, fog].forEach((part) => part.dispose());
+      [
+        wall,
+        wood,
+        stone,
+        earth,
+        trail,
+        ground.geometry,
+        path.geometry,
+        tree.geometry,
+      ].forEach((item) => item.dispose());
+      [body, windows, graves, ghosts, faces, yardFence, sky, fog].forEach(
+        (part) => part.dispose(),
+      );
       renderer.dispose();
     },
   };

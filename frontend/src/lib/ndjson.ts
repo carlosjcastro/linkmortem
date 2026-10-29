@@ -1,4 +1,6 @@
-export async function* readLines(body: ReadableStream<Uint8Array>): AsyncGenerator<string> {
+export async function* readLines(
+  body: ReadableStream<Uint8Array>,
+): AsyncGenerator<string> {
   const reader = body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";

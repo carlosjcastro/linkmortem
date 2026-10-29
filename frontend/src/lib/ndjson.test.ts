@@ -14,7 +14,8 @@ function streamOf(...chunks: string[]): ReadableStream<Uint8Array> {
 describe("readLines", () => {
   it("joins lines split across chunks", async () => {
     const lines: string[] = [];
-    for await (const line of readLines(streamOf('{"a":', '1}\n{"b"', ":2}\n"))) lines.push(line);
+    for await (const line of readLines(streamOf('{"a":', '1}\n{"b"', ":2}\n")))
+      lines.push(line);
     expect(lines).toEqual(['{"a":1}', '{"b":2}']);
   });
 });

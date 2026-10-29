@@ -4,12 +4,22 @@ import { streamPreservation } from "./preserveStream";
 export type Preservation = {
   phase: "idle" | "running" | "done" | "failed";
   total: number;
-  saved: { url: string; status: "queued" | "recent" | "failed"; detail: string }[];
+  saved: {
+    url: string;
+    status: "queued" | "recent" | "failed";
+    detail: string;
+  }[];
   waiting: number;
   errorCode: string;
 };
 
-const IDLE: Preservation = { phase: "idle", total: 0, saved: [], waiting: 0, errorCode: "" };
+const IDLE: Preservation = {
+  phase: "idle",
+  total: 0,
+  saved: [],
+  waiting: 0,
+  errorCode: "",
+};
 
 export function usePreservation(id: string) {
   const [state, setState] = useState<Preservation>(IDLE);
@@ -17,15 +27,38 @@ export function usePreservation(id: string) {
   const start = useCallback(async () => {
     setState({ ...IDLE, phase: "running" });
     try {
-      for await (const event of streamPreservation(id, new AbortController().signal)) {
-        if (event.type === "preserving") setState((previous) => ({ ...previous, total: event.total }));
-        if (event.type === "waiting") setState((previous) => ({ ...previous, waiting: event.seconds }));
-        if (event.type === "preserved") setState((previous) => ({ ...previous, waiting: 0, saved: [...previous.saved, { url: event.url, status: event.status, detail: event.detail }] }));
-        if (event.type === "done") setState((previous) => ({ ...previous, phase: "done" }));
-        if (event.type === "error") setState((previous) => ({ ...previous, phase: "failed", errorCode: event.code }));
+      for await (const event of streamPreservation(
+        id,
+        new AbortController().signal,
+      )) {
+        if (event.type === "preserving")
+          setState((previous) => ({ ...previous, total: event.total }));
+        if (event.type === "waiting")
+          setState((previous) => ({ ...previous, waiting: event.seconds }));
+        if (event.type === "preserved")
+          setState((previous) => ({
+            ...previous,
+            waiting: 0,
+            saved: [
+              ...previous.saved,
+              { url: event.url, status: event.status, detail: event.detail },
+            ],
+          }));
+        if (event.type === "done")
+          setState((previous) => ({ ...previous, phase: "done" }));
+        if (event.type === "error")
+          setState((previous) => ({
+            ...previous,
+            phase: "failed",
+            errorCode: event.code,
+          }));
       }
     } catch {
-      setState((previous) => ({ ...previous, phase: "failed", errorCode: "unavailable" }));
+      setState((previous) => ({
+        ...previous,
+        phase: "failed",
+        errorCode: "unavailable",
+      }));
     }
   }, [id]);
 

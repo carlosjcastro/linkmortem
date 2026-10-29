@@ -1,4 +1,12 @@
-import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, Points, ShaderMaterial, type Vector3 } from "three";
+import {
+  AdditiveBlending,
+  BufferAttribute,
+  BufferGeometry,
+  Color,
+  Points,
+  ShaderMaterial,
+  type Vector3,
+} from "three";
 import { ghostPoints } from "../haunting/ghostPoints";
 
 const PER_GHOST = 1600;
@@ -46,7 +54,11 @@ void main() {
 }
 `;
 
-export function yardGhosts(origins: Vector3[], color: string, pixelRatio: number) {
+export function yardGhosts(
+  origins: Vector3[],
+  color: string,
+  pixelRatio: number,
+) {
   const shape = ghostPoints(PER_GHOST);
   const total = origins.length * PER_GHOST;
   const positions = new Float32Array(total * 3);
@@ -57,7 +69,10 @@ export function yardGhosts(origins: Vector3[], color: string, pixelRatio: number
     positions.set(shape.targets, ghost * PER_GHOST * 3);
     seeds.set(shape.seeds, ghost * PER_GHOST);
     for (let index = 0; index < PER_GHOST; index += 1) {
-      anchors.set([origin.x, origin.y, origin.z], (ghost * PER_GHOST + index) * 3);
+      anchors.set(
+        [origin.x, origin.y, origin.z],
+        (ghost * PER_GHOST + index) * 3,
+      );
       ghosts[ghost * PER_GHOST + index] = ghost;
     }
   });
@@ -84,5 +99,9 @@ export function yardGhosts(origins: Vector3[], color: string, pixelRatio: number
   });
   const points = new Points(geometry, material);
   points.frustumCulled = false;
-  return { points, uniforms: material.uniforms, dispose: () => (geometry.dispose(), material.dispose()) };
+  return {
+    points,
+    uniforms: material.uniforms,
+    dispose: () => (geometry.dispose(), material.dispose()),
+  };
 }

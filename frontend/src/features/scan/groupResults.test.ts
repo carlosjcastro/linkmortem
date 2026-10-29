@@ -13,7 +13,12 @@ const result = (url: string, verdict: Verdict): Diagnosis => ({
 
 describe("groupResults", () => {
   it("separates ghosts, unconfirmed and living links", () => {
-    const groups = groupResults([result("a", "ghost"), result("b", "alive"), result("c", "unknown"), result("d", "ghost")]);
+    const groups = groupResults([
+      result("a", "ghost"),
+      result("b", "alive"),
+      result("c", "unknown"),
+      result("d", "ghost"),
+    ]);
     expect(groups.ghost.map((item) => item.link.url)).toEqual(["a", "d"]);
     expect(groups.unknown).toHaveLength(1);
     expect(groups.alive).toHaveLength(1);

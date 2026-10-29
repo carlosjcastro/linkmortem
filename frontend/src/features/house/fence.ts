@@ -1,4 +1,12 @@
-import { BoxGeometry, Group, InstancedMesh, Matrix4, Mesh, type MeshStandardMaterial, Vector3 } from "three";
+import {
+  BoxGeometry,
+  Group,
+  InstancedMesh,
+  Matrix4,
+  Mesh,
+  type MeshStandardMaterial,
+  Vector3,
+} from "three";
 import { FENCE } from "./facade";
 import { mergeSolids } from "./mergeSolids";
 
@@ -15,7 +23,9 @@ export function fence(material: MeshStandardMaterial) {
   const matrix = new Matrix4();
   xs.forEach((x, index) => {
     const lean = Math.sin(x * 7.3) * 0.06;
-    matrix.makeRotationZ(lean).setPosition(new Vector3(x, PICKET.height / 2 - 0.02, FENCE.z));
+    matrix
+      .makeRotationZ(lean)
+      .setPosition(new Vector3(x, PICKET.height / 2 - 0.02, FENCE.z));
     pickets.setMatrixAt(index, matrix);
   });
   const railLength = FENCE.reach - FENCE.gap;
@@ -23,7 +33,13 @@ export function fence(material: MeshStandardMaterial) {
   const rails = new Mesh(
     mergeSolids(
       [-railCenter, railCenter].flatMap((x) =>
-        [0.16, 0.44].map((y) => new BoxGeometry(railLength, 0.035, 0.025).translate(x, y, FENCE.z - 0.025)),
+        [0.16, 0.44].map((y) =>
+          new BoxGeometry(railLength, 0.035, 0.025).translate(
+            x,
+            y,
+            FENCE.z - 0.025,
+          ),
+        ),
       ),
     ),
     material,
