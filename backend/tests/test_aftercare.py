@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 from app.aftercare.patch import PatchBuilder, blob_parts, rewritten
 from app.aftercare.preserver import Preserver, living_links
-from app.aftercare.replacements import ARCHIVED_COPY, NEW_HOME, replacements
+from app.aftercare.replacements import ARCHIVED_COPY, NEW_HOME, Replacement, replacements
 from app.aftercare.routes import build_aftercare_router
 from app.aftercare.savepagenow import BUSY, FAILED, QUEUED, RECENT, Capture, SavePageNow, outcome
 from app.persistence.archive import ScanArchive
@@ -65,6 +65,18 @@ def test_replaces_whole_links_only():
     assert rewritten("nothing here", [change]) == ("nothing here", [])
     sentence = f"Tutorial at {change.url}. Mirror at {change.url}.html, notes at {change.url}, done"
     assert rewritten(sentence, [change])[0] == f"Tutorial at {change.replacement}. Mirror at {change.url}.html, notes at {change.replacement}, done"
+
+
+async def test_fixes_the_same_dead_link_in_every_file():
+    guide = "https://github.com/owner/repo/blob/main/docs/guide.md"
+    shared = [*EVENTS[:2], {"type": "link", "diagnosis": {"link": {"url": LOST, "source": README, "text": "", "other_sources": [guide]}, "verdict": "ghost", "cause": "not_found"}}, *EVENTS[4:]]
+
+    def files(request: httpx2.Request) -> httpx2.Response:
+        return httpx2.Response(200, text=f"See [the post]({LOST}).\n")
+
+    built = await PatchBuilder(httpx2.AsyncClient(transport=httpx2.MockTransport(files))).build(replacements(shared))
+    assert "+++ b/docs/README.md" in built.diff and "+++ b/docs/guide.md" in built.diff
+    assert built.diff.count(f"+See [the post]({ARCHIVED}).") == 2
 
 
 async def test_builds_a_git_patch_for_each_file():
@@ -146,3 +158,24 @@ async def test_waits_once_when_the_archive_is_busy():
     events = [event async for event in Preserver(archive, 0, 0).events(EVENTS)]
     assert [event["type"] for event in events] == ["preserving", "waiting", "preserved", "done"]
     assert events[2]["status"] == QUEUED and archive.calls == 2
+
+
+def test_rewrites_a_section_link_as_it_is_written():
+    guide = "https://github.com/owner/repo/blob/main/docs/GUIDE.md"
+    events = [
+        {"type": "link", "diagnosis": {"link": {"url": f"{guide}#install", "source": README, "text": "", "written": "GUIDE.md#install"}, "verdict": "ghost", "cause": "missing_section"}},
+        {"type": "afterlife", "url": f"{guide}#install", "afterlife": {"status": "found", "url": f"{guide}#installation", "match": "successor", "source": "section"}},
+    ]
+    [change] = replacements(events)
+    assert (change.url, change.replacement, change.dead_link) == ("GUIDE.md#install", "GUIDE.md#installation", f"{guide}#install")
+    assert rewritten("See [setup](GUIDE.md#install).", [change])[0] == "See [setup](GUIDE.md#installation)."
+
+
+def test_never_touches_code_or_prose_mentions():
+    dead = Replacement(README, "https://old.dev/api", "https://web.archive.org/web/2019/https://old.dev/api", ARCHIVED_COPY)
+    section = Replacement(README, "#install", "#installation", NEW_HOME, "https://github.com/o/r/blob/main/README.md#install")
+    text = "See [the API](https://old.dev/api) and [setup](#install).\n\n```\ncurl https://old.dev/api\n```\n\nThe old `#install` anchor and the word #install stay."
+    after, applied = rewritten(text, [dead, section])
+    assert "[the API](https://web.archive.org/web/2019/https://old.dev/api)" in after and "[setup](#installation)" in after
+    assert "curl https://old.dev/api" in after and "`#install`" in after and "the word #install stay" in after
+    assert applied == [dead, section]
