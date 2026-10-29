@@ -25,7 +25,7 @@ class OllamaModel:
 
     async def generate(self, system: str, prompt: str, schema: type[Schema]) -> Schema:
         async def attempt() -> Schema:
-            with model_span(PROVIDER, self._model) as span:
+            with model_span(PROVIDER, self._model, system, prompt) as span:
                 started = perf_counter()
                 response = await self._chat(system, prompt, schema)
                 answer = response.message.content or ""

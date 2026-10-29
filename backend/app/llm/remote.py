@@ -76,7 +76,7 @@ class BackboardModel:
         }
 
         async def attempt() -> Schema:
-            with model_span(self._provider, self._model) as span:
+            with model_span(self._provider, self._model, body["system_prompt"], prompt) as span:
                 started = perf_counter()
                 response = await self._post(body)
                 payload = response.json()
