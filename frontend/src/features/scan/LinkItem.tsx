@@ -16,7 +16,7 @@ export default function LinkItem({ result }: { result: Diagnosis }) {
       <div className="mt-1 text-[0.95rem]">
         <CauseLine result={result} />
       </div>
-      <SourceLine source={result.link.source} />
+      <SourceLine link={result.link} />
     </li>
   );
 }

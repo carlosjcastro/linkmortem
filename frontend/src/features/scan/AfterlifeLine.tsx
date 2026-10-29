@@ -27,7 +27,11 @@ export default function AfterlifeLine({
   return (
     <div>
       <p className="font-semibold text-marigold">
-        {afterlife.match === "same" ? t.afterlifeSame : t.afterlifeSuccessor}
+        {afterlife.source === "section"
+          ? t.afterlifeSection
+          : afterlife.match === "same"
+            ? t.afterlifeSame
+            : t.afterlifeSuccessor}
       </p>
       <a
         href={afterlife.url}

@@ -16,10 +16,11 @@ export type Cause =
   | "restricted"
   | "blocked"
   | "unclassified"
-  | "model_unavailable";
+  | "model_unavailable"
+  | "missing_section";
 
 export type Diagnosis = {
-  link: { url: string; source: string; text: string };
+  link: { url: string; source: string; text: string; other_sources?: string[] };
   verdict: Verdict;
   cause: Cause;
   status_code: number | null;
@@ -41,11 +42,22 @@ export type Afterlife = {
   title: string;
   match: "same" | "successor" | "different" | null;
   evidence: string;
-  source: "search" | "graveyard" | "";
+  source: "search" | "graveyard" | "section" | "";
+};
+
+export type Coverage = {
+  found: number;
+  read: number;
+  available: number;
+  source: "repository" | "site" | "";
 };
 
 export type ScanEvent =
-  | { type: "collected"; total: number; reincarnation: boolean }
+  | ({
+      type: "collected";
+      total: number;
+      reincarnation: boolean;
+    } & Partial<Coverage>)
   | { type: "link"; diagnosis: Diagnosis }
   | { type: "memory"; url: string; memory: Memory }
   | { type: "afterlife"; url: string; afterlife: Afterlife }

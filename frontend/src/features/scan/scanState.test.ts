@@ -7,7 +7,17 @@ describe("scan state", () => {
   it("replays a saved scan into the same state a live scan builds", () => {
     const events: ScanEvent[] = [
       { type: "collected", total: 1, reincarnation: false },
-      { type: "link", diagnosis: { link: { url: "https://a.dev/x", source: "", text: "" }, verdict: "ghost", cause: "not_found", status_code: 404, final_url: null, evidence: "" } },
+      {
+        type: "link",
+        diagnosis: {
+          link: { url: "https://a.dev/x", source: "", text: "" },
+          verdict: "ghost",
+          cause: "not_found",
+          status_code: 404,
+          final_url: null,
+          evidence: "",
+        },
+      },
       { type: "done", summary: { ghost: 1 } },
       { type: "saved", id: "abc123def4" },
     ];
@@ -15,6 +25,30 @@ describe("scan state", () => {
     expect(state.phase).toBe("done");
     expect(state.results).toHaveLength(1);
     expect(state.shareId).toBe("abc123def4");
+    expect(state.coverage).toEqual({
+      found: 1,
+      read: 0,
+      available: 0,
+      source: "",
+    });
+  });
+
+  it("keeps what a capped scan left out", () => {
+    const state = applyEvent(INITIAL_SCAN, {
+      type: "collected",
+      total: 150,
+      found: 412,
+      read: 40,
+      available: 87,
+      source: "repository",
+      reincarnation: true,
+    });
+    expect(state.coverage).toEqual({
+      found: 412,
+      read: 40,
+      available: 87,
+      source: "repository",
+    });
   });
 
   it("reads share ids only from share paths", () => {

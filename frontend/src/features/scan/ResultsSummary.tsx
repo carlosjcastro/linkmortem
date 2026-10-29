@@ -1,6 +1,7 @@
 import type { Ref } from "react";
 import HauntedHouse from "../house/HauntedHouse";
 import { useTranslation } from "../i18n/useTranslation";
+import CoverageNote from "./CoverageNote";
 import ModelNotice from "./ModelNotice";
 import ScanProgress from "./ScanProgress";
 import type { ScanState } from "./scanState";
@@ -36,6 +37,9 @@ export default function ResultsSummary({
         <p className="mt-3 break-all text-dusk">{state.target}</p>
         {running ? <ScanProgress state={state} /> : null}
         {done ? <Tally groups={groups} /> : null}
+        {done ? (
+          <CoverageNote total={state.total} coverage={state.coverage} />
+        ) : null}
         {done ? <ModelNotice results={state.results} /> : null}
       </div>
       {done && state.results.length ? (

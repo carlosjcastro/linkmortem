@@ -3,6 +3,7 @@ import AfterlifeLine from "./AfterlifeLine";
 import AutopsyRow from "./AutopsyRow";
 import CauseLine from "./CauseLine";
 import MemoryLine from "./MemoryLine";
+import { needsMemory } from "./needsMemory";
 import { ghostAnchor } from "./sectionAnchors";
 import SourceLine from "./SourceLine";
 import type { Afterlife, Diagnosis, Memory } from "./scanTypes";
@@ -37,12 +38,12 @@ export default function GhostAutopsy({
       >
         {result.link.url}
       </a>
-      <SourceLine source={result.link.source} />
+      <SourceLine link={result.link} />
       <dl className="mt-6 grid gap-5">
         <AutopsyRow term={t.rowCause} tone="bg-rose">
           <CauseLine result={result} />
         </AutopsyRow>
-        {memory || remembering ? (
+        {needsMemory(result) && (memory || remembering) ? (
           <AutopsyRow term={t.rowMemory} tone="bg-spectral">
             <MemoryLine memory={memory} remembering={remembering} />
           </AutopsyRow>
