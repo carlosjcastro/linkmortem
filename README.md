@@ -6,15 +6,15 @@
 
 [![Live at linkmortem.tech](https://img.shields.io/badge/live-linkmortem.tech-E8A33D?style=for-the-badge)](https://linkmortem.tech)
 [![Demo video on YouTube](https://img.shields.io/badge/demo_video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/lp0didvo9Rs)
-[![Example autopsy](https://img.shields.io/badge/example-autopsy-6E56CF?style=for-the-badge)](https://linkmortem.tech/r/J1TS79vOe1kw)
+[![Example autopsy](https://img.shields.io/badge/example-autopsy-6E56CF?style=for-the-badge)](https://linkmortem.tech/r/n1piOyPEcD1E)
 
 [![GitHub Action demo, pull request opened by the Action](https://img.shields.io/badge/Action_demo-pull_request_%231-238636?style=for-the-badge&logo=github)](https://github.com/carlosjcastro/linkmortem-playground/pull/1)
 [![GitHub Action demo, issue kept by the Action](https://img.shields.io/badge/Action_demo-issue_%232-238636?style=for-the-badge&logo=github)](https://github.com/carlosjcastro/linkmortem-playground/issues/2)
 [![CI status](https://img.shields.io/github/actions/workflow/status/carlosjcastro/linkmortem/ci.yml?branch=main&style=for-the-badge&label=CI&logo=githubactions&logoColor=white)](https://github.com/carlosjcastro/linkmortem/actions/workflows/ci.yml)
 [![MIT license](https://img.shields.io/badge/license-MIT-3DA639?style=for-the-badge)](LICENSE)
 
-[![Read the story on DEV](https://img.shields.io/badge/DEV_post-read_the_story-0A0A0A?style=for-the-badge&logo=devdotto&logoColor=white)](https://dev.to/carlosjcastrog/linkmortem-an-autopsy-for-every-dead-link-56a6)
 [![Built for the DEV Hacktoberfest 2026 Open Source AI Challenge, Week 4, Ghost in the Machine](https://img.shields.io/badge/DEV_Hacktoberfest_2026-Week_4%2C_Ghost_in_the_Machine-0A0A0A?style=for-the-badge&logo=devdotto&logoColor=white)](https://dev.to/challenges/hacktoberfest-week4-2026-10-26)
+
 ## Contents
 
 - [Why it exists](#why-it-exists)
