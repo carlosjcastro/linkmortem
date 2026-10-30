@@ -13,8 +13,8 @@
 [![CI status](https://img.shields.io/github/actions/workflow/status/carlosjcastro/linkmortem/ci.yml?branch=main&style=for-the-badge&label=CI&logo=githubactions&logoColor=white)](https://github.com/carlosjcastro/linkmortem/actions/workflows/ci.yml)
 [![MIT license](https://img.shields.io/badge/license-MIT-3DA639?style=for-the-badge)](LICENSE)
 
+[![Read the story on DEV](https://img.shields.io/badge/DEV_post-read_the_story-0A0A0A?style=for-the-badge&logo=devdotto&logoColor=white)](https://dev.to/carlosjcastrog/linkmortem-an-autopsy-for-every-dead-link-56a6)
 [![Built for the DEV Hacktoberfest 2026 Open Source AI Challenge, Week 4, Ghost in the Machine](https://img.shields.io/badge/DEV_Hacktoberfest_2026-Week_4%2C_Ghost_in_the_Machine-0A0A0A?style=for-the-badge&logo=devdotto&logoColor=white)](https://dev.to/challenges/hacktoberfest-week4-2026-10-26)
-
 ## Contents
 
 - [Why it exists](#why-it-exists)
