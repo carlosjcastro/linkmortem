@@ -46,6 +46,8 @@ Linkmortem treats each dead link the way a coroner treats a body. It names the c
 
 Every scan follows the same six steps, and each one reports what it did.
 
+![The six steps of an autopsy on the home page](docs/screenshots/home-steps.png)
+
 1. **Find.** Collects up to 150 links from up to 12 pages of a site, or from up to 40 Markdown files of a public repository at an exact branch, tag or commit. Relative links are resolved against the repository, badges and placeholder hosts like `example.com` are skipped, and links inside code blocks are ignored. When a limit cuts the scan short, the results say how many links were found and how many files or pages were read.
 2. **Diagnose.** Checks each link and names its cause of death: not found, removed on purpose, dead domain, parked domain, error page in disguise, empty placeholder, unrelated redirect or missing section. Redirects and meta refresh are followed, and every hop goes through the same safety guard. A failure that may be temporary (429, 5xx, a network error, a DNS hiccup) is retried once before any verdict. Bot checks, login walls and pages that only render with JavaScript are reported as unconfirmed, never as dead.
 3. **Remember.** Finds the last healthy copy in the Wayback Machine. Captures that are themselves error pages, parked domains or impossible dates are skipped, and links that already point to an archive don't look for a memory of themselves.
@@ -65,9 +67,14 @@ In production, Gemma is called for roughly one link in ten. One night of scans c
 
 A real example shows the split. The TypeScript home page contains a code sample with the error `Property 'name' does not exist on type…`. "does not exist" is one of the phrases code treats as suspicious, because it usually means a page answers 200 but its content is gone. Code can't tell a sentence about a dead page from an example inside a code block, so it asks Gemma. Gemma read the page and answered `alive`. If Gemma hadn't been available, the link would have stayed unconfirmed, never dead.
 
-![A Gemma call in Sentry, with the TypeScript page and Gemma's answer](docs/screenshots/sentry-gemma-call.png)
+<p>
+  <img src="docs/screenshots/sentry-gemma-call.png" alt="A Gemma call in Sentry with the TypeScript page as input" width="49%">
+  <img src="docs/screenshots/sentry-gemma-output.png" alt="Gemma's answer in Sentry, alive with the page title as evidence" width="49%">
+</p>
 
 Pages from the internet are fenced as data in every prompt. One of the pages scanned while building Linkmortem opens with "Ignore all previous instructions" to trap AI crawlers. Gemma kept classifying it, and Linkmortem even found the article at its new address.
+
+![Another Gemma call in Sentry, with the prompt that fences the page as data](docs/screenshots/sentry-gemma-call-2.png)
 
 ### The page lives, but the section died
 
@@ -95,12 +102,21 @@ Linkmortem never claims more than it knows.
 - **A shared autopsy says it is loading saved results,** "Nothing is being scanned again", and an expired one explains that autopsies last 30 days and how to scan again.
 - **Copying never fails silently.** If the browser refuses, the page says so and opens the text to copy by hand.
 
+<p>
+  <img src="docs/screenshots/results-unconfirmed.png" alt="Could not confirm, with npmjs.com hidden behind a bot check" width="49%">
+  <img src="docs/screenshots/results-loading.png" alt="The waiting ghost while a shared autopsy loads" width="49%">
+</p>
+
+![An expired or wrong autopsy link, with an honest title and how to scan again](docs/screenshots/results-not-found.png)
+
 ### Fixes a maintainer can trust
 
 - Only proven replacements are written: a new home Gemma judged as the same page or its successor, a move the archived page announced, the closest heading of a moved section, or the last healthy archived copy with its date.
 - Whole links only, so fixing `https://old.dev/a` never touches `https://old.dev/abc`.
 - Code blocks and inline code are never rewritten, and relative links are only rewritten where they are the target of a link.
 - The same dead link found in several files is fixed in all of them.
+
+![The patch replacing a dead section and Enzyme's dead link](docs/screenshots/patch-diff.png)
 
 ## Use it on the web
 
@@ -119,6 +135,13 @@ While the scan runs, progress says what is happening ("Checked 116 of 150 links"
 - **Could not confirm** and **Still alive,** collapsed below.
 
 ![What you can do now, with the patch, preservation, the workflow and the share link](docs/screenshots/results-next-steps.png)
+
+<p>
+  <img src="docs/screenshots/results-house-hover.png" alt="Hovering a ghost in the haunted house shows its link" width="49%">
+  <img src="docs/screenshots/results-preserve.png" alt="Living links sent to the Internet Archive with their status" width="49%">
+</p>
+
+![The link preview of a shared autopsy, naming the ghosts found](docs/screenshots/share-preview.png)
 
 The interface is in English and Spanish and always starts in English. The header switch changes the language, and the animations switch stops every animation.
 
@@ -185,7 +208,10 @@ The job summary shows the report, followed by a line for the pull request and an
 - It never forces a patch that no longer applies, never overwrites a branch someone edited, never reopens a closed pull request and never merges.
 - The description is a numbered list that fits any screen: the link as written in the file, its replacement, why it died and what backs the new link.
 
-![The pull request the Action opened in the playground](docs/screenshots/playground-pull-request.png)
+<p>
+  <img src="docs/screenshots/playground-pull-request.png" alt="The pull request the Action opened in the playground, as a list" width="49%">
+  <img src="docs/screenshots/playground-pull-request-diff.png" alt="The files changed in that pull request" width="49%">
+</p>
 
 **The issue** keeps the full report, including the links without a proven replacement:
 
@@ -193,7 +219,10 @@ The job summary shows the report, followed by a line for the pull request and an
 - It comments only when ghosts appear or are laid to rest, so nothing new means no notification.
 - It closes itself when the repository is clean.
 
-![The issue the Action keeps up to date in the playground](docs/screenshots/playground-issue.png)
+<p>
+  <img src="docs/screenshots/playground-issue.png" alt="The issue the Action keeps up to date in the playground" width="49%">
+  <img src="docs/screenshots/playground-action-summary.png" alt="The job summary with the report, the pull request and the issue" width="49%">
+</p>
 
 This repository runs the Action on itself every Monday and on every pull request that touches Markdown. The [playground](https://github.com/carlosjcastro/linkmortem-playground) shows it working from another repository, with a renamed section (`#install` → `#installation`) and a retired Unity tutorial replaced by its copy from 2019.
 
@@ -278,7 +307,6 @@ The first run said Llama 4 Scout scored 0%. It had never answered: the provider 
 
 Labels were proposed with AI help and reviewed by hand. Results vary by a few points between runs even at temperature 0. The full report, with invalid answers, p95 latency and tokens, is in [`backend/evals/REPORT.md`](backend/evals/REPORT.md).
 
-![The evaluation report with nine open models](docs/screenshots/evaluation-results.png)
 
 To reproduce it, set `LINKMORTEM_CAPTURE_FILE` while scanning to record prompts, label them with `python -m evals.label <captured file>` and compare models with `python -m evals.compare <model> <model> …` (for example `backboard:openrouter:google/gemma-4-26b-a4b-it` or `ollama:gemma4:e4b`). The comparison rewrites `REPORT.md` with the models you pass.
 
@@ -293,28 +321,118 @@ Every scan is traced in Sentry as an AI agent:
 
 Sentry receives the prompts and answers built from public pages, but never IP addresses, cookies or request bodies.
 
-![The agent's input and output in Sentry](docs/screenshots/sentry-agent-input.png)
+<p>
+  <img src="docs/screenshots/sentry-agent-input.png" alt="The agent's input in Sentry, the task it received" width="49%">
+  <img src="docs/screenshots/sentry-agent-output.png" alt="The agent's output in Sentry, the scan summary" width="49%">
+</p>
 
-![The agent overview in Sentry: traffic, model calls, tokens and cost](docs/screenshots/sentry-agents-overview.png)
+<p>
+  <img src="docs/screenshots/sentry-agents-overview.png" alt="The AI agents overview in Sentry, filtered by production" width="49%">
+  <img src="docs/screenshots/sentry-agents-overview-2.png" alt="More of the agents overview: model calls, tokens and cost" width="49%">
+</p>
+
+<p>
+  <img src="docs/screenshots/sentry-agents-tools.png" alt="Every tool the agent calls, with calls, errors and duration" width="49%">
+  <img src="docs/screenshots/sentry-agents-models.png" alt="Gemma 4 26B with its calls, tokens, cost and latency" width="49%">
+</p>
+
+![One scan as a trace: invoke_agent with its tools and Gemma calls](docs/screenshots/sentry-trace-waterfall.png)
+
+<p>
+  <img src="docs/screenshots/sentry-agent-transcript.png" alt="The agent transcript, with every Gemma call in order" width="49%">
+  <img src="docs/screenshots/sentry-agent-transcript-2.png" alt="More of the transcript, with the pages Gemma read and its answers" width="49%">
+</p>
 
 Sentry shows prompts as HTML, so the `<page>` tags that fence the page text are hidden in its view. They are in the prompt, and a test checks it.
 
 ## How it's built
 
+Where each piece runs and what it talks to. The same scanner runs on Render for the web and on the GitHub Actions runner for the Action.
+
 ```mermaid
 flowchart LR
-  user[Web or GitHub Action] --> api[FastAPI on Render]
-  api --> find[Find links and sections]
-  find --> diagnose[Diagnose]
-  diagnose -->|suspicious pages only| gemma[Gemma 4 via Backboard or Ollama]
-  diagnose --> remember[Wayback Machine]
-  remember --> announced{Move announced?}
-  announced -->|no| graves[(Atlas graveyard)]
-  graves -->|not known yet| search[SerpApi]
-  graves --> gemma
-  search --> gemma
-  api --> atlas[(MongoDB Atlas)]
-  api --> sentry[Sentry agent traces]
+  browser["Browser<br/>React 19, Tailwind, Three.js"]
+
+  subgraph render["Render, Docker, linkmortem.tech"]
+    api["FastAPI<br/>address checks, 16 KB bodies,<br/>rate limit, security headers"]
+  end
+
+  subgraph runner["GitHub Actions runner"]
+    action["Linkmortem Action<br/>on a schedule or on demand"]
+    cli["Command line<br/>app.cli"]
+  end
+
+  scanner["Scanner, the same code in both<br/>find, diagnose, remember,<br/>reincarnate, rest"]
+
+  subgraph open["Open pieces"]
+    gemma["Gemma 4<br/>Backboard or Ollama"]
+    wayback["Internet Archive<br/>Wayback Machine and Save Page Now"]
+  end
+
+  subgraph partners["Partner services"]
+    serpapi["SerpApi<br/>live search"]
+    atlas[("MongoDB Atlas<br/>autopsies, caches,<br/>vector graveyard")]
+    sentry["Sentry<br/>agent traces"]
+  end
+
+  subgraph sources["What gets read"]
+    githubapi["GitHub API<br/>and raw Markdown"]
+    pages["Public web pages<br/>through the SSRF guard"]
+  end
+
+  subgraph results["What comes back"]
+    autopsy["Autopsy and haunted house<br/>shared at /r/id"]
+    patch["linkmortem.patch"]
+    pr["Pull request and issue"]
+  end
+
+  browser -->|"POST /api/scans/stream"| api
+  api --> scanner
+  api -->|"NDJSON events"| autopsy
+  action --> cli
+  cli --> scanner
+  scanner --> githubapi
+  scanner --> pages
+  scanner --> gemma
+  scanner --> wayback
+  scanner --> serpapi
+  scanner <--> atlas
+  scanner -.-> sentry
+  api -->|"preserve living links"| wayback
+  scanner --> patch
+  patch -->|"scripts in the Action"| pr
+```
+
+How each link is decided, from the moment it's found to the fix. Every diamond is a decision made by code, and Gemma is asked only on the two paths that need reading.
+
+```mermaid
+flowchart TD
+  link(["A link found in a page<br/>or a Markdown file"]) --> section{"Points to a section<br/>of a repository document?"}
+  section -->|"yes"| anchor{"Does a heading or<br/>anchor create it?"}
+  anchor -->|"yes"| alive(["Alive"])
+  anchor -->|"no"| closest["Closest heading in the<br/>same document, no model"]
+  section -->|"no"| fetch["Fetch through the safety guard<br/>follow redirects and meta refresh<br/>retry once if the failure may be temporary"]
+  fetch --> code{"Can code decide?"}
+  code -->|"404, 410, dead domain,<br/>parked domain"| ghost(["Ghost"])
+  code -->|"5xx, timeout, login,<br/>bot check, private address"| unknown(["Could not confirm"])
+  code -->|"healthy page, or text<br/>that only loads with scripts"| alive
+  code -->|"readable page that<br/>looks dead"| gemma["Gemma 4 reads the page<br/>fenced as data"]
+  gemma -->|"alive"| alive
+  gemma -->|"error page, placeholder,<br/>parked or unrelated"| ghost
+  gemma -->|"unusable or unavailable"| unknown
+  ghost --> memory{"Healthy copy in the<br/>Wayback Machine?"}
+  memory -->|"no"| listed(["Listed in the report<br/>without a replacement"])
+  memory -->|"yes"| announced{"Does the archived page<br/>announce a new address?"}
+  announced -->|"yes, and it is alive"| proven(["Proven replacement"])
+  announced -->|"no"| known{"Known in the cache<br/>or the Atlas graveyard?"}
+  known -->|"candidates"| compare["Gemma compares each candidate<br/>with the archived copy"]
+  known -->|"nothing yet"| search["SerpApi search<br/>within 5 per scan and 20 per day"]
+  search --> compare
+  compare -->|"same page or newer version"| proven
+  compare -->|"different, none or<br/>budget spent"| archived(["Last healthy archived<br/>copy as replacement"])
+  closest --> proven
+  proven --> deliver["Patch, pull request and issue"]
+  archived --> deliver
 ```
 
 | Piece | Role |
@@ -331,6 +449,18 @@ flowchart LR
 | **Three.js** | The ghost of 9,000 points with falling marigold petals on the home page, and the haunted house of each autopsy |
 
 The backend is Python 3.12 or newer with FastAPI, httpx2, Pydantic and PyMongo's async client, checked with Ruff and pytest (181 tests). The interface is React 19 with Vite, Tailwind CSS 4 and Three.js, formatted with Prettier and tested with Vitest (62 tests). Three.js loads in its own chunk only when a scene appears, so the home page shows up before it.
+
+In production:
+
+<p>
+  <img src="docs/screenshots/render-service.png" alt="The Linkmortem service live on Render with its custom domain" width="49%">
+  <img src="docs/screenshots/backboard-usage.png" alt="Gemma calls through Backboard, with tokens and cost per call" width="49%">
+</p>
+
+<p>
+  <img src="docs/screenshots/atlas-collections.png" alt="The Linkmortem database in MongoDB Atlas with its collections" width="49%">
+  <img src="docs/screenshots/atlas-vector-index.png" alt="The graveyard's Vector Search index, active" width="49%">
+</p>
 
 ```
 backend/
@@ -387,6 +517,8 @@ See [SECURITY.md](SECURITY.md) to report a vulnerability.
 - Body text in Atkinson Hyperlegible, designed for readers with low vision, and headings in IM Fell English, a 17th century print face that fits honoring the past.
 - Serious, readable colors on a night background, with meaning carried by words as well as color.
 - The footer is the edge of a graveyard, with headstones, an iron fence, a candle and an epitaph: "Here lie the links that led nowhere. May they rest, and may their pages be remembered."
+
+![The graveyard footer with its epitaph, links and credits](docs/screenshots/footer-graveyard.png)
 
 ## Limits
 
