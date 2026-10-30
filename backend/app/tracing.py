@@ -10,7 +10,7 @@ from sentry_sdk.consts import OP, SPANDATA
 from sentry_sdk.tracing import Span
 
 from app.llm.usage import ModelUsage
-from app.wording import counted
+from app.wording import counted, verdict_line
 
 AGENT_NAME = "Linkmortem"
 PIPELINE_NAME = "autopsy"
@@ -24,10 +24,8 @@ def messages(*turns: tuple[str, str, int]) -> str:
 
 
 def agent_summary(tally: dict[str, int]) -> str:
-    return (
-        f"Checked {counted(sum(tally.values()), 'link')}: {counted(tally.get('ghost', 0), 'ghost')}, "
-        f"{tally.get('unknown', 0)} could not be confirmed, {tally.get('alive', 0)} alive."
-    )
+    verdict = verdict_line(tally.get("ghost", 0), tally.get("unknown", 0))
+    return f"Checked {counted(sum(tally.values()), 'link')}: {verdict}, {tally.get('alive', 0)} alive."
 
 
 def tag_agent(span: Span) -> None:
