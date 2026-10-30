@@ -2,7 +2,7 @@
 
 **Every dead link is a ghost.** Linkmortem finds the dead links and dead sections in a website or in the Markdown docs of a GitHub repository, works out why each one died, recovers what the page said from the Internet Archive, finds where the content lives now and writes the fix. Code decides everything it can verify. Gemma 4, an open weights model, reads only the pages code can't judge.
 
-**Live:** [linkmortem.tech](https://linkmortem.tech) · **Example autopsy:** [linkmortem.tech/r/J1TS79vOe1kw](https://linkmortem.tech/r/J1TS79vOe1kw) · **GitHub Action demo:** [pull request](https://github.com/carlosjcastro/linkmortem-playground/pull/1) and [issue](https://github.com/carlosjcastro/linkmortem-playground/issues/2) opened by the Action in [linkmortem-playground](https://github.com/carlosjcastro/linkmortem-playground)
+**Live:** [linkmortem.tech](https://linkmortem.tech) · **Demo video:** [youtu.be/lp0didvo9Rs](https://youtu.be/lp0didvo9Rs) · **Example autopsy:** [linkmortem.tech/r/J1TS79vOe1kw](https://linkmortem.tech/r/J1TS79vOe1kw) · **GitHub Action demo:** [pull request](https://github.com/carlosjcastro/linkmortem-playground/pull/1) and [issue](https://github.com/carlosjcastro/linkmortem-playground/issues/2) opened by the Action in [linkmortem-playground](https://github.com/carlosjcastro/linkmortem-playground)
 
 Built for the DEV Hacktoberfest Open Source AI Challenge, Week 4, "Ghost in the Machine".
 
@@ -28,6 +28,7 @@ Built for the DEV Hacktoberfest Open Source AI Challenge, Week 4, "Ghost in the 
 - [Configuration](#configuration)
 - [Deploy](#deploy)
 - [Built with AI](#built-with-ai)
+- [Credits](#credits)
 - [License](#license)
 
 ## Why it exists
@@ -179,25 +180,25 @@ jobs:
 
 Save it as `.github/workflows/linkmortem.yml`, add the secrets you have and enable **Settings → Actions → General → Workflow permissions → Allow GitHub Actions to create and approve pull requests**. Without any key, the code checks still run.
 
-| Input | Default | What it does |
-| --- | --- | --- |
-| `repository` | the current repository | Repository to scan, as `owner/name` |
-| `ref` | the commit being run | Branch, tag or commit to scan |
-| `github-token` | `github.token` | Reads the repository through the GitHub API |
-| `backboard-api-key` | empty | Lets Gemma judge suspicious pages through Backboard. Without it, code checks still run |
-| `backboard-model` | `google/gemma-4-26b-a4b-it` | Model served by Backboard |
-| `serpapi-api-key` | empty | Looks for where dead pages live now |
-| `fail-on-ghosts` | `false` | Fails the step when ghosts are found |
-| `open-pull-request` | `false` | Opens or updates one pull request with the proven replacements |
-| `open-issue` | `false` | Keeps one issue with the latest report, comments only when ghosts appear or are laid to rest and closes it when none are left |
+| Input               | Default                     | What it does                                                                                                                  |
+| ------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `repository`        | the current repository      | Repository to scan, as `owner/name`                                                                                           |
+| `ref`               | the commit being run        | Branch, tag or commit to scan                                                                                                 |
+| `github-token`      | `github.token`              | Reads the repository through the GitHub API                                                                                   |
+| `backboard-api-key` | empty                       | Lets Gemma judge suspicious pages through Backboard. Without it, code checks still run                                        |
+| `backboard-model`   | `google/gemma-4-26b-a4b-it` | Model served by Backboard                                                                                                     |
+| `serpapi-api-key`   | empty                       | Looks for where dead pages live now                                                                                           |
+| `fail-on-ghosts`    | `false`                     | Fails the step when ghosts are found                                                                                          |
+| `open-pull-request` | `false`                     | Opens or updates one pull request with the proven replacements                                                                |
+| `open-issue`        | `false`                     | Keeps one issue with the latest report, comments only when ghosts appear or are laid to rest and closes it when none are left |
 
-| Output | Meaning |
-| --- | --- |
-| `ghosts` | Number of dead links |
-| `unknown` | Number of links that could not be confirmed |
-| `report` | Path to the Markdown report |
-| `replacements` | Number of dead links with a proven replacement in the patch |
-| `pull-request` | Address of the Linkmortem pull request, when there is one |
+| Output                | Meaning                                                            |
+| --------------------- | ------------------------------------------------------------------ |
+| `ghosts`              | Number of dead links                                               |
+| `unknown`             | Number of links that could not be confirmed                        |
+| `report`              | Path to the Markdown report                                        |
+| `replacements`        | Number of dead links with a proven replacement in the patch        |
+| `pull-request`        | Address of the Linkmortem pull request, when there is one          |
 | `pull-request-status` | `opened`, `updated`, `unchanged`, `conflict` or `edited-by-people` |
 
 The job summary shows the report, followed by a line for the pull request and another for the issue (`opened`, `updated` or `closed`, with its link).
@@ -233,68 +234,68 @@ cd backend
 python -m app.cli https://github.com/owner/repo --report report.md --patch linkmortem.patch
 ```
 
-| Option | What it does |
-| --- | --- |
-| `target` | A website or a GitHub repository, optionally with `/tree/<ref>` |
-| `--report` | Where to write the Markdown report |
-| `--patch` | Writes a git patch with the proven replacements and a pull request body next to it |
-| `--github-output` | Appends the scan counts and file paths to this file |
-| `--fail-on-ghosts` | Exits with code 1 when ghosts are found |
+| Option             | What it does                                                                       |
+| ------------------ | ---------------------------------------------------------------------------------- |
+| `target`           | A website or a GitHub repository, optionally with `/tree/<ref>`                    |
+| `--report`         | Where to write the Markdown report                                                 |
+| `--patch`          | Writes a git patch with the proven replacements and a pull request body next to it |
+| `--github-output`  | Appends the scan counts and file paths to this file                                |
+| `--fail-on-ghosts` | Exits with code 1 when ghosts are found                                            |
 
 ## What every result means
 
-| Cause | Verdict | How it's decided |
-| --- | --- | --- |
-| Alive | alive | The page answers with readable content that matches the link |
-| Alive, though its content loads with scripts | alive | The page answers but has no readable text, which is never evidence of death |
-| The page no longer exists | ghost | 404 |
-| The page was removed on purpose | ghost | 410 |
-| The domain no longer exists | ghost | DNS fails, even after a retry |
-| The domain is parked or for sale | ghost | A parking host or a for sale phrase found by code, or Gemma reading a page made of ads |
-| An error page in disguise | ghost | Gemma reads an error message on a page that answered 200 |
-| An empty or unfinished page | ghost | Gemma reads a placeholder, a default server page or a coming soon notice |
-| Sends readers somewhere unrelated | ghost | The link redirects to a different site and Gemma reads unrelated content |
-| The section no longer exists | ghost | No heading or anchor in the document creates that section |
-| The server failed to answer | unconfirmed | 5xx, even after a retry |
-| Could not reach the server | unconfirmed | The connection failed |
-| The server took too long | unconfirmed | Timeout, even after a retry |
-| Hidden behind a login or bot check | unconfirmed | 401, 403 or 429, a login wall, a bot check or a request to update the browser or enable JavaScript |
-| Private address, not checked | unconfirmed | The address isn't public, so it's never requested |
-| Gemma could not decide | unconfirmed | Gemma's answer wasn't usable |
-| Gemma wasn't available to read it | unconfirmed | The model didn't answer |
+| Cause                                        | Verdict     | How it's decided                                                                                   |
+| -------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------- |
+| Alive                                        | alive       | The page answers with readable content that matches the link                                       |
+| Alive, though its content loads with scripts | alive       | The page answers but has no readable text, which is never evidence of death                        |
+| The page no longer exists                    | ghost       | 404                                                                                                |
+| The page was removed on purpose              | ghost       | 410                                                                                                |
+| The domain no longer exists                  | ghost       | DNS fails, even after a retry                                                                      |
+| The domain is parked or for sale             | ghost       | A parking host or a for sale phrase found by code, or Gemma reading a page made of ads             |
+| An error page in disguise                    | ghost       | Gemma reads an error message on a page that answered 200                                           |
+| An empty or unfinished page                  | ghost       | Gemma reads a placeholder, a default server page or a coming soon notice                           |
+| Sends readers somewhere unrelated            | ghost       | The link redirects to a different site and Gemma reads unrelated content                           |
+| The section no longer exists                 | ghost       | No heading or anchor in the document creates that section                                          |
+| The server failed to answer                  | unconfirmed | 5xx, even after a retry                                                                            |
+| Could not reach the server                   | unconfirmed | The connection failed                                                                              |
+| The server took too long                     | unconfirmed | Timeout, even after a retry                                                                        |
+| Hidden behind a login or bot check           | unconfirmed | 401, 403 or 429, a login wall, a bot check or a request to update the browser or enable JavaScript |
+| Private address, not checked                 | unconfirmed | The address isn't public, so it's never requested                                                  |
+| Gemma could not decide                       | unconfirmed | Gemma's answer wasn't usable                                                                       |
+| Gemma wasn't available to read it            | unconfirmed | The model didn't answer                                                                            |
 
-| Afterlife | Meaning |
-| --- | --- |
-| Reincarnated at a new address | Same content at a new address, judged by Gemma or announced by the archived page |
-| Lives on in a newer version | A newer version of the same content, judged by Gemma |
-| Closest section in the same document | The heading that replaced a renamed section |
-| Found in Linkmortem's graveyard | A link already resolved in an earlier scan, found without a new web search |
-| No new home found | The archived copy is the best replacement |
-| The search didn't answer | The search service failed this time |
-| Search limit reached | This scan used its 5 searches |
-| Web searches used up for today | The daily search budget ran out, and the archived copy still works |
+| Afterlife                            | Meaning                                                                          |
+| ------------------------------------ | -------------------------------------------------------------------------------- |
+| Reincarnated at a new address        | Same content at a new address, judged by Gemma or announced by the archived page |
+| Lives on in a newer version          | A newer version of the same content, judged by Gemma                             |
+| Closest section in the same document | The heading that replaced a renamed section                                      |
+| Found in Linkmortem's graveyard      | A link already resolved in an earlier scan, found without a new web search       |
+| No new home found                    | The archived copy is the best replacement                                        |
+| The search didn't answer             | The search service failed this time                                              |
+| Search limit reached                 | This scan used its 5 searches                                                    |
+| Web searches used up for today       | The daily search budget ran out, and the archived copy still works               |
 
-| Memory | Meaning |
-| --- | --- |
-| Last healthy copy, with its date | A capture that isn't an error page, linked to the Wayback Machine |
-| No healthy copy | The Wayback Machine never saved a healthy version |
-| The Wayback Machine didn't answer | Try again in a few minutes |
+| Memory                            | Meaning                                                           |
+| --------------------------------- | ----------------------------------------------------------------- |
+| Last healthy copy, with its date  | A capture that isn't an error page, linked to the Wayback Machine |
+| No healthy copy                   | The Wayback Machine never saved a healthy version                 |
+| The Wayback Machine didn't answer | Try again in a few minutes                                        |
 
 ## Open models, measured
 
 Choosing the model was itself an experiment. Linkmortem captured 60 prompts while scanning old repositories, labeled 55 of them (42 page classifications and 13 candidate comparisons) and replayed them against nine open weights models through a single Backboard API key. A costly error is calling a living page dead or accepting a different page as the new home, the two mistakes that hurt users most.
 
-| Model | Accuracy | Costly errors | Median latency |
-| --- | --- | --- | --- |
-| Gemma 4 31B | 98% | 0 | 2.98 s |
-| **Gemma 4 26B A4B (production)** | **95%** | **0** | **1.22 s** |
-| Llama 4 Scout (JSON by prompt) | 93% | 4 | 5.06 s |
-| DeepSeek V3.2 | 91% | 3 | 4.29 s |
-| Qwen3 30B A3B Instruct | 91% | 3 | 2.57 s |
-| Gemma 4 e4b, local with Ollama | 87% | 1 | 0.72 s |
-| Gemma 3 27B | 87% | 5 | 2.48 s |
-| Ministral 14B | 79% | 10 | 1.86 s |
-| Gemma 3 4B | 67% | 10 | 1.29 s |
+| Model                            | Accuracy | Costly errors | Median latency |
+| -------------------------------- | -------- | ------------- | -------------- |
+| Gemma 4 31B                      | 98%      | 0             | 2.98 s         |
+| **Gemma 4 26B A4B (production)** | **95%**  | **0**         | **1.22 s**     |
+| Llama 4 Scout (JSON by prompt)   | 93%      | 4             | 5.06 s         |
+| DeepSeek V3.2                    | 91%      | 3             | 4.29 s         |
+| Qwen3 30B A3B Instruct           | 91%      | 3             | 2.57 s         |
+| Gemma 4 e4b, local with Ollama   | 87%      | 1             | 0.72 s         |
+| Gemma 3 27B                      | 87%      | 5             | 2.48 s         |
+| Ministral 14B                    | 79%      | 10            | 1.86 s         |
+| Gemma 3 4B                       | 67%      | 10            | 1.29 s         |
 
 What the numbers say:
 
@@ -306,7 +307,6 @@ What the numbers say:
 The first run said Llama 4 Scout scored 0%. It had never answered: the provider rejected JSON mode and returned the error inside a successful response. Once the evaluation stored the reason for every invalid answer, the adapter learned to fall back to JSON requested by prompt, and Llama went from 0% to 93%.
 
 Labels were proposed with AI help and reviewed by hand. Results vary by a few points between runs even at temperature 0. The full report, with invalid answers, p95 latency and tokens, is in [`backend/evals/REPORT.md`](backend/evals/REPORT.md).
-
 
 To reproduce it, set `LINKMORTEM_CAPTURE_FILE` while scanning to record prompts, label them with `python -m evals.label <captured file>` and compare models with `python -m evals.compare <model> <model> …` (for example `backboard:openrouter:google/gemma-4-26b-a4b-it` or `ollama:gemma4:e4b`). The comparison rewrites `REPORT.md` with the models you pass.
 
@@ -320,6 +320,13 @@ Every scan is traced in Sentry as an AI agent:
 - `gen_ai.evaluate` for each model in the comparison.
 
 Sentry receives the prompts and answers built from public pages, but never IP addresses, cookies or request bodies.
+
+### What the traces showed
+
+- **How little the model is needed.** One night of production scans made 301 `diagnose_link` calls and only 30 Gemma calls, none failed. Gemma answered in 1.66 s on average and 3.27 s at P95, and those 30 calls used 12,927 tokens for USD 0.00141.
+- **A score that was never earned.** The first model comparison gave Llama 4 Scout and Mistral Small 0%. Their traces had 165 errors and 0 tokens, so they had never answered. Backboard returned 200 with a provider error inside, because those servers rejected JSON mode. Asking for JSON in the prompt took Llama from 0% to 93%.
+- **A span with no input.** The agent trace said "No input for this span". The agent never reported its task or its summary, and the deprecated `gen_ai.response.text` attribute was in use. Now the agent reports "Find the dead links in …" and its summary, and each Gemma call reports `gen_ai.input.messages` and `gen_ai.output.messages`.
+- **Code suspects, Gemma decides.** The TypeScript home page reached Gemma because its code sample says "does not exist". The trace shows Gemma answering `alive` with the title as evidence.
 
 <p>
   <img src="docs/screenshots/sentry-agent-input.png" alt="The agent's input in Sentry, the task it received" width="49%">
@@ -435,18 +442,18 @@ flowchart TD
   archived --> deliver
 ```
 
-| Piece | Role |
-| --- | --- |
-| **Gemma 4** | Classifies suspicious pages and compares candidates for a new home. Local with Ollama or in the cloud |
-| **Backboard** | Serves Gemma in production and ran the comparison of nine open models with one API key |
-| **Internet Archive** | Wayback Machine for the last healthy copy, Save Page Now to preserve living links |
-| **SerpApi** | Live web search for the new home of a dead page, with 5 searches per scan and a daily budget so one busy day can't spend the monthly quota |
-| **MongoDB Atlas** | Shared autopsies for 30 days, a 7 day cache of memories and new homes, and a graveyard of resolved links with Vector Search and Automated Embedding that answers before spending a search |
-| **Sentry** | Agent tracing with prompts, answers, tokens and cost |
-| **GitHub Actions** | CI with tests, Ruff and Prettier, the reusable Action, the weekly scan of this repository, the automatic pull request and the issue |
-| **GitHub Copilot** | The coding agent wrote the first security and contributing guides in [PR #3](https://github.com/carlosjcastro/linkmortem/pull/3), fixed after human review |
-| **Render** | Runs the API and the interface from a two stage Docker image at linkmortem.tech |
-| **Three.js** | The ghost of 9,000 points with falling marigold petals on the home page, and the haunted house of each autopsy |
+| Piece                | Role                                                                                                                                                                                      |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Gemma 4**          | Classifies suspicious pages and compares candidates for a new home. Local with Ollama or in the cloud                                                                                     |
+| **Backboard**        | Serves Gemma in production and ran the comparison of nine open models with one API key                                                                                                    |
+| **Internet Archive** | Wayback Machine for the last healthy copy, Save Page Now to preserve living links                                                                                                         |
+| **SerpApi**          | Live web search for the new home of a dead page, with 5 searches per scan and a daily budget so one busy day can't spend the monthly quota                                                |
+| **MongoDB Atlas**    | Shared autopsies for 30 days, a 7 day cache of memories and new homes, and a graveyard of resolved links with Vector Search and Automated Embedding that answers before spending a search |
+| **Sentry**           | Agent tracing with prompts, answers, tokens and cost                                                                                                                                      |
+| **GitHub Actions**   | CI with tests, Ruff and Prettier, the reusable Action, the weekly scan of this repository, the automatic pull request and the issue                                                       |
+| **GitHub Copilot**   | The coding agent wrote the first security and contributing guides in [PR #3](https://github.com/carlosjcastro/linkmortem/pull/3), fixed after human review                                |
+| **Render**           | Runs the API and the interface from a two stage Docker image at linkmortem.tech                                                                                                           |
+| **Three.js**         | The ghost of 9,000 points with falling marigold petals on the home page, and the haunted house of each autopsy                                                                            |
 
 The backend is Python 3.12 or newer with FastAPI, httpx2, Pydantic and PyMongo's async client, checked with Ruff and pytest (181 tests). The interface is React 19 with Vite, Tailwind CSS 4 and Three.js, formatted with Prettier and tested with Vitest (62 tests). Three.js loads in its own chunk only when a scene appears, so the home page shows up before it.
 
@@ -484,17 +491,17 @@ render.yaml        the Render Blueprint
 
 Linkmortem enters every category it actually uses, and none it doesn't.
 
-| Category | What the category asks | How Linkmortem meets it |
-| --- | --- | --- |
-| **Gemma** | Use Gemma to build the project | Gemma 4 classifies suspicious pages and compares candidates for a new home. It runs locally with Ollama (`gemma4:e4b`) or in the cloud through Backboard (`gemma-4-26b-a4b-it`), and the evaluation shows why: 0 costly errors |
-| **Render** | Use Render as the AI runtime or to host an agent's front end | Render runs the agent and its interface in production from a Docker image, with a health check and deploys only after CI passes |
-| **.tech Domain** | Put the project live on a .tech domain claimed through Hacktoberfest | [linkmortem.tech](https://linkmortem.tech), with HTTPS, structured data, a sitemap and link previews |
-| **Backboard** | Compare open weights models through a single Backboard API key | Nine open models compared on 55 labeled cases with one key, a comparison that chose the production model. Backboard also serves Gemma in production |
-| **GitHub Copilot** | Build with Copilot's coding agent, automate with GitHub Actions or review PRs with Copilot | The coding agent resolved [issue #2](https://github.com/carlosjcastro/linkmortem/issues/2) in [PR #3](https://github.com/carlosjcastro/linkmortem/pull/3). GitHub Actions runs CI, the reusable Action, the weekly scan, the automatic pull request and the issue |
-| **MongoDB Atlas** | Use Atlas as the data layer, with Vector Search for retrieval | Atlas stores shared autopsies and caches, and the graveyard uses Vector Search with Automated Embedding (`voyage-4`) to find links already resolved before spending a search |
-| **Sentry Agent Tracing** | Show the agent's work: setup, latency, tokens, cost | Every scan is an `invoke_agent` trace with its tools and every Gemma call, with prompts, answers, tokens and cost, as shown [above](#watching-the-agent-work) |
-| **SerpApi** | Give an agent live web search | SerpApi finds where a dead page lives now, with a cap per scan and a daily budget |
-| **ElevenLabs** | Generate narration for the demo video | The demo video is narrated with ElevenLabs |
+| Category                 | What the category asks                                                                      | How Linkmortem meets it                                                                                                                                                                                                                                           |
+| ------------------------ | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Gemma**                | Use Gemma to build the project                                                              | Gemma 4 classifies suspicious pages and compares candidates for a new home. It runs locally with Ollama (`gemma4:e4b`) or in the cloud through Backboard (`gemma-4-26b-a4b-it`), and the evaluation shows why: 0 costly errors                                    |
+| **Render**               | Use Render as the AI runtime or to host an agent's front end                                | Render runs the agent and its interface in production from a Docker image, with a health check and deploys only after CI passes                                                                                                                                   |
+| **.tech Domain**         | Put the project live on a .tech domain claimed through Hacktoberfest                        | [linkmortem.tech](https://linkmortem.tech), with HTTPS, structured data, a sitemap and link previews                                                                                                                                                              |
+| **Backboard**            | Compare open weights models through a single Backboard API key                              | Nine open models compared on 55 labeled cases with one key, a comparison that chose the production model. Backboard also serves Gemma in production                                                                                                               |
+| **GitHub Copilot**       | Build with Copilot's coding agent, automate with GitHub Actions or review PRs with Copilot  | The coding agent resolved [issue #2](https://github.com/carlosjcastro/linkmortem/issues/2) in [PR #3](https://github.com/carlosjcastro/linkmortem/pull/3). GitHub Actions runs CI, the reusable Action, the weekly scan, the automatic pull request and the issue |
+| **MongoDB Atlas**        | Use Atlas as the data layer, with Vector Search for retrieval                               | Atlas stores shared autopsies and caches, and the graveyard uses Vector Search with Automated Embedding (`voyage-4`) to find links already resolved before spending a search                                                                                      |
+| **Sentry Agent Tracing** | Show the agent's work: setup, latency, tokens, cost, what you found and how you debugged it | Every scan is an `invoke_agent` trace with its tools and every Gemma call, with prompts, answers, tokens and cost. The traces exposed a model comparison that had never answered and a span with no input, as shown [above](#what-the-traces-showed)              |
+| **SerpApi**              | Give an agent live web search                                                               | SerpApi finds where a dead page lives now, with a cap per scan and a daily budget                                                                                                                                                                                 |
+| **ElevenLabs**           | Generate narration for the demo video                                                       | The [demo video](https://youtu.be/lp0didvo9Rs) is narrated with ElevenLabs                                                                                                                                                                                        |
 
 ## Security
 
@@ -557,32 +564,32 @@ Vite proxies `/api` to the backend at `http://localhost:8000`. Everything works 
 
 ## Configuration
 
-| Variable | Default | What it does |
-| --- | --- | --- |
-| `LINKMORTEM_MODEL_PROVIDER` | `ollama` | `ollama` or `backboard` |
-| `LINKMORTEM_OLLAMA_MODEL` | `gemma4:e4b` | Local model |
-| `OLLAMA_HOST` | `http://localhost:11434` | Ollama server |
-| `LINKMORTEM_NUM_CTX` | `8192` | Context window for Ollama |
-| `BACKBOARD_API_KEY` | empty | Gemma through Backboard |
-| `LINKMORTEM_BACKBOARD_PROVIDER` | `openrouter` | Provider behind Backboard |
-| `LINKMORTEM_BACKBOARD_MODEL` | `google/gemma-4-26b-a4b-it` | Model served by Backboard |
-| `LINKMORTEM_MODEL_RETRIES` | `2` | Retries for an unusable model answer |
-| `MONGODB_URI` | empty | Shared autopsies, caches and the graveyard |
-| `LINKMORTEM_DATABASE` | `linkmortem` | Atlas database |
-| `SERPAPI_API_KEY` | empty | Searching for new homes |
-| `LINKMORTEM_MAX_SEARCHES` | `5` | Searches per scan |
-| `LINKMORTEM_SEARCH_DAILY_BUDGET` | `20` | Searches per day for the whole server |
-| `ARCHIVE_ACCESS_KEY`, `ARCHIVE_SECRET_KEY` | empty | Preserving living links with Save Page Now |
-| `SENTRY_DSN` | empty | Agent traces |
-| `LINKMORTEM_ENVIRONMENT` | `development` | Environment name in Sentry |
-| `GITHUB_TOKEN` | empty | 5,000 GitHub requests per hour instead of 60 |
-| `LINKMORTEM_SCAN_CONCURRENCY` | `8` | Links checked at the same time |
-| `LINKMORTEM_MODEL_CONCURRENCY` | `2` | Gemma calls at the same time |
-| `LINKMORTEM_SCAN_LIMIT`, `LINKMORTEM_SCAN_WINDOW` | `5`, `600` | Scans per client per window, in seconds |
-| `LINKMORTEM_MAX_CONCURRENT_SCANS` | `2` | Scans running at the same time |
-| `LINKMORTEM_TRUST_PROXY` | `false` | Read the client address from the proxy headers |
-| `LINKMORTEM_CAPTURE_FILE` | empty | Records prompts for the evaluation |
-| `LINKMORTEM_PUBLIC_URL` | `https://linkmortem.tech` | Address used in shared links and previews |
+| Variable                                          | Default                     | What it does                                   |
+| ------------------------------------------------- | --------------------------- | ---------------------------------------------- |
+| `LINKMORTEM_MODEL_PROVIDER`                       | `ollama`                    | `ollama` or `backboard`                        |
+| `LINKMORTEM_OLLAMA_MODEL`                         | `gemma4:e4b`                | Local model                                    |
+| `OLLAMA_HOST`                                     | `http://localhost:11434`    | Ollama server                                  |
+| `LINKMORTEM_NUM_CTX`                              | `8192`                      | Context window for Ollama                      |
+| `BACKBOARD_API_KEY`                               | empty                       | Gemma through Backboard                        |
+| `LINKMORTEM_BACKBOARD_PROVIDER`                   | `openrouter`                | Provider behind Backboard                      |
+| `LINKMORTEM_BACKBOARD_MODEL`                      | `google/gemma-4-26b-a4b-it` | Model served by Backboard                      |
+| `LINKMORTEM_MODEL_RETRIES`                        | `2`                         | Retries for an unusable model answer           |
+| `MONGODB_URI`                                     | empty                       | Shared autopsies, caches and the graveyard     |
+| `LINKMORTEM_DATABASE`                             | `linkmortem`                | Atlas database                                 |
+| `SERPAPI_API_KEY`                                 | empty                       | Searching for new homes                        |
+| `LINKMORTEM_MAX_SEARCHES`                         | `5`                         | Searches per scan                              |
+| `LINKMORTEM_SEARCH_DAILY_BUDGET`                  | `20`                        | Searches per day for the whole server          |
+| `ARCHIVE_ACCESS_KEY`, `ARCHIVE_SECRET_KEY`        | empty                       | Preserving living links with Save Page Now     |
+| `SENTRY_DSN`                                      | empty                       | Agent traces                                   |
+| `LINKMORTEM_ENVIRONMENT`                          | `development`               | Environment name in Sentry                     |
+| `GITHUB_TOKEN`                                    | empty                       | 5,000 GitHub requests per hour instead of 60   |
+| `LINKMORTEM_SCAN_CONCURRENCY`                     | `8`                         | Links checked at the same time                 |
+| `LINKMORTEM_MODEL_CONCURRENCY`                    | `2`                         | Gemma calls at the same time                   |
+| `LINKMORTEM_SCAN_LIMIT`, `LINKMORTEM_SCAN_WINDOW` | `5`, `600`                  | Scans per client per window, in seconds        |
+| `LINKMORTEM_MAX_CONCURRENT_SCANS`                 | `2`                         | Scans running at the same time                 |
+| `LINKMORTEM_TRUST_PROXY`                          | `false`                     | Read the client address from the proxy headers |
+| `LINKMORTEM_CAPTURE_FILE`                         | empty                       | Records prompts for the evaluation             |
+| `LINKMORTEM_PUBLIC_URL`                           | `https://linkmortem.tech`   | Address used in shared links and previews      |
 
 ## Deploy
 
@@ -591,6 +598,10 @@ Vite proxies `/api` to the backend at `http://localhost:8000`. Everything works 
 ## Built with AI
 
 Claude helped plan the work, write and review code, label the evaluation cases, debug and write the documentation. GitHub Copilot's coding agent wrote the first version of the security and contributing guides. Every change was reviewed, tested and committed by hand.
+
+## Credits
+
+Gemma's open weights by Google. The Wayback Machine, its CDX API and Save Page Now by the Internet Archive. Three.js for the ghost and the haunted house. IM Fell English, digitized by Igino Marini, and Atkinson Hyperlegible by the Braille Institute, both under the SIL Open Font License. Section anchors follow the way GitHub builds them from headings. The link rot figures on the home page come from Pew Research Center (2024) and Zittrain and colleagues (2021), as cited by the Internet Archive.
 
 ## License
 
