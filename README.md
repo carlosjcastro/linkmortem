@@ -1,12 +1,19 @@
+![The Linkmortem home page with a ghost made of light](docs/screenshots/linkmortem.jpg)
+
 # Linkmortem
 
 **Every dead link is a ghost.** Linkmortem finds the dead links and dead sections in a website or in the Markdown docs of a GitHub repository, works out why each one died, recovers what the page said from the Internet Archive, finds where the content lives now and writes the fix. Code decides everything it can verify. Gemma 4, an open weights model, reads only the pages code can't judge.
 
-**Live:** [linkmortem.tech](https://linkmortem.tech) · **Demo video:** [youtu.be/lp0didvo9Rs](https://youtu.be/lp0didvo9Rs) · **Example autopsy:** [linkmortem.tech/r/J1TS79vOe1kw](https://linkmortem.tech/r/J1TS79vOe1kw) · **GitHub Action demo:** [pull request](https://github.com/carlosjcastro/linkmortem-playground/pull/1) and [issue](https://github.com/carlosjcastro/linkmortem-playground/issues/2) opened by the Action in [linkmortem-playground](https://github.com/carlosjcastro/linkmortem-playground)
+[![Live at linkmortem.tech](https://img.shields.io/badge/live-linkmortem.tech-E8A33D?style=for-the-badge)](https://linkmortem.tech)
+[![Demo video on YouTube](https://img.shields.io/badge/demo_video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/lp0didvo9Rs)
+[![Example autopsy](https://img.shields.io/badge/example-autopsy-6E56CF?style=for-the-badge)](https://linkmortem.tech/r/J1TS79vOe1kw)
 
-Built for the DEV Hacktoberfest Open Source AI Challenge, Week 4, "Ghost in the Machine".
+[![GitHub Action demo, pull request opened by the Action](https://img.shields.io/badge/Action_demo-pull_request_%231-238636?style=for-the-badge&logo=github)](https://github.com/carlosjcastro/linkmortem-playground/pull/1)
+[![GitHub Action demo, issue kept by the Action](https://img.shields.io/badge/Action_demo-issue_%232-238636?style=for-the-badge&logo=github)](https://github.com/carlosjcastro/linkmortem-playground/issues/2)
+[![CI status](https://img.shields.io/github/actions/workflow/status/carlosjcastro/linkmortem/ci.yml?branch=main&style=for-the-badge&label=CI&logo=githubactions&logoColor=white)](https://github.com/carlosjcastro/linkmortem/actions/workflows/ci.yml)
+[![MIT license](https://img.shields.io/badge/license-MIT-3DA639?style=for-the-badge)](LICENSE)
 
-![The Linkmortem home page with a ghost made of light](docs/screenshots/home-hero.png)
+[![Built for the DEV Hacktoberfest 2026 Open Source AI Challenge, Week 4, Ghost in the Machine](https://img.shields.io/badge/DEV_Hacktoberfest_2026-Week_4%2C_Ghost_in_the_Machine-0A0A0A?style=for-the-badge&logo=devdotto&logoColor=white)](https://dev.to/challenges/hacktoberfest-week4-2026-10-26)
 
 ## Contents
 
